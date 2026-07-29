@@ -1,0 +1,8 @@
+@extends('admin.layouts.app')
+@section('title', 'Courses')
+@section('heading', 'Courses')
+@section('breadcrumb', 'Academy / Courses')
+@section('content')
+@if (session('status'))<p class="mb-4 border border-[var(--color-success)] bg-white px-4 py-3 text-[var(--color-success)]">{{ session('status') }}</p>@endif
+<div class="admin-panel mb-6"><div class="admin-panel__head"><h2 class="admin-panel__title">Courses</h2><a href="{{ route('admin.courses.create') }}" class="btn btn-primary">Add course</a></div><div class="admin-panel__body" style="padding:0;"><table class="admin-table"><thead><tr><th>Name</th><th>Fee</th><th>Venue</th><th>Status</th><th></th></tr></thead><tbody>@forelse($courses as $course)<tr><td>{{ $course->name }}</td><td>GHS {{ number_format((float)$course->fee,2) }}</td><td>{{ $course->venue ?: '—' }}</td><td>@if($course->is_active)<span class="admin-status admin-status--success">Active</span>@else<span class="admin-status admin-status--warning">Hidden</span>@endif</td><td class="text-right"><a href="{{ route('admin.courses.edit', $course->id) }}" class="btn btn-secondary">Edit</a><form action="{{ route('admin.courses.destroy', $course->id) }}" method="POST" class="inline" onsubmit="return confirm('Remove this course?')">@csrf @method('DELETE')<button type="submit" class="btn btn-secondary">Delete</button></form></td></tr>@empty<tr><td colspan="5"><div class="admin-empty"><p class="admin-empty__title">No courses yet</p><p class="admin-empty__copy">Create and publish academy courses here.</p></div></td></tr>@endforelse</tbody></table></div></div>{{ $courses->links() }}
+@endsection

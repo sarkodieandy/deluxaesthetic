@@ -1,0 +1,26 @@
+:root {
+  --admin-canvas: #f5f2ec;
+  --admin-surface: #ffffff;
+  --admin-surface-muted: #eee9e1;
+  --admin-text: #181818;
+  --admin-text-muted: #69655f;
+  --admin-border: #d8d2c9;
+  --admin-accent: #967452;
+  --admin-success: #386b4b;
+  --admin-error: #a43b3b;
+  --admin-warning: #9a6a1e;
+  --admin-info: #365f7c;
+  --admin-inactive: #727272;
+  --admin-radius: 0px;
+  --admin-radius-max: 3px;
+
+  /* Sidebar — dark panel, separate from light canvas */
+  --admin-sidebar-bg: #2c2925;
+  --admin-sidebar-surface: #35312c;
+  --admin-sidebar-border: #4a443d;
+  --admin-sidebar-text: #f2ede4;
+  --admin-sidebar-text-muted: #a9a095;
+  --admin-sidebar-accent: #c9a876;
+  --admin-sidebar-active-bg: rgb(201 168 118 / 0.12);
+  --admin-sidebar-link-border: rgb(242 237 228 / 0.14);
+}

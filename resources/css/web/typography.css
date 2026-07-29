@@ -1,0 +1,113 @@
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+.text-display {
+  font-family: var(--font-display);
+  font-size: var(--text-display);
+  font-weight: 500;
+  line-height: var(--leading-tight);
+  letter-spacing: -0.02em;
+  text-shadow: none;
+}
+
+.text-page-title {
+  font-family: var(--font-display);
+  font-size: var(--text-page-title);
+  font-weight: 500;
+  line-height: var(--leading-tight);
+  text-shadow: none;
+}
+
+.text-section-title {
+  font-family: var(--font-display);
+  font-size: var(--text-section-title);
+  font-weight: 500;
+  line-height: var(--leading-snug);
+  text-shadow: none;
+}
+
+.text-card-title {
+  font-family: var(--font-display);
+  font-size: var(--text-card-title);
+  font-weight: 500;
+  line-height: var(--leading-snug);
+}
+
+.text-body-lg {
+  font-size: var(--text-body-lg);
+  line-height: var(--leading-relaxed);
+}
+
+.text-body {
+  font-size: var(--text-body);
+  line-height: var(--leading-normal);
+}
+
+.text-body-sm {
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-normal);
+}
+
+.text-label,
+.micro-label {
+  font-family: var(--font-body);
+  font-size: var(--text-label);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  line-height: 1.4;
+  text-transform: uppercase;
+  color: var(--color-soft-grey);
+}
+
+.text-caption {
+  font-size: var(--text-caption);
+  line-height: 1.5;
+  color: var(--color-soft-grey);
+}
+
+.text-button {
+  font-family: var(--font-body);
+  font-size: var(--text-button);
+  font-weight: 600;
+  letter-spacing: var(--tracking-button);
+  text-transform: uppercase;
+}
+
+.text-metric {
+  font-family: var(--font-display);
+  font-size: var(--text-metric);
+  font-weight: 500;
+  line-height: 1;
+  text-shadow: none;
+}
+
+.text-table-heading {
+  font-size: var(--text-table-heading);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  color: var(--color-charcoal);
+  text-shadow: none;
+}
+
+p {
+  margin: 0;
+}
+
+.prose-clinic p + p {
+  margin-top: 1rem;
+}

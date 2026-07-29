@@ -1,0 +1,24 @@
+@import "./design-tokens.css";
+@import "./typography.css";
+@import "./layout.css";
+@import "./components.css";
+@import "./animations.css";
+@import "./pages.css";
+@import "./our-work.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply antialiased;
+    background: var(--color-ivory);
+    color: var(--color-charcoal);
+    font-family: var(--font-body);
+  }
+
+  [x-cloak] {
+    display: none !important;
+  }
+}

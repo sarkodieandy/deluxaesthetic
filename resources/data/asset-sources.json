@@ -1,0 +1,74 @@
+{
+  "assets": [
+    {
+      "filename": "ceo-mac-tonto-portrait-a.png",
+      "source_url": "client-supplied",
+      "creator": "Mac Tonto / De Luxe Aesthetic Clinic",
+      "licence": "Client ownership",
+      "downloaded_at": "2026-07-27",
+      "used_on": ["web.home", "web.about", "practitioner profile"],
+      "attribution_required": false,
+      "formats": ["png"]
+    },
+    {
+      "filename": "ceo-mac-tonto-portrait-b.png",
+      "source_url": "client-supplied",
+      "creator": "Mac Tonto / De Luxe Aesthetic Clinic",
+      "licence": "Client ownership",
+      "downloaded_at": "2026-07-27",
+      "used_on": ["web.home", "web.about"],
+      "attribution_required": false,
+      "formats": ["png"]
+    },
+    {
+      "filename": "spa-treatment-room.jpg",
+      "source_url": "https://unsplash.com/photos/white-bathtub-near-white-wall-4be289fbecef",
+      "creator": "Unsplash contributor",
+      "licence": "Unsplash License",
+      "downloaded_at": "2026-07-27",
+      "used_on": ["web.home hero"],
+      "attribution_required": false,
+      "formats": ["jpg"]
+    },
+    {
+      "filename": "facial-care.jpg",
+      "source_url": "https://images.unsplash.com/photo-1519823551278-64ac92734fb1",
+      "creator": "Unsplash contributor",
+      "licence": "Unsplash License",
+      "downloaded_at": "2026-07-27",
+      "used_on": ["web.home treatments"],
+      "attribution_required": false,
+      "formats": ["jpg"]
+    },
+    {
+      "filename": "skincare-ritual.jpg",
+      "source_url": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881",
+      "creator": "Unsplash contributor",
+      "licence": "Unsplash License",
+      "downloaded_at": "2026-07-27",
+      "used_on": ["web.home treatments"],
+      "attribution_required": false,
+      "formats": ["jpg"]
+    },
+    {
+      "filename": "body-massage.jpg",
+      "source_url": "https://images.unsplash.com/photo-1544161515-4ab6ce6db874",
+      "creator": "Unsplash contributor",
+      "licence": "Unsplash License",
+      "downloaded_at": "2026-07-27",
+      "used_on": ["web.home treatments"],
+      "attribution_required": false,
+      "formats": ["jpg"]
+    },
+    {
+      "filename": "clinic-ambiance.jpg",
+      "source_url": "https://images.unsplash.com/photo-1600334129128-685c5582fd35",
+      "creator": "Unsplash contributor",
+      "licence": "Unsplash License",
+      "downloaded_at": "2026-07-27",
+      "used_on": ["web.home ambiance"],
+      "attribution_required": false,
+      "formats": ["jpg"]
+    }
+  ]
+}

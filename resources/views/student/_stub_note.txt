@@ -1,0 +1,2 @@
+@foreach (['calendar' => 'Training calendar', 'materials' => 'Course materials', 'attendance' => 'Attendance', 'assignments' => 'Assignments', 'assessments' => 'Assessments', 'payments' => 'Payments', 'notifications' => 'Notifications', 'support' => 'Support', 'profile' => 'Profile', 'security' => 'Security'] as $partial => $title)
+@endforeach

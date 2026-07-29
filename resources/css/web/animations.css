@@ -1,0 +1,105 @@
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes line-expand {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(1.25rem);
+}
+
+.reveal.is-visible {
+  animation: fade-up var(--duration-slow) var(--ease-out) forwards;
+}
+
+.reveal-delay-1 {
+  animation-delay: 80ms;
+}
+
+.reveal-delay-2 {
+  animation-delay: 160ms;
+}
+
+.reveal-delay-3 {
+  animation-delay: 240ms;
+}
+
+.line-reveal {
+  display: block;
+  height: 1px;
+  background: var(--color-bronze);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+.line-reveal.is-visible {
+  animation: line-expand 700ms var(--ease-out) forwards;
+}
+
+.hero-mask {
+  clip-path: inset(0 0 100% 0);
+}
+
+.hero-mask.is-revealed {
+  animation: fade-in 0.01s forwards;
+  clip-path: inset(0 0 0 0);
+  transition: clip-path 900ms var(--ease-out);
+}
+
+.link-underline {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  background-size: 0 1px;
+  transition: background-size var(--duration-base) var(--ease-out);
+}
+
+.link-underline:hover {
+  background-size: 100% 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reveal,
+  .hero-mask,
+  .line-reveal {
+    opacity: 1;
+    transform: none;
+    clip-path: none;
+  }
+}

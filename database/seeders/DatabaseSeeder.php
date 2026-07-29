@@ -2,24 +2,31 @@
 
 namespace Database\Seeders;
 
+use App\Models\Branch;
+use App\Models\PractitionerProfile;
+use App\Models\Setting;
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            RolePermissionSeeder::class,
+            SettingsSeeder::class,
+            EmailTemplateSeeder::class,
+            BranchSeeder::class,
+            DemoUserSeeder::class,
+            ClinicDemoSeeder::class,
+            ProductCategorySeeder::class,
+            DemoCertificateSeeder::class,
+            AdminSidebarDemoSeeder::class,
         ]);
     }
 }

@@ -2,23 +2,59 @@
 
 namespace App\Providers;
 
+use App\Support\GoogleAuth;
+use App\Contracts\Payments\PaymentGatewayInterface;
+use App\Events\Auth\GoogleAccountLinked;
+use App\Events\Auth\GoogleAccountUnlinked;
+use App\Events\Auth\SocialAccountRegistered;
+use App\Events\EnrolmentActivated;
+use App\Events\StudentAccountActivated;
+use App\Listeners\Emails\SendAuthenticationEmails;
+use App\Listeners\Notifications\SendPortalInAppNotifications;
+use App\Models\Enrolment;
+use App\Policies\Student\EnrolmentPolicy;
+use App\Services\Payments\MockPaymentService;
+use App\Services\Payments\PaystackPaymentService;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        //
+        $this->app->bind(PaymentGatewayInterface::class, function () {
+            if (config('payments.mock') || config('payments.default') === 'mock') {
+                return new MockPaymentService;
+            }
+
+            return new PaystackPaymentService;
+        });
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        //
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
+
+        config([
+            'authentication.google.enabled' => GoogleAuth::enabled(),
+        ]);
+
+        Gate::policy(Enrolment::class, EnrolmentPolicy::class);
+
+        $emailListener = SendAuthenticationEmails::class;
+
+        Event::listen(Registered::class, [$emailListener, 'handleWelcome']);
+        Event::listen(SocialAccountRegistered::class, [$emailListener, 'handleSocialRegistered']);
+        Event::listen(GoogleAccountLinked::class, [$emailListener, 'handleGoogleLinked']);
+        Event::listen(GoogleAccountUnlinked::class, [$emailListener, 'handleGoogleUnlinked']);
+
+        $portalNotifications = SendPortalInAppNotifications::class;
+        Event::listen(EnrolmentActivated::class, [$portalNotifications, 'handleEnrolmentActivated']);
+        Event::listen(StudentAccountActivated::class, [$portalNotifications, 'handleStudentAccountActivated']);
     }
 }
