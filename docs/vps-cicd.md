@@ -165,3 +165,49 @@ git push origin main
 
 The workflow keeps the five newest releases. If its health check fails, it
 restores the previous `current` symlink automatically.
+
+## Alternative: direct Git remote deployment
+
+This option does not use GitHub Actions. A push directly to the VPS builds and
+activates the release:
+
+```bash
+git push production main
+```
+
+On the VPS, run as `root` once. Install Node.js 22 before creating the remote:
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_22.x -o /tmp/nodesource_setup.sh
+bash /tmp/nodesource_setup.sh
+apt install -y nodejs git
+mkdir -p /var/repo/deluxaesthetic.git
+git init --bare /var/repo/deluxaesthetic.git
+chown -R deploy:www-data /var/repo/deluxaesthetic.git
+```
+
+Verify that the installed Node version is 22 or newer:
+
+```bash
+node --version
+npm --version
+```
+
+From the local project directory, install the deployment hook:
+
+```bash
+scp deploy/post-receive deploy@198.54.112.18:/tmp/deluxaesthetic-post-receive
+ssh deploy@198.54.112.18 \
+    'cp /tmp/deluxaesthetic-post-receive /var/repo/deluxaesthetic.git/hooks/post-receive && chmod 755 /var/repo/deluxaesthetic.git/hooks/post-receive'
+```
+
+Add the production remote locally:
+
+```bash
+git remote add production deploy@198.54.112.18:/var/repo/deluxaesthetic.git
+git push production main
+```
+
+Future direct pushes to `production` automatically run Composer, build the
+Vite assets, run database migrations, switch the `current` symlink, restart
+the queue worker, and retain the five newest releases.

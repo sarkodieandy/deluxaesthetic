@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+APP_ROOT="/var/www/deluxaesthetic"
+DEPLOY_BRANCH="refs/heads/main"
+
+while read -r OLD_REV NEW_REV REF_NAME; do
+    if [[ "$REF_NAME" != "$DEPLOY_BRANCH" ]]; then
+        echo "Ignoring ${REF_NAME}; only main is deployed."
+        continue
+    fi
+
+    if [[ "$NEW_REV" =~ ^0+$ ]]; then
+        echo "Refusing to deploy a deleted main branch."
+        exit 1
+    fi
+
+    RELEASE_ID="$(date +%s)-${NEW_REV}"
+    BUILD_DIR="$(mktemp -d /tmp/deluxaesthetic-build.XXXXXX)"
+    ARCHIVE_PATH="/tmp/deluxaesthetic-${RELEASE_ID}.tar.gz"
+
+    cleanup_build() {
+        rm -rf -- "$BUILD_DIR"
+        rm -f "$ARCHIVE_PATH"
+    }
+    trap cleanup_build EXIT
+
+    echo "Preparing ${RELEASE_ID}..."
+    git archive "$NEW_REV" | tar -x -C "$BUILD_DIR"
+
+    cd "$BUILD_DIR"
+
+    /usr/local/bin/composer install \
+        --no-dev \
+        --prefer-dist \
+        --no-interaction \
+        --no-progress \
+        --classmap-authoritative
+
+    /usr/bin/npm ci
+    /usr/bin/npm run build
+    rm -rf node_modules
+
+    tar \
+        --exclude=.env \
+        --exclude=.git \
+        --exclude=node_modules \
+        --exclude=storage/logs \
+        --exclude=tests \
+        -czf "$ARCHIVE_PATH" .
+
+    /bin/bash "${BUILD_DIR}/deploy/release.sh" \
+        "$RELEASE_ID" \
+        "$ARCHIVE_PATH" \
+        "${PRODUCTION_URL:-}"
+
+    echo "Deployment from ${REF_NAME} completed."
+done

@@ -57,8 +57,12 @@ chmod -R ug+rwX "${SHARED_DIR}/storage" "${RELEASE_DIR}/bootstrap/cache"
 
 cd "$RELEASE_DIR"
 
-php artisan optimize:clear
+php artisan config:clear
+php artisan event:clear
+php artisan route:clear
+php artisan view:clear
 php artisan migrate --force
+php artisan db:seed --class=ProductionSeeder --force
 php artisan storage:link
 php artisan optimize
 
@@ -96,4 +100,3 @@ for OLD_RELEASE in "${OLD_RELEASES[@]}"; do
 done
 
 echo "Release ${RELEASE_ID} is live."
-
