@@ -8,59 +8,32 @@ use App\Models\PractitionerProfile;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Models\Treatment;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class HomeController extends Controller
 {
     public function index(): View
     {
-        $content = Cache::remember('web.home.content.v1', now()->addMinutes(5), fn () => [
-            'ceo' => PractitionerProfile::query()
-                ->with('user')
-                ->where('is_ceo', true)
-                ->where('is_active', true)
-                ->first(),
-            'featuredTreatments' => Treatment::query()
-                ->with('category')
-                ->where('is_active', true)
-                ->where('is_featured', true)
-                ->latest()
-                ->take(3)
-                ->get(),
-            'practitioners' => PractitionerProfile::query()
-                ->with('user')
-                ->where('is_active', true)
-                ->orderByDesc('is_ceo')
-                ->take(3)
-                ->get(),
-            'featuredProducts' => Product::query()
-                ->with(['category', 'images'])
-                ->where('is_active', true)
-                ->orderByDesc('is_featured')
-                ->orderBy('name')
-                ->take(2)
-                ->get(),
-            'featuredBeforeAfter' => GalleryItem::query()
-                ->where('is_active', true)
-                ->where('type', 'before_after')
-                ->orderByDesc('is_featured')
-                ->orderBy('sort_order')
-                ->first(),
-            'featuredGalleryImage' => GalleryItem::query()
-                ->where('is_active', true)
-                ->where('type', 'gallery')
-                ->orderByDesc('is_featured')
-                ->orderBy('sort_order')
-                ->first(),
-            'ourWorkGallery' => GalleryItem::query()
-                ->where('is_active', true)
-                ->where('type', 'gallery')
-                ->orderByDesc('is_featured')
-                ->orderBy('sort_order')
-                ->take(3)
-                ->get(),
-        ]);
+        $ceo = PractitionerProfile::query()
+            ->with('user')
+            ->where('is_ceo', true)
+            ->where('is_active', true)
+            ->first();
+
+        $featuredTreatments = Treatment::query()
+            ->with('category')
+            ->where('is_active', true)
+            ->where('is_featured', true)
+            ->latest()
+            ->take(3)
+            ->get();
+
+        $practitioners = PractitionerProfile::query()
+            ->with('user')
+            ->where('is_active', true)
+            ->orderByDesc('is_ceo')
+            ->take(3)
+            ->get();
 
         $serviceIndex = [
             [
@@ -95,9 +68,45 @@ class HomeController extends Controller
             ],
         ];
 
+        $featuredProducts = Product::query()
+            ->with(['category', 'images'])
+            ->where('is_active', true)
+            ->orderByDesc('is_featured')
+            ->orderBy('name')
+            ->take(2)
+            ->get();
+
+        $featuredBeforeAfter = GalleryItem::query()
+            ->where('is_active', true)
+            ->where('type', 'before_after')
+            ->orderByDesc('is_featured')
+            ->orderBy('sort_order')
+            ->first();
+
+        $featuredGalleryImage = GalleryItem::query()
+            ->where('is_active', true)
+            ->where('type', 'gallery')
+            ->orderByDesc('is_featured')
+            ->orderBy('sort_order')
+            ->first();
+
+        $ourWorkGallery = GalleryItem::query()
+            ->where('is_active', true)
+            ->where('type', 'gallery')
+            ->orderByDesc('is_featured')
+            ->orderBy('sort_order')
+            ->take(3)
+            ->get();
+
         return view('web.home.index', [
-            ...$content,
+            'ceo' => $ceo,
+            'featuredTreatments' => $featuredTreatments,
+            'practitioners' => $practitioners,
             'serviceIndex' => $serviceIndex,
+            'featuredProducts' => $featuredProducts,
+            'featuredBeforeAfter' => $featuredBeforeAfter,
+            'featuredGalleryImage' => $featuredGalleryImage,
+            'ourWorkGallery' => $ourWorkGallery,
             'heroSlides' => [
                 [
                     'src' => 'assets/web/images/hero/spa-treatment-room.webp',
