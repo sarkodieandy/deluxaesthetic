@@ -58,7 +58,7 @@ At minimum, set:
 ```env
 APP_ENV=production
 APP_DEBUG=false
-APP_URL=https://deluxeaestheticclinic.com
+APP_URL=https://deluxaestheticclinic.com
 APP_KEY=
 LOG_LEVEL=error
 
@@ -78,7 +78,7 @@ QUEUE_SCHEDULED_DRAIN=false
 PAYMENT_MOCK=false
 PAYSTACK_PUBLIC_KEY=REPLACE_WITH_PAYSTACK_PUBLIC_KEY
 PAYSTACK_SECRET_KEY=REPLACE_WITH_PAYSTACK_SECRET_KEY
-PAYSTACK_CALLBACK_URL=https://deluxeaestheticclinic.com/checkout/callback
+PAYSTACK_CALLBACK_URL=https://deluxaestheticclinic.com/checkout/callback
 ```
 
 Generate `APP_KEY` without placing the environment file in a release:
@@ -110,7 +110,7 @@ environment secrets:
 - `VPS_KNOWN_HOSTS`: the verified output from `ssh-keyscan -H 198.54.112.18`
 
 Add an environment variable named `PRODUCTION_URL`. Leave it blank for the
-first deployment, then set it to `https://deluxeaestheticclinic.com` after SSL
+first deployment, then set it to `https://deluxaestheticclinic.com` after SSL
 is active.
 
 ## 4. Configure Nginx, Supervisor, and scheduler
@@ -147,7 +147,7 @@ Add this cron entry:
 Once DNS points to the VPS and the first release is live:
 
 ```bash
-certbot --nginx -d deluxeaestheticclinic.com -d www.deluxeaestheticclinic.com
+certbot --nginx -d deluxaestheticclinic.com -d www.deluxaestheticclinic.com
 ```
 
 Then set GitHub's `PRODUCTION_URL` environment variable and rerun the workflow
