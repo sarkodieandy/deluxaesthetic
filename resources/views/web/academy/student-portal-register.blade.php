@@ -1,6 +1,7 @@
 @extends('web.layouts.app')
 
 @section('title', __('web.student_portal.title').' — '.config('clinic.name'))
+@section('robots', 'noindex, follow')
 
 @section('content')
 @php

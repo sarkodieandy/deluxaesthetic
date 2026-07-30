@@ -57,8 +57,7 @@
         @endforeach
         <div class="mobile-menu__actions">
             @guest
-                <a href="{{ route('login') }}" class="btn btn-secondary mobile-menu__action" style="--menu-i: 10" @click="close()">{{ __('Log in') }}</a>
-                <a href="{{ route('register') }}" class="btn btn-secondary mobile-menu__action" style="--menu-i: 11" @click="close()">{{ __('Register') }}</a>
+                <a href="{{ route('login') }}" class="btn btn-secondary mobile-menu__action" style="--menu-i: 10" @click="close()">{{ __('Student login') }}</a>
             @else
                 <a href="{{ route(auth()->user()->portalHomeRoute()) }}" class="btn btn-secondary mobile-menu__action" style="--menu-i: 10" @click="close()">{{ __('web.account') }}</a>
             @endguest

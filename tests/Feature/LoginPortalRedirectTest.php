@@ -76,15 +76,23 @@ class LoginPortalRedirectTest extends TestCase
         ])->assertRedirect(route('admin.dashboard'));
     }
 
-    public function test_client_registration_redirects_to_client_portal(): void
+    public function test_client_only_account_cannot_log_in(): void
     {
-        Role::findOrCreate('Client');
+        $client = User::factory()->create([
+            'email' => 'client@example.com',
+            'password' => bcrypt('Password1!'),
+            'is_active' => true,
+            'email_verified_at' => now(),
+        ]);
+        $client->assignRole(Role::findOrCreate('Client'));
 
-        $this->post(route('register'), [
-            'name' => 'Client User',
-            'email' => 'client-new@example.com',
+        $this->post(route('login'), [
+            'email' => 'client@example.com',
             'password' => 'Password1!',
-            'password_confirmation' => 'Password1!',
-        ])->assertRedirect(route('client.dashboard'));
+        ])
+            ->assertSessionHasErrors('email')
+            ->assertRedirect();
+
+        $this->assertGuest();
     }
 }

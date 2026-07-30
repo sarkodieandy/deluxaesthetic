@@ -15,6 +15,10 @@ class StudentPortalRegistrationTest extends TestCase
     {
         $this->get(route('web.academy.index'))
             ->assertOk()
+            ->assertSee(route('web.academy.student-portal.create'));
+
+        $this->get(route('web.academy.student-portal.create'))
+            ->assertOk()
             ->assertSee(__('web.student_portal.form_title'));
     }
 

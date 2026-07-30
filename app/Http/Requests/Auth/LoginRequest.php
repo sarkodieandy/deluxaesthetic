@@ -50,6 +50,20 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        $user = Auth::user();
+
+        if ($user?->hasRole('Client') && ! $user->hasAnyRole(array_merge(
+            config('admin.roles', []),
+            ['Student']
+        ))) {
+            Auth::guard('web')->logout();
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => 'Customers do not need an account. Please shop or book a consultation as a guest.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

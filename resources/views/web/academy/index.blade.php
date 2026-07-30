@@ -240,7 +240,7 @@
         <p class="academy-v2-final__portal">Create your student portal account to track enrolment, courses and academy updates.</p>
         <div>
             <a href="{{ route('web.enrol') }}" class="btn btn-primary">Start an academy enquiry</a>
-            <a href="{{ route('register') }}" class="btn btn-secondary">Create student account</a>
+            <a href="{{ route('web.academy.student-portal.create') }}" class="btn btn-secondary">Create student account</a>
         </div>
     </div>
 </section>

@@ -5,7 +5,7 @@ return [
     'google' => [
         // Resolved at runtime in AppServiceProvider (services config loads after this file).
         'enabled' => false,
-        'public_roles' => ['Client', 'Student'],
+        'public_roles' => ['Student'],
     ],
 
     'oauth' => [

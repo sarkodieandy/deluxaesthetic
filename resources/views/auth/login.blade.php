@@ -1,8 +1,8 @@
 <x-guest-layout>
     <div class="auth-intro">
-        <p class="text-label">{{ __('Welcome back') }}</p>
-        <h1 class="auth-title">{{ __('Log in') }}</h1>
-        <p class="auth-copy">{{ __('web.auth.login_copy') }}</p>
+        <p class="text-label">{{ __('Secure portal') }}</p>
+        <h1 class="auth-title">{{ __('Student & staff login') }}</h1>
+        <p class="auth-copy">{{ __('This login is for enrolled students and authorised staff. Customers can shop and book consultations without an account.') }}</p>
     </div>
 
     <x-auth-session-status class="auth-status" :status="session('status')" />
@@ -41,11 +41,7 @@
     @endif
 
     <p class="auth-switch">
-        {{ __('New to :brand?', ['brand' => config('clinic.wordmark')]) }}
-        <a class="auth-link" href="{{ route('register') }}">{{ __('Create an account') }}</a>
-    </p>
-    <p class="auth-switch">
-        {{ __('web.student_portal.login_hint') }}
-        <a class="auth-link" href="{{ route('web.academy.index') }}">{{ __('web.student_portal.login_hint_link') }}</a>
+        {{ __('Joining the academy?') }}
+        <a class="auth-link" href="{{ route('web.academy.student-portal.create') }}">{{ __('Create a student account') }}</a>
     </p>
 </x-guest-layout>

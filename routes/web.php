@@ -26,6 +26,8 @@ Route::get('/treatments', [TreatmentController::class, 'index'])->name('web.trea
 Route::get('/treatments/{slug}', [TreatmentController::class, 'show'])->name('web.treatments.show');
 Route::get('/practitioners', [PractitionerController::class, 'index'])->name('web.practitioners.index');
 Route::get('/academy', [StudentPortalRegistrationController::class, 'create'])->name('web.academy.index');
+Route::get('/academy/student-portal', [StudentPortalRegistrationController::class, 'register'])
+    ->name('web.academy.student-portal.create');
 Route::post('/academy/student-portal', [StudentPortalRegistrationController::class, 'store'])->name('web.academy.student-portal.store');
 Route::get('/courses', [CourseController::class, 'index'])->name('web.courses.index');
 Route::get('/courses/{slug}', [CourseController::class, 'show'])->name('web.courses.show');

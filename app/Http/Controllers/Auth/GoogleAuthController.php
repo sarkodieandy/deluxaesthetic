@@ -40,6 +40,20 @@ class GoogleAuthController extends Controller
             return redirect()->route('login')->withErrors(['email' => __('auth.google.provider_error')]);
         }
 
+        if (($result['type'] ?? null) === 'logged_in') {
+            $user = $result['user'];
+            $isClientOnly = $user->hasRole('Client')
+                && ! $user->hasAnyRole(array_merge(config('admin.roles', []), ['Student']));
+
+            if ($isClientOnly) {
+                auth()->logout();
+
+                return redirect()->route('login')->withErrors([
+                    'email' => 'Customers do not need an account. Please shop or book a consultation as a guest.',
+                ]);
+            }
+        }
+
         return match ($result['type']) {
             'logged_in' => PortalRedirect::afterLogin($result['user'], request()),
             'select_account_type' => redirect()->route('auth.google.select-account-type'),
@@ -96,7 +110,7 @@ class GoogleAuthController extends Controller
     public function storeCompleteProfile(CompleteGoogleProfileRequest $request, GoogleAuthenticationService $google): RedirectResponse
     {
         $role = session()->pull('google_oauth.selected_role');
-        if (! in_array($role, ['Client', 'Student'], true)) {
+        if (! in_array($role, config('authentication.google.public_roles', []), true)) {
             return redirect()->route('login')->withErrors(['email' => __('auth.google.session_expired')]);
         }
 

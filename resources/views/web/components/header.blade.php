@@ -16,9 +16,9 @@
                         <span class="header-icon-link__label">{{ __('web.account') }}</span>
                     </a>
                 @else
-                    <a href="{{ route('login') }}" class="header-icon-link" aria-label="{{ __('Log in') }}">
+                    <a href="{{ route('login') }}" class="header-icon-link" aria-label="{{ __('Student and staff login') }}">
                         @include('web.components.icon', ['name' => 'user', 'class' => 'icon icon--sm'])
-                        <span class="header-icon-link__label">{{ __('Log in') }}</span>
+                        <span class="header-icon-link__label">{{ __('Student login') }}</span>
                     </a>
                 @endauth
                 @php

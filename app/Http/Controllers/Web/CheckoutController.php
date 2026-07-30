@@ -33,10 +33,6 @@ class CheckoutController extends Controller
             return redirect()->route('web.cart.index')->withErrors(['cart' => 'Your cart is empty.']);
         }
 
-        if (! auth()->check() && ! config('ecommerce.allow_guest_checkout')) {
-            return redirect()->route('login')->with('status', 'Sign in to checkout.');
-        }
-
         $user = auth()->user();
         $quote = $this->pricing->quote($cart, $cart->fulfillment_type?->value);
 

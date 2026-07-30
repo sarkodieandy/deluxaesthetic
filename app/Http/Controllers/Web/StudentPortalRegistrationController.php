@@ -21,6 +21,17 @@ class StudentPortalRegistrationController extends Controller
         return view('web.academy.index');
     }
 
+    public function register(Request $request): View|RedirectResponse
+    {
+        if ($request->user()?->hasRole('Student')) {
+            return redirect()->route('student.dashboard');
+        }
+
+        return view('web.academy.student-portal-register', [
+            'loggedInAsClient' => (bool) $request->user()?->hasRole('Client'),
+        ]);
+    }
+
     public function store(
         StoreStudentPortalRegistrationRequest $request,
         StudentPortalRegistrationService $registration,
