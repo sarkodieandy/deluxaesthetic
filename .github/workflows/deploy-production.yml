@@ -1,0 +1,134 @@
+name: Deploy production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+env:
+  PHP_VERSION: "8.3"
+  NODE_VERSION: "22"
+
+jobs:
+  test-and-build:
+    name: Test and build release
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: bcmath, ctype, dom, fileinfo, gd, mbstring, pdo_sqlite, tokenizer, xml
+          coverage: none
+
+      - name: Install PHP dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Prepare test environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Run test suite
+        run: php artisan test
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Remove development PHP dependencies
+        run: composer install --no-dev --prefer-dist --no-interaction --no-progress --classmap-authoritative
+
+      - name: Create release archive
+        run: |
+          tar \
+            --exclude=.env \
+            --exclude=.git \
+            --exclude=.github \
+            --exclude=node_modules \
+            --exclude=storage/logs \
+            --exclude=tests \
+            -czf "${RUNNER_TEMP}/release.tar.gz" .
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-release
+          path: ${{ runner.temp }}/release.tar.gz
+          if-no-files-found: error
+          retention-days: 3
+
+  deploy:
+    name: Deploy to VPS
+    needs: test-and-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: ${{ vars.PRODUCTION_URL }}
+
+    steps:
+      - name: Check out deployment script
+        uses: actions/checkout@v4
+
+      - name: Download release artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: production-release
+          path: ${{ runner.temp }}
+
+      - name: Configure SSH
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Upload and activate release
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+          RELEASE_ID: ${{ github.run_number }}-${{ github.sha }}
+        run: |
+          SSH_TARGET="${VPS_USER}@${VPS_HOST}"
+          REMOTE_ARCHIVE="/tmp/deluxaesthetic-${RELEASE_ID}.tar.gz"
+          REMOTE_SCRIPT="/tmp/deluxaesthetic-release-${RELEASE_ID}.sh"
+
+          scp -P "${VPS_PORT:-22}" \
+            "${RUNNER_TEMP}/release.tar.gz" \
+            "${SSH_TARGET}:${REMOTE_ARCHIVE}"
+
+          scp -P "${VPS_PORT:-22}" \
+            deploy/release.sh \
+            "${SSH_TARGET}:${REMOTE_SCRIPT}"
+
+          ssh -p "${VPS_PORT:-22}" "$SSH_TARGET" \
+            /bin/bash "$REMOTE_SCRIPT" "$RELEASE_ID" "$REMOTE_ARCHIVE" "$PRODUCTION_URL"
+

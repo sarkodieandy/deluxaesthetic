@@ -4,6 +4,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Scheduled Queue Drain
+    |--------------------------------------------------------------------------
+    |
+    | Shared hosting can drain queued jobs from the scheduler. Production
+    | servers with Supervisor should disable this to avoid duplicate workers.
+    |
+    */
+
+    'scheduled_drain' => (bool) env('QUEUE_SCHEDULED_DRAIN', true),
+
+    /*
+    |--------------------------------------------------------------------------
     | Default Queue Connection Name
     |--------------------------------------------------------------------------
     |

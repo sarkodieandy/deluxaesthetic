@@ -8,6 +8,8 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('queue:work --stop-when-empty --max-jobs=25')
-    ->everyMinute()
-    ->withoutOverlapping();
+if (config('queue.scheduled_drain')) {
+    Schedule::command('queue:work --stop-when-empty --max-jobs=25')
+        ->everyMinute()
+        ->withoutOverlapping();
+}
