@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\AppointmentController;
+use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\CertificateController;
 use App\Http\Controllers\Admin\ClientController;
@@ -25,6 +26,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\TreatmentController;
+use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'active.account', 'admin.access'])
@@ -34,6 +36,11 @@ Route::middleware(['auth', 'active.account', 'admin.access'])
         Route::get('/', [DashboardController::class, 'index'])
             ->middleware('permission:dashboard.view')
             ->name('dashboard');
+
+        Route::get('/profile', [AccountController::class, 'profile'])->name('profile.edit');
+        Route::patch('/profile', [AccountController::class, 'updateProfile'])->name('profile.update');
+        Route::get('/account', [AccountController::class, 'security'])->name('account.security');
+        Route::delete('/account/sessions', [AccountController::class, 'destroyOtherSessions'])->name('account.sessions.destroy');
 
         Route::middleware('permission:audit.view')->group(function () {
             Route::get('/activity', [AuditLogController::class, 'index'])->name('activity.index');
@@ -96,7 +103,13 @@ Route::middleware(['auth', 'active.account', 'admin.access'])
             Route::put('/orders/{order}', [OrderController::class, 'update'])->middleware('permission:orders.manage')->name('orders.update');
         });
         Route::middleware('permission:payments.view')->get('/payments', [ConnectedIndexController::class, 'payments'])->name('payments.index');
-        Route::middleware('permission:users.manage')->get('/users', [ConnectedIndexController::class, 'users'])->name('users.index');
+        Route::middleware('permission:users.manage')->group(function () {
+            Route::get('/users', [UserController::class, 'index'])->name('users.index');
+            Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+            Route::post('/users', [UserController::class, 'store'])->name('users.store');
+            Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+            Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+        });
         Route::middleware('permission:roles.manage')->get('/roles', [ConnectedIndexController::class, 'roles'])->name('roles.index');
         Route::middleware('permission:settings.manage')->get('/settings', [ConnectedIndexController::class, 'settings'])->name('settings.index');
         Route::middleware('permission:inventory.view')->get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');

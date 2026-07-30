@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Support\GoogleAuth;
+use App\DTOs\Auth\GoogleUserData;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\CompleteGoogleProfileRequest;
 use App\Http\Requests\Auth\SelectGoogleAccountTypeRequest;
 use App\Services\Auth\GoogleAuthenticationService;
+use App\Support\GoogleAuth;
 use App\Support\PortalRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Laravel\Socialite\Two\InvalidStateException;
 use Symfony\Component\HttpFoundation\RedirectResponse as SymfonyRedirect;
 
 class GoogleAuthController extends Controller
@@ -32,7 +34,7 @@ class GoogleAuthController extends Controller
 
         try {
             $result = $google->handleCallback();
-        } catch (\Laravel\Socialite\Two\InvalidStateException) {
+        } catch (InvalidStateException) {
             return redirect()->route('login')->withErrors(['email' => __('auth.google.session_state_mismatch')]);
         } catch (\Throwable $exception) {
             report($exception);
@@ -67,17 +69,21 @@ class GoogleAuthController extends Controller
             return redirect()->route('login')->withErrors(['email' => __('auth.google.link_session_invalid')]);
         }
 
+        $returnRoute = auth()->user()->hasAnyRole(config('admin.roles', []))
+            ? 'admin.account.security'
+            : 'account.linked-accounts';
+
         try {
             $socialiteUser = $google->fetchSocialiteUser();
-            $googleData = \App\DTOs\Auth\GoogleUserData::fromSocialiteUser($socialiteUser);
+            $googleData = GoogleUserData::fromSocialiteUser($socialiteUser);
             $google->linkToAuthenticatedUser(auth()->user(), $googleData);
-        } catch (\Laravel\Socialite\Two\InvalidStateException) {
-            return redirect()->route('account.linked-accounts')->withErrors(['google' => __('auth.google.session_state_mismatch')]);
+        } catch (InvalidStateException) {
+            return redirect()->route($returnRoute)->withErrors(['google' => __('auth.google.session_state_mismatch')]);
         } catch (\Throwable $exception) {
-            return redirect()->route('account.linked-accounts')->withErrors(['google' => $exception->getMessage()]);
+            return redirect()->route($returnRoute)->withErrors(['google' => $exception->getMessage()]);
         }
 
-        return redirect()->route('account.linked-accounts')->with('status', __('auth.google.linked_success'));
+        return redirect()->route($returnRoute)->with('status', __('auth.google.linked_success'));
     }
 
     public function selectAccountType(GoogleAuthenticationService $google): View|RedirectResponse

@@ -61,10 +61,17 @@
             <ul class="admin-nav-list">
                 <li>
                     <a
-                        href="{{ route('profile.edit') }}"
-                        @class(['admin-nav-link', 'is-active' => request()->routeIs('profile.*')])
-                        @if(request()->routeIs('profile.*')) aria-current="page" @endif
+                        href="{{ route('admin.profile.edit') }}"
+                        @class(['admin-nav-link', 'is-active' => request()->routeIs('admin.profile.*')])
+                        @if(request()->routeIs('admin.profile.*')) aria-current="page" @endif
                     >{{ __('Profile') }}</a>
+                </li>
+                <li>
+                    <a
+                        href="{{ route('admin.account.security') }}"
+                        @class(['admin-nav-link', 'is-active' => request()->routeIs('admin.account.*')])
+                        @if(request()->routeIs('admin.account.*')) aria-current="page" @endif
+                    >{{ __('Security & account') }}</a>
                 </li>
                 <li>
                     <a
