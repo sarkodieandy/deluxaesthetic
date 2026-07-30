@@ -48,6 +48,28 @@ function initAdminNavigation() {
             }
         });
     });
+
+    sidebar.querySelectorAll('[data-admin-nav-group]').forEach((group) => {
+        const button = group.querySelector('[data-admin-group-toggle]');
+        const key = group.dataset.groupKey;
+        if (!button || !key) return;
+
+        const storageKey = `deluxe-admin-nav-${key}`;
+        const stored = window.localStorage.getItem(storageKey);
+        const startsCollapsed = stored === 'collapsed' && !group.classList.contains('is-active');
+
+        const setCollapsed = (collapsed) => {
+            group.classList.toggle('is-collapsed', collapsed);
+            button.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        };
+
+        setCollapsed(startsCollapsed);
+        button.addEventListener('click', () => {
+            const collapsed = !group.classList.contains('is-collapsed');
+            setCollapsed(collapsed);
+            window.localStorage.setItem(storageKey, collapsed ? 'collapsed' : 'expanded');
+        });
+    });
 }
 
 document.addEventListener('DOMContentLoaded', initAdminNavigation);

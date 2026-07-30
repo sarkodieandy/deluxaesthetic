@@ -15,12 +15,12 @@
   --admin-radius-max: 3px;
 
   /* Sidebar — dark panel, separate from light canvas */
-  --admin-sidebar-bg: #2c2925;
-  --admin-sidebar-surface: #35312c;
-  --admin-sidebar-border: #4a443d;
-  --admin-sidebar-text: #f2ede4;
-  --admin-sidebar-text-muted: #a9a095;
-  --admin-sidebar-accent: #c9a876;
-  --admin-sidebar-active-bg: rgb(201 168 118 / 0.12);
-  --admin-sidebar-link-border: rgb(242 237 228 / 0.14);
+  --admin-sidebar-bg: #171613;
+  --admin-sidebar-surface: #211f1b;
+  --admin-sidebar-border: rgb(231 211 178 / 0.16);
+  --admin-sidebar-text: #f7f2e9;
+  --admin-sidebar-text-muted: #aaa398;
+  --admin-sidebar-accent: #d7b57b;
+  --admin-sidebar-active-bg: rgb(215 181 123 / 0.13);
+  --admin-sidebar-link-border: rgb(247 242 233 / 0.08);
 }
