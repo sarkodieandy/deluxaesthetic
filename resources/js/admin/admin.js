@@ -56,7 +56,7 @@ function initAdminNavigation() {
 
         const storageKey = `deluxe-admin-nav-${key}`;
         const stored = window.localStorage.getItem(storageKey);
-        const startsCollapsed = stored === 'collapsed' && !group.classList.contains('is-active');
+        const startsCollapsed = stored !== 'expanded' && !group.classList.contains('is-active');
 
         const setCollapsed = (collapsed) => {
             group.classList.toggle('is-collapsed', collapsed);

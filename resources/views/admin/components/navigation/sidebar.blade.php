@@ -2,6 +2,17 @@
     $navigation = $adminNavigation ?? \App\Support\AdminNavigation::forUser(auth()->user());
     $user = auth()->user();
     $unreadInbox = $user?->unreadNotifications()->count() ?? 0;
+    $groupIcons = [
+        'overview' => 'dashboard',
+        'clinic' => 'treatment',
+        'academy' => 'academy',
+        'store' => 'store',
+        'finance' => 'payment',
+        'marketing' => 'sparkles',
+        'content' => 'content',
+        'communication' => 'mail',
+        'system' => 'settings',
+    ];
 @endphp
 
 <header class="admin-sidebar__header">
@@ -36,10 +47,17 @@
                     aria-expanded="true"
                     aria-controls="admin-nav-list-{{ $group['key'] }}"
                 >
-                    <span id="admin-nav-{{ $group['key'] }}" class="admin-nav-group__label">{{ $group['label'] }}</span>
+                    <span class="admin-nav-group__identity">
+                        <span class="admin-nav-group__icon">
+                            @include('admin.components.navigation.icon', ['name' => $groupIcons[$group['key']] ?? 'item'])
+                        </span>
+                        <span id="admin-nav-{{ $group['key'] }}" class="admin-nav-group__label">{{ $group['label'] }}</span>
+                    </span>
                     <span class="admin-nav-group__meta">
                         <span class="admin-nav-group__count">{{ count($group['items']) }}</span>
-                        <span class="admin-nav-group__chevron" aria-hidden="true">⌄</span>
+                        <svg class="admin-nav-group__chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                            <path d="m6 8 4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
                     </span>
                 </button>
                 <ul class="admin-nav-list" id="admin-nav-list-{{ $group['key'] }}">
