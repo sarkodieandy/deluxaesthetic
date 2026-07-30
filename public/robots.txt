@@ -1,2 +1,14 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /admin
+Disallow: /student
+Disallow: /trainer
+Disallow: /practitioner
+Disallow: /profile
+Disallow: /dashboard
+Disallow: /cart
+Disallow: /checkout
+Disallow: /payments
+Disallow: /auth
+
+Sitemap: https://deluxaestheticclinic.com/sitemap.xml

@@ -2,6 +2,30 @@
 
 @section('title', $treatment->name.' — '.config('clinic.name'))
 @section('meta_description', $treatment->seo_description ?: $treatment->short_description)
+@section('meta_image', $treatment->imageUrl() ?: asset(config('seo.default_image')))
+@section('meta_image_alt', $treatment->name)
+@push('structured_data')
+<script type="application/ld+json">{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'Service',
+    'name' => $treatment->name,
+    'description' => $treatment->seo_description ?: $treatment->short_description,
+    'image' => $treatment->imageUrl(),
+    'serviceType' => $treatment->category?->name,
+    'provider' => ['@id' => url('/').'#business'],
+    'areaServed' => [
+        '@type' => 'City',
+        'name' => 'Accra',
+    ],
+    'offers' => [
+        '@type' => 'Offer',
+        'url' => route('web.treatments.show', $treatment->slug),
+        'priceCurrency' => config('clinic.currency'),
+        'price' => $treatment->effectivePrice(),
+        'availability' => 'https://schema.org/InStock',
+    ],
+], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+@endpush
 
 @section('content')
 <section class="section border-b border-[var(--color-border)]">

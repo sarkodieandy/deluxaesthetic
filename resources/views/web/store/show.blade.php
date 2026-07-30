@@ -1,5 +1,30 @@
 @extends('web.layouts.app')
 @section('title', $product->name.' — '.config('clinic.name'))
+@section('meta_description', $product->seo_description ?: \Illuminate\Support\Str::limit(strip_tags($product->description), 155, ''))
+@section('meta_image', $product->imageUrl() ?: asset(config('seo.default_image')))
+@section('meta_image_alt', $product->name)
+@section('og_type', 'product')
+@push('structured_data')
+<script type="application/ld+json">{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'Product',
+    'name' => $product->name,
+    'description' => $product->seo_description ?: strip_tags($product->description),
+    'image' => array_values(array_filter([$product->imageUrl()])),
+    'sku' => $product->sku,
+    'category' => $product->category?->name,
+    'offers' => [
+        '@type' => 'Offer',
+        'url' => route('web.store.show', $product->slug),
+        'priceCurrency' => config('clinic.currency'),
+        'price' => $product->effectivePrice(),
+        'availability' => $product->isPurchasable()
+            ? 'https://schema.org/InStock'
+            : 'https://schema.org/OutOfStock',
+        'itemCondition' => 'https://schema.org/NewCondition',
+    ],
+], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+@endpush
 @section('content')
 <section class="section">
     <div class="container-site">

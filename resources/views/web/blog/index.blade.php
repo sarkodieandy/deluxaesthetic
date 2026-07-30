@@ -1,5 +1,6 @@
 @extends('web.layouts.app')
 @section('title', __('web.pages.blog_title').' — '.config('clinic.name'))
+@section('meta_description', 'Read practical guidance on skin health, aesthetic treatments, beauty aftercare and professional training from our Accra clinic and academy.')
 @section('content')
 @include('web.components.page-intro', [
     'eyebrow' => __('web.pages.blog_eyebrow'),

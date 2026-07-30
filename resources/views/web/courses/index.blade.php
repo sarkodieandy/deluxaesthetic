@@ -1,5 +1,6 @@
 @extends('web.layouts.app')
 @section('title', __('web.pages.courses_title').' — '.config('clinic.name'))
+@section('meta_description', 'Browse professional aesthetics courses and practical beauty training programmes at De Luxe Aesthetic Academy in Accra.')
 @section('content')
 @include('web.components.page-intro', [
     'eyebrow' => __('web.pages.courses_eyebrow'),

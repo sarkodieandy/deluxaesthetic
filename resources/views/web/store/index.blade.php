@@ -1,5 +1,6 @@
 @extends('web.layouts.app')
 @section('title', __('web.pages.store_title').' — '.config('clinic.name'))
+@section('meta_description', 'Shop clinic-selected skincare and beauty essentials from De Luxe Aesthetic Clinic, with delivery and pickup options in Accra.')
 @section('content')
 <section class="store-v2-hero">
     <div class="container-site store-v2-hero__grid">

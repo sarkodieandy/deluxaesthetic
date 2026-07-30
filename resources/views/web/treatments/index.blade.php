@@ -1,6 +1,7 @@
 @extends('web.layouts.app')
 
 @section('title', __('web.nav.treatments').' — '.config('clinic.name'))
+@section('meta_description', 'Explore professional facial, skin, body, wellness and injectable aesthetic treatments at our clinic in East Legon, Accra.')
 
 @section('content')
 <section class="section">

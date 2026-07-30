@@ -1,5 +1,6 @@
 @extends('web.layouts.app')
 @section('title', __('web.pages.gallery_title').' — '.config('clinic.name'))
+@section('meta_description', 'View clinic treatments, professional aesthetics work and real before-and-after results from De Luxe Aesthetic Clinic in Accra.')
 @section('content')
 @include('web.components.page-intro', [
     'eyebrow' => __('web.pages.gallery_eyebrow'),

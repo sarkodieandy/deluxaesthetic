@@ -1,5 +1,24 @@
 @extends('web.layouts.app')
 @section('title', $course->name.' — '.config('clinic.name'))
+@section('meta_description', $course->seo_description ?: \Illuminate\Support\Str::limit(strip_tags($course->description), 155, ''))
+@section('meta_image', $course->imageUrl() ?: asset(config('seo.default_image')))
+@section('meta_image_alt', $course->name)
+@push('structured_data')
+<script type="application/ld+json">{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'Course',
+    'name' => $course->name,
+    'description' => $course->seo_description ?: strip_tags($course->description),
+    'provider' => [
+        '@type' => 'EducationalOrganization',
+        'name' => config('clinic.name').' Academy',
+        'sameAs' => url('/'),
+    ],
+    'url' => route('web.courses.show', $course->slug),
+    'image' => $course->imageUrl(),
+    'inLanguage' => str_replace('_', '-', app()->getLocale()),
+], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+@endpush
 @section('content')
 @php
     $whatsapp = preg_replace('/\D+/', '', (string) config('clinic.whatsapp'));

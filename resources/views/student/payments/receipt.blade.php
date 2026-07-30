@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><title>Receipt {{ $payment->reference }}</title></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex, nofollow"><title>Receipt {{ $payment->reference }}</title></head>
 <body style="font-family: sans-serif; padding: 2rem;">
 <h1>Payment receipt</h1>
 <p>Reference: {{ $payment->reference }}</p>

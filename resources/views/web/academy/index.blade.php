@@ -1,5 +1,6 @@
 @extends('web.layouts.app')
 @section('title', 'Aesthetics Training & Masterclasses — '.config('clinic.name'))
+@section('meta_description', 'Build practical skills through hands-on aesthetics training, Botox, fillers, skin treatments and certified masterclasses in Accra, Ghana.')
 @section('content')
 <section class="academy-v2-hero">
     <div class="container-site academy-v2-hero__grid">
