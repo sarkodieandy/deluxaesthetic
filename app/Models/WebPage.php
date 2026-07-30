@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Cache;
 
 class WebPage extends Model
 {
@@ -23,12 +22,6 @@ class WebPage extends Model
         ];
     }
 
-    protected static function booted(): void
-    {
-        static::saved(fn (self $page) => Cache::forget('web-page.'.$page->route_name));
-        static::deleted(fn (self $page) => Cache::forget('web-page.'.$page->route_name));
-    }
-
     public function editor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
@@ -40,6 +33,6 @@ class WebPage extends Model
             return null;
         }
 
-        return Cache::remember('web-page.'.$routeName, now()->addHour(), fn () => static::where('route_name', $routeName)->first());
+        return static::where('route_name', $routeName)->first();
     }
 }
