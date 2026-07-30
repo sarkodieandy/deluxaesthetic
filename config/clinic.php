@@ -10,14 +10,8 @@ return [
     'whatsapp' => env('BUSINESS_WHATSAPP', '+233552248636'),
     'address' => env('BUSINESS_ADDRESS', 'East Legon, Dr Tagoe Avenue, GA-375-8490, Accra, Ghana'),
     'hours' => env('BUSINESS_HOURS', 'Daily · 7:00am–7:00pm'),
-    'map_embed_url' => env(
-        'BUSINESS_MAP_EMBED_URL',
-        'https://maps.google.com/maps?q=East+Legon+Dr+Tagoe+Avenue+Accra+Ghana&t=&z=16&ie=UTF8&iwloc=&output=embed',
-    ),
-    'map_link' => env(
-        'BUSINESS_MAP_LINK',
-        'https://www.google.com/maps/search/?api=1&query=East+Legon+Dr+Tagoe+Avenue+Accra+Ghana',
-    ),
+    'map_embed_url' => env('BUSINESS_MAP_EMBED_URL') ?: 'https://maps.google.com/maps?q=East+Legon+Dr+Tagoe+Avenue+Accra+Ghana&t=&z=16&ie=UTF8&iwloc=&output=embed',
+    'map_link' => env('BUSINESS_MAP_LINK') ?: 'https://www.google.com/maps/search/?api=1&query=East+Legon+Dr+Tagoe+Avenue+Accra+Ghana',
     'currency' => env('DEFAULT_CURRENCY', 'GHS'),
     'timezone' => env('APP_TIMEZONE', 'Africa/Accra'),
     'default_locale' => env('DEFAULT_LOCALE', 'en'),
