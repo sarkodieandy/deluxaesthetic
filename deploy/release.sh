@@ -52,7 +52,9 @@ ln -s "${SHARED_DIR}/storage" "${RELEASE_DIR}/storage"
 ln -s "${SHARED_DIR}/.env" "${RELEASE_DIR}/.env"
 
 mkdir -p "${RELEASE_DIR}/bootstrap/cache"
-chgrp -R www-data "${SHARED_DIR}/storage" "${RELEASE_DIR}/bootstrap/cache"
+chgrp -R www-data "$RELEASE_DIR" "${SHARED_DIR}/storage"
+chmod -R g+rX,o-rwx "$RELEASE_DIR"
+find "$RELEASE_DIR" -type d -exec chmod g+s {} +
 chmod -R ug+rwX "${SHARED_DIR}/storage" "${RELEASE_DIR}/bootstrap/cache"
 
 cd "$RELEASE_DIR"
