@@ -28,7 +28,7 @@
             </div>
         </div>
         <div class="contact-v2-hero__visual reveal reveal-delay-2">
-            <img src="{{ asset('assets/web/images/gallery/clinic-ambiance.jpg') }}" alt="The welcoming interior at De Luxe Aesthetic Clinic">
+            <img src="{{ asset('assets/web/images/gallery/clinic-ambiance.webp') }}" alt="The welcoming interior at De Luxe Aesthetic Clinic" decoding="async">
             <div><span>Visit us</span><strong>East Legon<br>Accra, Ghana</strong></div>
         </div>
     </div>
@@ -74,7 +74,7 @@
             <p class="contact-v2-details__note">For medical emergencies, please contact the appropriate emergency service. Website messages and WhatsApp are not monitored as emergency channels.</p>
         </div>
         <div class="contact-v2-details__image reveal reveal-delay-2">
-            <img src="{{ asset('assets/web/images/hero/spa-treatment-room.jpg') }}" alt="A calm treatment space at De Luxe" loading="lazy">
+            <img src="{{ asset('assets/web/images/hero/spa-treatment-room.webp') }}" alt="A calm treatment space at De Luxe" loading="lazy" decoding="async">
             <blockquote>“Every confident decision begins with clear, honest guidance.”</blockquote>
         </div>
     </div>

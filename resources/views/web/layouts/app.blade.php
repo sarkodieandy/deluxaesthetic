@@ -103,9 +103,7 @@
     @endif
     <script type="application/ld+json">{!! json_encode($businessSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
     @stack('structured_data')
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    @stack('preload')
     @vite(['resources/css/web/app.css', 'resources/js/web/app.js'])
 </head>
 <body class="antialiased" x-data="mobileNav()" @keydown.window="onKey($event)">

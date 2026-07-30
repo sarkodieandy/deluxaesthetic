@@ -21,16 +21,7 @@
                         <span class="header-icon-link__label">{{ __('Student login') }}</span>
                     </a>
                 @endauth
-                @php
-                    $cartCount = 0;
-                    try {
-                        $cartCount = app(\App\Services\Cart\CartService::class)->itemCount(
-                            app(\App\Services\Cart\CartService::class)->resolve()
-                        );
-                    } catch (\Throwable) {
-                        $cartCount = 0;
-                    }
-                @endphp
+                @php($cartCount = (int) session('cart_count', 0))
                 <a href="{{ route('web.cart.index') }}" class="header-cart" aria-label="{{ __('web.cart') }}">
                     @include('web.components.icon', ['name' => 'cart', 'class' => 'icon icon--sm'])
                     <span class="header-cart__label">{{ __('web.cart') }}</span>

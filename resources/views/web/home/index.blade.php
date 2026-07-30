@@ -2,13 +2,16 @@
 
 @section('title', config('clinic.name').' — Aesthetics, Academy & Beauty')
 @section('meta_description', 'Premium medical-aesthetic treatments, professional training, and curated beauty care at '.config('clinic.name').' in Accra, Ghana.')
+@push('preload')
+<link rel="preload" as="image" href="{{ asset('assets/web/images/hero/spa-treatment-room.webp') }}" type="image/webp" fetchpriority="high">
+@endpush
 
 @section('content')
 <section class="home-v3-hero" data-hero x-data="heroCarousel({{ count($heroSlides) }})">
     <div class="home-v3-hero__media hero-carousel" x-ref="carousel" data-hero-mask>
         @foreach($heroSlides as $index => $slide)
             <div class="hero-carousel__slide {{ $index === 0 ? 'is-active' : '' }}" data-hero-slide aria-hidden="{{ $index === 0 ? 'false' : 'true' }}">
-                <img src="{{ asset($slide['src']) }}" alt="{{ $slide['alt'] }}" @if($index === 0) fetchpriority="high" @else loading="lazy" @endif>
+                <img src="{{ asset($slide['src']) }}" alt="{{ $slide['alt'] }}" width="1920" height="1280" decoding="async" @if($index === 0) fetchpriority="high" @else loading="lazy" @endif>
             </div>
         @endforeach
     </div>
@@ -72,15 +75,15 @@
         </header>
         <div class="home-v3-worlds__grid">
             <a href="{{ route('web.treatments.index') }}" class="home-v3-world reveal" data-tilt-card>
-                <img src="{{ asset('assets/web/images/hero/hero-facial-tech.jpg') }}" alt="Advanced facial treatment at De Luxe">
+                <img src="{{ asset('assets/web/images/hero/hero-facial-tech.webp') }}" alt="Advanced facial treatment at De Luxe" loading="lazy" decoding="async">
                 <div><span>01 · Clinic</span><h3>Results-led treatments</h3><p>Facials, injectables, body care and restorative spa experiences.</p><strong>View treatments →</strong></div>
             </a>
             <a href="{{ route('web.academy.index') }}" class="home-v3-world reveal reveal-delay-1" data-tilt-card>
-                <img src="{{ asset('assets/web/images/hero/hero-beauty-academy.jpg') }}" alt="Professional aesthetics academy training">
+                <img src="{{ asset('assets/web/images/hero/hero-beauty-academy.webp') }}" alt="Professional aesthetics academy training" loading="lazy" decoding="async">
                 <div><span>02 · Academy</span><h3>Train with confidence</h3><p>Hands-on aesthetics education, certification and lifetime mentorship.</p><strong>Explore the academy →</strong></div>
             </a>
             <a href="{{ route('web.store.index') }}" class="home-v3-world reveal reveal-delay-2" data-tilt-card>
-                <img src="{{ asset('assets/web/images/treatments/skincare-ritual.jpg') }}" alt="Curated skincare and beauty products">
+                <img src="{{ asset('assets/web/images/treatments/skincare-ritual.webp') }}" alt="Curated skincare and beauty products" loading="lazy" decoding="async">
                 <div><span>03 · Store</span><h3>Continue your care</h3><p>Clinic-selected skincare and beauty essentials for everyday routines.</p><strong>Shop the edit →</strong></div>
             </a>
         </div>
@@ -94,7 +97,7 @@
             <a href="{{ route('web.treatments.index') }}">View all treatments →</a>
         </header>
         @php
-            $fallbackImages = ['assets/web/images/treatments/facial-care.jpg','assets/web/images/treatments/skincare-ritual.jpg','assets/web/images/treatments/body-massage.jpg'];
+            $fallbackImages = ['assets/web/images/treatments/facial-care.webp','assets/web/images/treatments/skincare-ritual.webp','assets/web/images/treatments/body-massage.webp'];
             $cards = $featuredTreatments->isNotEmpty() ? $featuredTreatments : collect([
                 (object)['id'=>null,'slug'=>null,'name'=>'Signature Clinical Facial','short_description'=>'Barrier-focused facial care with a considered clinical assessment.','duration_minutes'=>60,'image_path'=>$fallbackImages[0],'category'=>(object)['name'=>'Facial'],'price'=>450],
                 (object)['id'=>null,'slug'=>null,'name'=>'Skin Clarity Protocol','short_description'=>'Targeted care designed around texture, congestion and clarity.','duration_minutes'=>75,'image_path'=>$fallbackImages[1],'category'=>(object)['name'=>'Skin'],'price'=>520],
@@ -148,11 +151,11 @@
 
 <section class="home-v3-duo">
     <article class="home-v3-duo__panel home-v3-duo__panel--academy reveal">
-        <img src="{{ asset('assets/web/images/hero/hero-beauty-academy.jpg') }}" alt="De Luxe professional aesthetics academy" loading="lazy">
+        <img src="{{ asset('assets/web/images/hero/hero-beauty-academy.webp') }}" alt="De Luxe professional aesthetics academy" loading="lazy" decoding="async">
         <div><p class="text-label">De Luxe Academy</p><h2>Learn the science.<br>Master the technique.</h2><p>Clinic-led training in Botox, fillers, skin science and advanced procedures—with practical support beyond certification.</p><a href="{{ route('web.academy.index') }}" class="btn btn-light">Explore training</a></div>
     </article>
     <article class="home-v3-duo__panel home-v3-duo__panel--store reveal reveal-delay-2">
-        <img src="{{ asset('assets/web/images/treatments/skincare-ritual.jpg') }}" alt="Curated De Luxe skincare products" loading="lazy">
+        <img src="{{ asset('assets/web/images/treatments/skincare-ritual.webp') }}" alt="Curated De Luxe skincare products" loading="lazy" decoding="async">
         <div><p class="text-label">The De Luxe Edit</p><h2>Your routine,<br>carefully considered.</h2><p>Discover clinic-selected skincare and beauty essentials, available through secure Paystack checkout.</p><a href="{{ route('web.store.index') }}" class="btn btn-light">Shop products</a></div>
     </article>
 </section>
@@ -193,7 +196,7 @@
 </section>
 
 <section class="home-v3-cta">
-    <div class="home-v3-cta__image" data-parallax-image><img src="{{ asset('assets/web/images/gallery/clinic-ambiance.jpg') }}" alt="The welcoming De Luxe clinic environment" loading="lazy"></div>
+    <div class="home-v3-cta__image" data-parallax-image><img src="{{ asset('assets/web/images/gallery/clinic-ambiance.webp') }}" alt="The welcoming De Luxe clinic environment" loading="lazy" decoding="async"></div>
     <div class="home-v3-cta__veil"></div>
     <div class="container-site home-v3-cta__content reveal">
         <p class="text-label">Begin with a conversation</p>

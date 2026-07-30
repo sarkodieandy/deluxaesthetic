@@ -133,7 +133,7 @@
 </section>
 
 <section class="practitioners-v2-cta">
-    <div class="practitioners-v2-cta__image"><img src="{{ asset('assets/web/images/gallery/clinic-ambiance.jpg') }}" alt="The De Luxe clinic environment" loading="lazy"></div>
+    <div class="practitioners-v2-cta__image"><img src="{{ asset('assets/web/images/gallery/clinic-ambiance.webp') }}" alt="The De Luxe clinic environment" loading="lazy" decoding="async"></div>
     <div class="practitioners-v2-cta__veil"></div>
     <div class="container-site practitioners-v2-cta__content reveal">
         <p class="text-label">Your care starts here</p>

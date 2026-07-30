@@ -8,32 +8,59 @@ use App\Models\PractitionerProfile;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Models\Treatment;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class HomeController extends Controller
 {
     public function index(): View
     {
-        $ceo = PractitionerProfile::query()
-            ->with('user')
-            ->where('is_ceo', true)
-            ->where('is_active', true)
-            ->first();
-
-        $featuredTreatments = Treatment::query()
-            ->with('category')
-            ->where('is_active', true)
-            ->where('is_featured', true)
-            ->latest()
-            ->take(3)
-            ->get();
-
-        $practitioners = PractitionerProfile::query()
-            ->with('user')
-            ->where('is_active', true)
-            ->orderByDesc('is_ceo')
-            ->take(3)
-            ->get();
+        $content = Cache::remember('web.home.content.v1', now()->addMinutes(5), fn () => [
+            'ceo' => PractitionerProfile::query()
+                ->with('user')
+                ->where('is_ceo', true)
+                ->where('is_active', true)
+                ->first(),
+            'featuredTreatments' => Treatment::query()
+                ->with('category')
+                ->where('is_active', true)
+                ->where('is_featured', true)
+                ->latest()
+                ->take(3)
+                ->get(),
+            'practitioners' => PractitionerProfile::query()
+                ->with('user')
+                ->where('is_active', true)
+                ->orderByDesc('is_ceo')
+                ->take(3)
+                ->get(),
+            'featuredProducts' => Product::query()
+                ->with(['category', 'images'])
+                ->where('is_active', true)
+                ->orderByDesc('is_featured')
+                ->orderBy('name')
+                ->take(2)
+                ->get(),
+            'featuredBeforeAfter' => GalleryItem::query()
+                ->where('is_active', true)
+                ->where('type', 'before_after')
+                ->orderByDesc('is_featured')
+                ->orderBy('sort_order')
+                ->first(),
+            'featuredGalleryImage' => GalleryItem::query()
+                ->where('is_active', true)
+                ->where('type', 'gallery')
+                ->orderByDesc('is_featured')
+                ->orderBy('sort_order')
+                ->first(),
+            'ourWorkGallery' => GalleryItem::query()
+                ->where('is_active', true)
+                ->where('type', 'gallery')
+                ->orderByDesc('is_featured')
+                ->orderBy('sort_order')
+                ->take(3)
+                ->get(),
+        ]);
 
         $serviceIndex = [
             [
@@ -68,73 +95,37 @@ class HomeController extends Controller
             ],
         ];
 
-        $featuredProducts = Product::query()
-            ->with(['category', 'images'])
-            ->where('is_active', true)
-            ->orderByDesc('is_featured')
-            ->orderBy('name')
-            ->take(2)
-            ->get();
-
-        $featuredBeforeAfter = GalleryItem::query()
-            ->where('is_active', true)
-            ->where('type', 'before_after')
-            ->orderByDesc('is_featured')
-            ->orderBy('sort_order')
-            ->first();
-
-        $featuredGalleryImage = GalleryItem::query()
-            ->where('is_active', true)
-            ->where('type', 'gallery')
-            ->orderByDesc('is_featured')
-            ->orderBy('sort_order')
-            ->first();
-
-        $ourWorkGallery = GalleryItem::query()
-            ->where('is_active', true)
-            ->where('type', 'gallery')
-            ->orderByDesc('is_featured')
-            ->orderBy('sort_order')
-            ->take(3)
-            ->get();
-
         return view('web.home.index', [
-            'ceo' => $ceo,
-            'featuredTreatments' => $featuredTreatments,
-            'practitioners' => $practitioners,
+            ...$content,
             'serviceIndex' => $serviceIndex,
-            'featuredProducts' => $featuredProducts,
-            'featuredBeforeAfter' => $featuredBeforeAfter,
-            'featuredGalleryImage' => $featuredGalleryImage,
-            'ourWorkGallery' => $ourWorkGallery,
             'heroSlides' => [
                 [
-                    'src' => 'assets/web/images/hero/spa-treatment-room.jpg',
+                    'src' => 'assets/web/images/hero/spa-treatment-room.webp',
                     'alt' => 'Calm spa treatment room at '.config('clinic.name'),
                     'label' => 'Spa & clinic',
                 ],
                 [
-                    'src' => 'assets/web/images/hero/hero-botox.jpg',
+                    'src' => 'assets/web/images/hero/hero-botox.webp',
                     'alt' => 'Professional Botox and injectable aesthetic treatment',
                     'label' => 'Botox',
                 ],
                 [
-                    'src' => 'assets/web/images/hero/hero-nail-tech.jpg',
+                    'src' => 'assets/web/images/hero/hero-nail-tech.webp',
                     'alt' => 'Professional nail technician manicure and gel finishing',
                     'label' => 'Nail tech',
                 ],
                 [
-                    'src' => 'assets/web/images/hero/hero-facial-tech.jpg',
+                    'src' => 'assets/web/images/hero/hero-facial-tech.webp',
                     'alt' => 'Advanced facial and skin treatment technology',
                     'label' => 'Skin tech',
                 ],
                 [
-                    'src' => 'assets/web/images/hero/hero-spa-massage.jpg',
+                    'src' => 'assets/web/images/hero/hero-spa-massage.webp',
                     'alt' => 'Restorative spa and body massage therapy',
                     'label' => 'Massage',
                 ],
                 [
-                    'src' => 'assets/web/images/hero/hero-beauty-academy.jpg',
+                    'src' => 'assets/web/images/hero/hero-beauty-academy.webp',
                     'alt' => 'Professional aesthetic training at '.__('web.pages.academy_title'),
                     'label' => 'Academy',
                 ],

@@ -17,7 +17,7 @@
         </div>
         <div class="about-v2-hero__visual reveal reveal-delay-2">
             <div class="about-v2-hero__image about-v2-hero__image--main"><img src="{{ $portraits['a'] }}" alt="{{ $ceo?->user?->name ?? config('clinic.ceo.name') }}"></div>
-            <div class="about-v2-hero__image about-v2-hero__image--secondary"><img src="{{ asset('assets/web/images/gallery/clinic-ambiance.jpg') }}" alt="The De Luxe clinic interior"></div>
+            <div class="about-v2-hero__image about-v2-hero__image--secondary"><img src="{{ asset('assets/web/images/gallery/clinic-ambiance.webp') }}" alt="The De Luxe clinic interior" decoding="async"></div>
             <div class="about-v2-hero__mark"><span>Clinic</span><i>·</i><span>Academy</span><i>·</i><span>Store</span></div>
         </div>
     </div>
@@ -39,7 +39,7 @@
 <section class="about-v2-story">
     <div class="container-site about-v2-story__grid">
         <div class="about-v2-story__media reveal">
-            <img src="{{ asset('assets/web/images/hero/spa-treatment-room.jpg') }}" alt="A calm treatment room at De Luxe Aesthetic Clinic" loading="lazy">
+            <img src="{{ asset('assets/web/images/hero/spa-treatment-room.webp') }}" alt="A calm treatment room at De Luxe Aesthetic Clinic" loading="lazy" decoding="async">
             <span>East Legon · Accra</span>
         </div>
         <div class="about-v2-story__content reveal reveal-delay-2">
@@ -97,7 +97,7 @@
 </section>
 
 <section class="about-v2-experience">
-    <div class="about-v2-experience__image"><img src="{{ asset('assets/web/images/gallery/clinic-ambiance.jpg') }}" alt="The De Luxe clinic atmosphere" loading="lazy"></div>
+    <div class="about-v2-experience__image"><img src="{{ asset('assets/web/images/gallery/clinic-ambiance.webp') }}" alt="The De Luxe clinic atmosphere" loading="lazy" decoding="async"></div>
     <div class="about-v2-experience__veil"></div>
     <div class="container-site about-v2-experience__content reveal">
         <p class="text-label">The De Luxe experience</p>

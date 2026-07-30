@@ -7,9 +7,9 @@
         ->take(3);
 
     $fallbackGrid = [
-        ['src' => asset('assets/web/images/hero/hero-spa-massage.jpg'), 'alt' => __('web.home.our_work_fallback_1')],
-        ['src' => asset('assets/web/images/hero/hero-nails.jpg'), 'alt' => __('web.home.our_work_fallback_2')],
-        ['src' => asset('assets/web/images/hero/hero-facial-tech.jpg'), 'alt' => __('web.home.our_work_fallback_3')],
+        ['src' => asset('assets/web/images/hero/hero-spa-massage.webp'), 'alt' => __('web.home.our_work_fallback_1')],
+        ['src' => asset('assets/web/images/hero/hero-nails.webp'), 'alt' => __('web.home.our_work_fallback_2')],
+        ['src' => asset('assets/web/images/hero/hero-facial-tech.webp'), 'alt' => __('web.home.our_work_fallback_3')],
     ];
 @endphp
 

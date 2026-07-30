@@ -27,13 +27,19 @@ class CartService
 
             $this->mergeGuestCart($cart, $sessionId);
 
-            return $cart->load(['items.product.images', 'items.variant']);
+            $cart = $cart->load(['items.product.images', 'items.variant']);
+            session()->put('cart_count', $this->itemCount($cart));
+
+            return $cart;
         }
 
-        return Cart::query()->firstOrCreate(
+        $cart = Cart::query()->firstOrCreate(
             ['session_id' => $sessionId, 'user_id' => null],
             []
         )->load(['items.product.images', 'items.variant']);
+        session()->put('cart_count', $this->itemCount($cart));
+
+        return $cart;
     }
 
     public function add(Product $product, int $quantity = 1, ?int $variantId = null): Cart
@@ -81,7 +87,10 @@ class CartService
             ]);
         }
 
-        return $cart->fresh(['items.product.images', 'items.variant']);
+        $cart = $cart->fresh(['items.product.images', 'items.variant']);
+        session()->put('cart_count', $this->itemCount($cart));
+
+        return $cart;
     }
 
     public function updateQuantity(CartItem $item, int $quantity): Cart
@@ -97,7 +106,10 @@ class CartService
         if ($quantity < 1) {
             $item->delete();
 
-            return $cart->fresh(['items.product.images', 'items.variant']);
+            $cart = $cart->fresh(['items.product.images', 'items.variant']);
+            session()->put('cart_count', $this->itemCount($cart));
+
+            return $cart;
         }
 
         $stock = $product->availableStock();
@@ -110,7 +122,10 @@ class CartService
             'unit_price' => (float) $product->effectivePrice(),
         ]);
 
-        return $cart->fresh(['items.product.images', 'items.variant']);
+        $cart = $cart->fresh(['items.product.images', 'items.variant']);
+        session()->put('cart_count', $this->itemCount($cart));
+
+        return $cart;
     }
 
     public function remove(CartItem $item): Cart
@@ -118,13 +133,17 @@ class CartService
         $cart = $this->ownedCartOrFail($item->cart_id);
         $item->delete();
 
-        return $cart->fresh(['items.product.images', 'items.variant']);
+        $cart = $cart->fresh(['items.product.images', 'items.variant']);
+        session()->put('cart_count', $this->itemCount($cart));
+
+        return $cart;
     }
 
     public function clear(Cart $cart): void
     {
         $cart->items()->delete();
         $cart->update(['coupon_code' => null]);
+        session()->put('cart_count', 0);
     }
 
     public function applyCoupon(Cart $cart, string $code): Cart

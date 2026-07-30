@@ -19,7 +19,7 @@
             </dl>
         </div>
         <div class="academy-v2-hero__visual reveal reveal-delay-2">
-            <img src="https://unsplash.com/photos/2LxO1Wef8wQ/download?force=true&w=1600" alt="A practitioner performing a professional facial treatment" fetchpriority="high">
+            <img src="{{ asset('assets/web/images/academy/academy-hero.webp') }}" alt="A practitioner performing a professional facial treatment" width="1600" height="1067" decoding="async" fetchpriority="high">
             <div class="academy-v2-hero__badge">
                 <span>Professional pathway</span>
                 <strong>Aesthetics<br>Masterclass</strong>
@@ -54,7 +54,7 @@
         <div class="academy-v2-programme-grid">
             <article class="academy-v2-programme academy-v2-programme--wide reveal">
                 <div class="academy-v2-programme__image">
-                    <img src="https://unsplash.com/photos/HtXyytr9304/download?force=true&w=1400" alt="Professional aesthetic facial procedure" loading="lazy">
+                    <img src="{{ asset('assets/web/images/academy/academy-injectables.webp') }}" alt="Professional aesthetic facial procedure" loading="lazy" decoding="async">
                     <span>01</span>
                 </div>
                 <div class="academy-v2-programme__body">
@@ -73,7 +73,7 @@
 
             <article class="academy-v2-programme reveal reveal-delay-1">
                 <div class="academy-v2-programme__image">
-                    <img src="https://images.pexels.com/photos/37676759/pexels-photo-37676759.jpeg?auto=compress&cs=tinysrgb&w=1400" alt="Professional administering a Botox injection to a client's forehead" loading="lazy">
+                    <img src="{{ asset('assets/web/images/academy/academy-botox.webp') }}" alt="Professional administering a Botox injection to a client's forehead" loading="lazy" decoding="async">
                     <span>02</span>
                 </div>
                 <div class="academy-v2-programme__body">
@@ -90,7 +90,7 @@
 
             <article class="academy-v2-programme reveal reveal-delay-2">
                 <div class="academy-v2-programme__image">
-                    <img src="{{ asset('assets/web/images/hero/hero-body-care.jpg') }}" alt="Professional body contouring treatment" loading="lazy">
+                    <img src="{{ asset('assets/web/images/hero/hero-body-care.webp') }}" alt="Professional body contouring treatment" loading="lazy" decoding="async">
                     <span>03</span>
                 </div>
                 <div class="academy-v2-programme__body">
@@ -107,7 +107,7 @@
 
             <article class="academy-v2-programme academy-v2-programme--wide academy-v2-programme--reverse reveal">
                 <div class="academy-v2-programme__image">
-                    <img src="https://unsplash.com/photos/2OVrIfOXDDY/download?force=true&w=1400" alt="Advanced professional skin treatment" loading="lazy">
+                    <img src="{{ asset('assets/web/images/academy/academy-skin.webp') }}" alt="Advanced professional skin treatment" loading="lazy" decoding="async">
                     <span>04</span>
                 </div>
                 <div class="academy-v2-programme__body">
@@ -129,7 +129,7 @@
 <section class="academy-v2-botox">
     <div class="container-site academy-v2-botox__grid">
         <div class="academy-v2-botox__visual reveal">
-            <img src="https://images.pexels.com/photos/37676759/pexels-photo-37676759.jpeg?auto=compress&cs=tinysrgb&w=1600" alt="Professional administering a Botox injection to a client's forehead" loading="lazy">
+            <img src="{{ asset('assets/web/images/academy/academy-botox.webp') }}" alt="Professional administering a Botox injection to a client's forehead" loading="lazy" decoding="async">
             <div class="academy-v2-botox__stamp">
                 <span>Focused pathway</span>
                 <strong>Botox<br>Training</strong>
@@ -215,7 +215,7 @@
 <section class="academy-v2-career">
     <div class="container-site academy-v2-career__grid">
         <div class="academy-v2-career__image reveal">
-            <img src="https://images.pexels.com/photos/33607394/pexels-photo-33607394.jpeg?auto=compress&cs=tinysrgb&w=1400" alt="Beauty professional receiving hands-on training" loading="lazy">
+            <img src="{{ asset('assets/web/images/academy/academy-training.webp') }}" alt="Beauty professional receiving hands-on training" loading="lazy" decoding="async">
         </div>
         <div class="academy-v2-career__copy reveal reveal-delay-2">
             <p class="text-label">Beyond the treatment room</p>

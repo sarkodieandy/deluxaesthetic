@@ -22,7 +22,7 @@
             </div>
         </div>
         <div class="store-v2-hero__visual reveal reveal-delay-2">
-            <img src="https://unsplash.com/photos/7mVXMtnI2MA/download?force=true&w=1600" alt="A curated collection of skincare and beauty products" fetchpriority="high">
+            <img src="{{ asset('assets/web/images/store/store-hero.webp') }}" alt="A curated collection of skincare and beauty products" width="1600" height="1067" decoding="async" fetchpriority="high">
             <div class="store-v2-hero__note">
                 <span>Curated essentials</span>
                 <strong>For skin that feels as good as it looks.</strong>
