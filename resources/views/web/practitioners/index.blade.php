@@ -7,9 +7,9 @@
 <section class="practitioners-v2-hero">
     <div class="container-site practitioners-v2-hero__grid">
         <div class="practitioners-v2-hero__copy reveal">
-            <p class="text-label">The people behind your care</p>
-            <h1>Expert hands.<br><em>Considered care.</em></h1>
-            <p>Meet the practitioners who bring clinical knowledge, thoughtful consultation and an exacting standard of care to every De Luxe experience.</p>
+            <p class="text-label">{{ $cmsPage?->hero_eyebrow ?: 'The people behind your care' }}</p>
+            <h1>@if($cmsPage?->hero_title){!! nl2br(e($cmsPage->hero_title)) !!}@else Expert hands.<br><em>Considered care.</em>@endif</h1>
+            <p>{{ $cmsPage?->hero_body ?: 'Meet the practitioners who bring clinical knowledge, thoughtful consultation and an exacting standard of care to every De Luxe experience.' }}</p>
             <div class="practitioners-v2-hero__actions">
                 <a href="#team" class="btn btn-primary">Meet the team</a>
                 <a href="{{ route('web.booking.create') }}" class="btn btn-secondary">Book a consultation</a>
@@ -21,7 +21,7 @@
             </div>
         </div>
         <div class="practitioners-v2-hero__visual reveal reveal-delay-2">
-            <img src="{{ $practitioners->first()?->photoUrl() ?? asset(config('clinic.ceo.portrait_a')) }}" alt="{{ $practitioners->first()?->user?->name ?? config('clinic.ceo.name') }}">
+            <img src="{{ $cmsPage?->hero_image_url ?: ($practitioners->first()?->photoUrl() ?? asset(config('clinic.ceo.portrait_a'))) }}" alt="{{ $practitioners->first()?->user?->name ?? config('clinic.ceo.name') }}">
             <div class="practitioners-v2-hero__caption">
                 <span>Clinical leadership</span>
                 <strong>{{ $practitioners->first()?->user?->name ?? config('clinic.ceo.name') }}</strong>

@@ -1,14 +1,15 @@
 <?php
 
-use App\Http\Controllers\Admin\BranchController;
-use App\Http\Controllers\Admin\AppointmentController;
 use App\Http\Controllers\Admin\AccountController;
+use App\Http\Controllers\Admin\AppointmentController;
 use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\CertificateController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ConnectedIndexController;
 use App\Http\Controllers\Admin\ConsultationController;
 use App\Http\Controllers\Admin\CourseController;
+use App\Http\Controllers\Admin\CourseEnquiryController;
 use App\Http\Controllers\Admin\CourseSessionController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EmailLogController;
@@ -17,7 +18,6 @@ use App\Http\Controllers\Admin\EnrolmentController;
 use App\Http\Controllers\Admin\GalleryController;
 use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\ModulePlaceholderController;
-use App\Http\Controllers\Admin\CourseEnquiryController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PhysicalEnrolmentController;
@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\TreatmentController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\WebPageController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'active.account', 'admin.access'])
@@ -153,6 +154,14 @@ Route::middleware(['auth', 'active.account', 'admin.access'])
             Route::resource('gallery', GalleryController::class)->parameters(['gallery' => 'gallery'])->except(['show']);
         });
 
+        Route::middleware('permission:content.manage')->group(function () {
+            Route::get('/content/homepage', [WebPageController::class, 'home'])->name('content.homepage');
+            Route::get('/pages', [WebPageController::class, 'index'])->name('pages.index');
+            Route::get('/pages/{page}/edit', [WebPageController::class, 'edit'])->name('pages.edit');
+            Route::put('/pages/{page}', [WebPageController::class, 'update'])->name('pages.update');
+            Route::get('/pages/{page}/preview', [WebPageController::class, 'preview'])->name('pages.preview');
+        });
+
         Route::middleware('permission:notifications.view')->group(function () {
             Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
             Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
@@ -177,8 +186,6 @@ Route::middleware(['auth', 'active.account', 'admin.access'])
             ['path' => 'testimonials', 'name' => 'testimonials.index', 'title' => 'Testimonials'],
             ['path' => 'loyalty', 'name' => 'loyalty.index', 'title' => 'Loyalty programme'],
             ['path' => 'referrals', 'name' => 'referrals.index', 'title' => 'Referrals'],
-            ['path' => 'content/homepage', 'name' => 'content.homepage', 'title' => 'Homepage'],
-            ['path' => 'pages', 'name' => 'pages.index', 'title' => 'Website pages'],
             ['path' => 'blog', 'name' => 'blog.index', 'title' => 'Blog'],
             ['path' => 'faqs', 'name' => 'faqs.index', 'title' => 'FAQs'],
             ['path' => 'media', 'name' => 'media.index', 'title' => 'Media library'],

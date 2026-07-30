@@ -3,9 +3,9 @@
 @section('meta_description', 'Read practical guidance on skin health, aesthetic treatments, beauty aftercare and professional training from our Accra clinic and academy.')
 @section('content')
 @include('web.components.page-intro', [
-    'eyebrow' => __('web.pages.blog_eyebrow'),
-    'title' => __('web.pages.blog_title'),
-    'lead' => __('web.pages.blog_lead'),
+    'eyebrow' => $cmsPage?->hero_eyebrow ?: __('web.pages.blog_eyebrow'),
+    'title' => $cmsPage?->hero_title ?: __('web.pages.blog_title'),
+    'lead' => $cmsPage?->hero_body ?: __('web.pages.blog_lead'),
 ])
 <section class="catalogue-shell">
     <div class="container-site blog-teaser__grid">

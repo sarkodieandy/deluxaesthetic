@@ -7,16 +7,16 @@
 <section class="about-v2-hero">
     <div class="container-site about-v2-hero__grid">
         <div class="about-v2-hero__copy reveal">
-            <p class="text-label">Our story</p>
-            <h1>Beauty, handled<br>with <em>intention.</em></h1>
-            <p>De Luxe is an expert-led aesthetic clinic and academy where thoughtful care, professional education and a refined understanding of beauty come together.</p>
+            <p class="text-label">{{ $cmsPage?->hero_eyebrow ?: 'Our story' }}</p>
+            <h1>@if($cmsPage?->hero_title){!! nl2br(e($cmsPage->hero_title)) !!}@else Beauty, handled<br>with <em>intention.</em>@endif</h1>
+            <p>{{ $cmsPage?->hero_body ?: 'De Luxe is an expert-led aesthetic clinic and academy where thoughtful care, professional education and a refined understanding of beauty come together.' }}</p>
             <div class="about-v2-hero__actions">
                 <a href="{{ route('web.booking.create') }}" class="btn btn-primary">Book a consultation</a>
                 <a href="#our-story" class="btn btn-secondary">Discover our story</a>
             </div>
         </div>
         <div class="about-v2-hero__visual reveal reveal-delay-2">
-            <div class="about-v2-hero__image about-v2-hero__image--main"><img src="{{ $portraits['a'] }}" alt="{{ $ceo?->user?->name ?? config('clinic.ceo.name') }}"></div>
+            <div class="about-v2-hero__image about-v2-hero__image--main"><img src="{{ $cmsPage?->hero_image_url ?: $portraits['a'] }}" alt="{{ $ceo?->user?->name ?? config('clinic.ceo.name') }}"></div>
             <div class="about-v2-hero__image about-v2-hero__image--secondary"><img src="{{ asset('assets/web/images/gallery/clinic-ambiance.webp') }}" alt="The De Luxe clinic interior" decoding="async"></div>
             <div class="about-v2-hero__mark"><span>Clinic</span><i>·</i><span>Academy</span><i>·</i><span>Store</span></div>
         </div>

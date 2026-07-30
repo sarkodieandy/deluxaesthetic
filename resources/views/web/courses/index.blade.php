@@ -3,9 +3,9 @@
 @section('meta_description', 'Browse professional aesthetics courses and practical beauty training programmes at De Luxe Aesthetic Academy in Accra.')
 @section('content')
 @include('web.components.page-intro', [
-    'eyebrow' => __('web.pages.courses_eyebrow'),
-    'title' => __('web.pages.courses_title'),
-    'lead' => __('web.pages.courses_lead'),
+    'eyebrow' => $cmsPage?->hero_eyebrow ?: __('web.pages.courses_eyebrow'),
+    'title' => $cmsPage?->hero_title ?: __('web.pages.courses_title'),
+    'lead' => $cmsPage?->hero_body ?: __('web.pages.courses_lead'),
 ])
 <section class="catalogue-shell">
     <div class="container-site">

@@ -31,12 +31,15 @@ class AdminNavigation
                 }
 
                 $isExternal = (bool) ($item['external'] ?? false);
+                $activePattern = str_ends_with($item['route'], '.index')
+                    ? substr($item['route'], 0, -6).'.*'
+                    : $item['route'].'*';
 
                 $items[] = [
                     'label' => $item['label'],
                     'route' => $item['route'],
                     'url' => route($item['route']),
-                    'active' => $isExternal ? false : request()->routeIs($item['route'].'*'),
+                    'active' => $isExternal ? false : request()->routeIs($activePattern),
                     'icon' => self::iconForRoute($item['route']),
                     'external' => $isExternal,
                 ];

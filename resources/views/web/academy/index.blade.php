@@ -5,9 +5,9 @@
 <section class="academy-v2-hero">
     <div class="container-site academy-v2-hero__grid">
         <div class="academy-v2-hero__copy reveal">
-            <p class="text-label">De Luxe Aesthetic Clinic & Academy</p>
-            <h1>Learn the science.<br><em>Master the technique.</em></h1>
-            <p class="academy-v2-hero__lead">Clinic-led aesthetics education built for confident, safe and commercially ready practitioners—from your first consultation to advanced injectable and skin procedures.</p>
+            <p class="text-label">{{ $cmsPage?->hero_eyebrow ?: 'De Luxe Aesthetic Clinic & Academy' }}</p>
+            <h1>@if($cmsPage?->hero_title){!! nl2br(e($cmsPage->hero_title)) !!}@else Learn the science.<br><em>Master the technique.</em>@endif</h1>
+            <p class="academy-v2-hero__lead">{{ $cmsPage?->hero_body ?: 'Clinic-led aesthetics education built for confident, safe and commercially ready practitioners—from your first consultation to advanced injectable and skin procedures.' }}</p>
             <div class="academy-v2-hero__actions">
                 <a href="{{ route('web.enrol') }}" class="btn btn-primary">Enquire about training</a>
                 <a href="#programmes" class="btn btn-secondary">Explore programmes</a>
@@ -19,7 +19,7 @@
             </dl>
         </div>
         <div class="academy-v2-hero__visual reveal reveal-delay-2">
-            <img src="{{ asset('assets/web/images/academy/academy-hero.webp') }}" alt="A practitioner performing a professional facial treatment" width="1600" height="1067" decoding="async" fetchpriority="high">
+            <img src="{{ $cmsPage?->hero_image_url ?: asset('assets/web/images/academy/academy-hero.webp') }}" alt="A practitioner performing a professional facial treatment" width="1600" height="1067" decoding="async" fetchpriority="high">
             <div class="academy-v2-hero__badge">
                 <span>Professional pathway</span>
                 <strong>Aesthetics<br>Masterclass</strong>

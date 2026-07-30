@@ -11,7 +11,7 @@
     <div class="home-v3-hero__media hero-carousel" x-ref="carousel" data-hero-mask>
         @foreach($heroSlides as $index => $slide)
             <div class="hero-carousel__slide {{ $index === 0 ? 'is-active' : '' }}" data-hero-slide aria-hidden="{{ $index === 0 ? 'false' : 'true' }}">
-                <img src="{{ asset($slide['src']) }}" alt="{{ $slide['alt'] }}" width="1920" height="1280" decoding="async" @if($index === 0) fetchpriority="high" @else loading="lazy" @endif>
+                <img src="{{ $index === 0 && $cmsPage?->hero_image_url ? $cmsPage->hero_image_url : asset($slide['src']) }}" alt="{{ $slide['alt'] }}" width="1920" height="1280" decoding="async" @if($index === 0) fetchpriority="high" @else loading="lazy" @endif>
             </div>
         @endforeach
     </div>
@@ -22,9 +22,9 @@
             <span>Clinic · Academy · Store</span>
         </div>
         <div class="home-v3-hero__main">
-            <p class="text-label" data-hero-brand>De Luxe Aesthetic Clinic</p>
-            <h1 data-hero-headline>Where clinical<br>expertise meets<br><em>beautiful restraint.</em></h1>
-            <p data-hero-support>Thoughtful aesthetic treatments, advanced professional education and carefully selected beauty essentials—all under one trusted name.</p>
+            <p class="text-label" data-hero-brand>{{ $cmsPage?->hero_eyebrow ?: 'De Luxe Aesthetic Clinic' }}</p>
+            <h1 data-hero-headline>@if($cmsPage?->hero_title){!! nl2br(e($cmsPage->hero_title)) !!}@else Where clinical<br>expertise meets<br><em>beautiful restraint.</em>@endif</h1>
+            <p data-hero-support>{{ $cmsPage?->hero_body ?: 'Thoughtful aesthetic treatments, advanced professional education and carefully selected beauty essentials—all under one trusted name.' }}</p>
             <div class="home-v3-hero__actions" data-hero-actions>
                 <a href="{{ route('web.booking.create') }}" class="btn btn-primary">Book a consultation</a>
                 <a href="{{ route('web.treatments.index') }}" class="btn btn-light">Explore treatments</a>

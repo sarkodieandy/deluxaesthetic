@@ -14,9 +14,9 @@
 <section class="contact-v2-hero">
     <div class="container-site contact-v2-hero__grid">
         <div class="contact-v2-hero__copy reveal">
-            <p class="text-label">Contact De Luxe</p>
-            <h1>Let’s begin with<br><em>a conversation.</em></h1>
-            <p>Whether you are considering a treatment, exploring academy training or need help with an order, our team is here to guide you.</p>
+            <p class="text-label">{{ $cmsPage?->hero_eyebrow ?: 'Contact De Luxe' }}</p>
+            <h1>@if($cmsPage?->hero_title){!! nl2br(e($cmsPage->hero_title)) !!}@else Let’s begin with<br><em>a conversation.</em>@endif</h1>
+            <p>{{ $cmsPage?->hero_body ?: 'Whether you are considering a treatment, exploring academy training or need help with an order, our team is here to guide you.' }}</p>
             <div class="contact-v2-hero__actions">
                 <a href="{{ route('web.booking.create') }}" class="btn btn-primary">Book a consultation</a>
                 @if($whatsappDigits)
@@ -28,7 +28,7 @@
             </div>
         </div>
         <div class="contact-v2-hero__visual reveal reveal-delay-2">
-            <img src="{{ asset('assets/web/images/gallery/clinic-ambiance.webp') }}" alt="The welcoming interior at De Luxe Aesthetic Clinic" decoding="async">
+            <img src="{{ $cmsPage?->hero_image_url ?: asset('assets/web/images/gallery/clinic-ambiance.webp') }}" alt="The welcoming interior at De Luxe Aesthetic Clinic" decoding="async">
             <div><span>Visit us</span><strong>East Legon<br>Accra, Ghana</strong></div>
         </div>
     </div>

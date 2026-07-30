@@ -8,8 +8,9 @@
     <div class="container-site">
         <div class="mb-10 flex flex-wrap items-end justify-between gap-6">
             <div>
-                <p class="text-label mb-3">Clinic</p>
-                <h1 class="text-page-title">{{ __('web.nav.treatments') }}</h1>
+                <p class="text-label mb-3">{{ $cmsPage?->hero_eyebrow ?: 'Clinic' }}</p>
+                <h1 class="text-page-title">{{ $cmsPage?->hero_title ?: __('web.nav.treatments') }}</h1>
+                @if($cmsPage?->hero_body)<p class="mt-4 max-w-2xl text-[var(--color-soft-grey)]">{{ $cmsPage->hero_body }}</p>@endif
             </div>
             <a href="{{ route('web.booking.create') }}" class="btn btn-primary">{{ __('web.book') }}</a>
         </div>

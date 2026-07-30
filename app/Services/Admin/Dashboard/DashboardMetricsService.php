@@ -6,6 +6,7 @@ use App\Enums\AppointmentStatus;
 use App\Models\Appointment;
 use App\Models\AuditLog;
 use App\Models\ClientProfile;
+use App\Models\Order;
 use App\Models\StudentProfile;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -53,6 +54,41 @@ class DashboardMetricsService
                 'user' => $log->user?->name,
             ])
             ->all();
+    }
+
+    public function orderTrend(int $days = 30): array
+    {
+        $days = in_array($days, [7, 30, 90], true) ? $days : 30;
+
+        return Cache::remember("admin.dashboard.order-trend.{$days}", now()->addMinutes(2), function () use ($days) {
+            $timezone = config('clinic.timezone', 'Africa/Accra');
+            $start = CarbonImmutable::today($timezone)->subDays($days - 1);
+            $orders = Order::query()
+                ->where('created_at', '>=', $start->startOfDay()->utc())
+                ->get(['created_at', 'grand_total', 'payment_status']);
+
+            $series = collect(range(0, $days - 1))->map(function (int $offset) use ($start, $orders, $timezone, $days) {
+                $date = $start->addDays($offset);
+                $daily = $orders->filter(fn (Order $order) => $order->created_at->timezone($timezone)->isSameDay($date));
+
+                return [
+                    'date' => $date->toDateString(),
+                    'label' => $days <= 7 ? $date->format('D') : $date->format('d M'),
+                    'orders' => $daily->count(),
+                    'revenue' => round((float) $daily->where('payment_status', 'paid')->sum('grand_total'), 2),
+                ];
+            })->values();
+
+            return [
+                'days' => $days,
+                'series' => $series->all(),
+                'total_orders' => $series->sum('orders'),
+                'total_revenue' => $series->sum('revenue'),
+                'average_order_value' => $series->sum('orders') > 0
+                    ? round($series->sum('revenue') / $series->sum('orders'), 2)
+                    : 0,
+            ];
+        });
     }
 
     private function appointmentsToday(CarbonImmutable $today): int

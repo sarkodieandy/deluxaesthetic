@@ -3,9 +3,9 @@
 @section('meta_description', 'View clinic treatments, professional aesthetics work and real before-and-after results from De Luxe Aesthetic Clinic in Accra.')
 @section('content')
 @include('web.components.page-intro', [
-    'eyebrow' => __('web.pages.gallery_eyebrow'),
-    'title' => __('web.pages.gallery_title'),
-    'lead' => __('web.pages.gallery_lead'),
+    'eyebrow' => $cmsPage?->hero_eyebrow ?: __('web.pages.gallery_eyebrow'),
+    'title' => $cmsPage?->hero_title ?: __('web.pages.gallery_title'),
+    'lead' => $cmsPage?->hero_body ?: __('web.pages.gallery_lead'),
 ])
 <section class="catalogue-shell">
     <div class="container-site space-y-12">

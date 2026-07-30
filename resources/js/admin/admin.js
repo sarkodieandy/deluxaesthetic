@@ -73,3 +73,54 @@ function initAdminNavigation() {
 }
 
 document.addEventListener('DOMContentLoaded', initAdminNavigation);
+
+function initPageEditor() {
+    const editor = document.querySelector('[data-page-editor]');
+    if (!editor) return;
+
+    const list = editor.querySelector('[data-page-sections]');
+    const template = document.querySelector('[data-page-section-template]');
+    const addButton = editor.querySelector('[data-add-page-section]');
+    if (!list || !template || !addButton) return;
+
+    const reindex = () => {
+        list.querySelectorAll('[data-page-section]').forEach((section, index) => {
+            section.querySelector('[data-section-number]').textContent = String(index + 1);
+            section.querySelectorAll('[name]').forEach((field) => {
+                field.name = field.name.replace(/sections\[[^\]]+]/, `sections[${index}]`);
+            });
+        });
+    };
+
+    const bind = (section) => {
+        section.querySelector('[data-section-remove]')?.addEventListener('click', () => {
+            section.remove();
+            reindex();
+        });
+        section.querySelector('[data-section-up]')?.addEventListener('click', () => {
+            const previous = section.previousElementSibling;
+            if (previous) list.insertBefore(section, previous);
+            reindex();
+        });
+        section.querySelector('[data-section-down]')?.addEventListener('click', () => {
+            const next = section.nextElementSibling;
+            if (next) list.insertBefore(next, section);
+            reindex();
+        });
+    };
+
+    list.querySelectorAll('[data-page-section]').forEach(bind);
+    addButton.addEventListener('click', () => {
+        const index = list.querySelectorAll('[data-page-section]').length;
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = template.innerHTML.replaceAll('__INDEX__', String(index)).trim();
+        const section = wrapper.firstElementChild;
+        if (!section) return;
+        list.append(section);
+        bind(section);
+        reindex();
+        section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initPageEditor);

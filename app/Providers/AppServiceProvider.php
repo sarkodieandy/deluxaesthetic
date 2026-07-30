@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Support\GoogleAuth;
 use App\Contracts\Payments\PaymentGatewayInterface;
 use App\Events\Auth\GoogleAccountLinked;
 use App\Events\Auth\GoogleAccountUnlinked;
@@ -12,13 +11,16 @@ use App\Events\StudentAccountActivated;
 use App\Listeners\Emails\SendAuthenticationEmails;
 use App\Listeners\Notifications\SendPortalInAppNotifications;
 use App\Models\Enrolment;
+use App\Models\WebPage;
 use App\Policies\Student\EnrolmentPolicy;
 use App\Services\Payments\MockPaymentService;
 use App\Services\Payments\PaystackPaymentService;
+use App\Support\GoogleAuth;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -43,6 +45,21 @@ class AppServiceProvider extends ServiceProvider
         config([
             'authentication.google.enabled' => GoogleAuth::enabled(),
         ]);
+
+        View::composer('web.*', function ($view) {
+            $page = WebPage::forRoute(request()->route()?->getName());
+            $preview = $page
+                && (int) request()->query('cms_preview') === $page->id
+                && auth()->check()
+                && auth()->user()->can('content.manage');
+
+            if ($page && ! $page->is_published && ! $preview) {
+                abort(404);
+            }
+
+            $view->with('cmsPage', $page);
+            $view->with('cmsPreview', $preview);
+        });
 
         Gate::policy(Enrolment::class, EnrolmentPolicy::class);
 

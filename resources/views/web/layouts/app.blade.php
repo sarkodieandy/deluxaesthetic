@@ -3,12 +3,12 @@
 <head>
     @php
         $seoTitle = html_entity_decode(
-            trim($__env->yieldContent('title', config('seo.default_title'))),
+            trim($cmsPage?->seo_title ?: $__env->yieldContent('title', config('seo.default_title'))),
             ENT_QUOTES | ENT_HTML5,
             'UTF-8'
         );
         $seoDescription = \Illuminate\Support\Str::limit(
-            trim(strip_tags($__env->yieldContent('meta_description', config('seo.default_description')))),
+            trim(strip_tags($cmsPage?->meta_description ?: $__env->yieldContent('meta_description', config('seo.default_description')))),
             160,
             ''
         );
@@ -116,7 +116,13 @@
     @include('web.components.header')
 
     <main id="main-content">
+        @if($cmsPreview ?? false)
+            <div class="cms-preview-bar">Draft preview · <a href="{{ route('admin.pages.edit', $cmsPage) }}">Return to editor</a></div>
+        @endif
         @yield('content')
+        @if($cmsPage && ($cmsPage->is_published || ($cmsPreview ?? false)))
+            @include('web.components.cms-sections', ['sections' => $cmsPage->sections ?? []])
+        @endif
     </main>
 
     @include('web.components.footer')

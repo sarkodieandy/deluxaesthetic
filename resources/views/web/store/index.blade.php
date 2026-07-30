@@ -5,9 +5,9 @@
 <section class="store-v2-hero">
     <div class="container-site store-v2-hero__grid">
         <div class="store-v2-hero__copy reveal">
-            <p class="text-label">The De Luxe edit</p>
-            <h1>Professional care,<br><em>beyond the clinic.</em></h1>
-            <p>Shop carefully selected skincare and beauty essentials chosen to support your routine, treatment results and everyday confidence.</p>
+            <p class="text-label">{{ $cmsPage?->hero_eyebrow ?: 'The De Luxe edit' }}</p>
+            <h1>@if($cmsPage?->hero_title){!! nl2br(e($cmsPage->hero_title)) !!}@else Professional care,<br><em>beyond the clinic.</em>@endif</h1>
+            <p>{{ $cmsPage?->hero_body ?: 'Shop carefully selected skincare and beauty essentials chosen to support your routine, treatment results and everyday confidence.' }}</p>
             <div class="store-v2-hero__actions">
                 <a href="#shop" class="btn btn-primary">Shop the collection</a>
                 <a href="{{ route('web.cart.index') }}" class="btn btn-secondary">
@@ -22,7 +22,7 @@
             </div>
         </div>
         <div class="store-v2-hero__visual reveal reveal-delay-2">
-            <img src="{{ asset('assets/web/images/store/store-hero.webp') }}" alt="A curated collection of skincare and beauty products" width="1600" height="1067" decoding="async" fetchpriority="high">
+            <img src="{{ $cmsPage?->hero_image_url ?: asset('assets/web/images/store/store-hero.webp') }}" alt="A curated collection of skincare and beauty products" width="1600" height="1067" decoding="async" fetchpriority="high">
             <div class="store-v2-hero__note">
                 <span>Curated essentials</span>
                 <strong>For skin that feels as good as it looks.</strong>
