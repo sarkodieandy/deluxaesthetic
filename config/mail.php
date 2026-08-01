@@ -97,6 +97,12 @@ return [
             'retry_after' => 60,
         ],
 
+        'bird' => [
+            'transport' => 'bird',
+            'key' => env('BIRD_API_KEY'),
+            'endpoint' => env('BIRD_API_ENDPOINT', 'https://us1.platform.bird.com/v1/email/messages'),
+        ],
+
     ],
 
     /*
