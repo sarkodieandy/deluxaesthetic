@@ -22,7 +22,6 @@ use App\Support\GoogleAuth;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -38,17 +37,19 @@ class AppServiceProvider extends ServiceProvider
 
             return new PaystackPaymentService;
         });
-
-        Mail::extend('bird', function ($config) {
-            return new BirdTransport(
-                $config['key'] ?? config('services.bird.key'),
-                $config['endpoint'] ?? config('services.bird.endpoint'),
-            );
-        });
     }
 
     public function boot(): void
     {
+        $this->app->resolved('mail.manager', function ($manager) {
+            $manager->extend('bird', function ($config) {
+                return new BirdTransport(
+                    $config['key'] ?? config('services.bird.key'),
+                    $config['endpoint'] ?? config('services.bird.endpoint'),
+                );
+            });
+        });
+
         if ($this->app->environment('production')) {
             URL::forceScheme('https');
         }
@@ -72,24 +73,26 @@ class AppServiceProvider extends ServiceProvider
             $view->with('cmsPreview', $preview);
         });
 
-        View::composer('web.layouts.app', function ($view) {
-            $route = request()->route()?->getName();
-            $placement = match (true) {
-                $route === 'web.home' => 'home',
-                str_starts_with((string) $route, 'web.store.') => 'store',
-                str_starts_with((string) $route, 'web.academy.') => 'academy',
-                default => null,
-            };
-            $view->with('livePromotions', Promotion::live()
-                ->where(fn ($query) => $query->where('placement', 'sitewide')
-                    ->when($placement, fn ($q) => $q->orWhere('placement', $placement)))
-                ->orderByDesc('priority')->limit(3)->get());
-        });
+        if (class_exists(Promotion::class) && class_exists(Testimonial::class)) {
+            View::composer('web.layouts.app', function ($view) {
+                $route = request()->route()?->getName();
+                $placement = match (true) {
+                    $route === 'web.home' => 'home',
+                    str_starts_with((string) $route, 'web.store.') => 'store',
+                    str_starts_with((string) $route, 'web.academy.') => 'academy',
+                    default => null,
+                };
+                $view->with('livePromotions', Promotion::live()
+                    ->where(fn ($query) => $query->where('placement', 'sitewide')
+                        ->when($placement, fn ($q) => $q->orWhere('placement', $placement)))
+                    ->orderByDesc('priority')->limit(3)->get());
+            });
 
-        View::composer('web.home.index', function ($view) {
-            $view->with('managedTestimonials', Testimonial::where('is_active', true)
-                ->orderByDesc('is_featured')->orderBy('sort_order')->limit(6)->get());
-        });
+            View::composer('web.home.index', function ($view) {
+                $view->with('managedTestimonials', Testimonial::where('is_active', true)
+                    ->orderByDesc('is_featured')->orderBy('sort_order')->limit(6)->get());
+            });
+        }
 
         Gate::policy(Enrolment::class, EnrolmentPolicy::class);
 
