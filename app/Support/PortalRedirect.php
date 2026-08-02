@@ -85,8 +85,7 @@ class PortalRedirect
         }
 
         if (str_starts_with($path, '/admin')) {
-            return ! $user->hasAnyRole(['Client', 'Student'])
-                && ($user->hasAnyRole($staffRoles) || $user->can('dashboard.view'));
+            return $user->hasAnyRole($staffRoles);
         }
 
         return ! str_starts_with($path, '/admin');

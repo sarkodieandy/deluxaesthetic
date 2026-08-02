@@ -93,7 +93,7 @@ class GuestAppointmentBookingTest extends TestCase
                 'goals' => 'Follow-up treatment',
                 'consent' => '1',
             ])
-            ->assertRedirect(route('client.dashboard'));
+            ->assertRedirect(route('web.booking.confirmation', Appointment::query()->latest('id')->value('reference')));
 
         $this->assertDatabaseHas('appointments', [
             'client_profile_id' => $client->id,

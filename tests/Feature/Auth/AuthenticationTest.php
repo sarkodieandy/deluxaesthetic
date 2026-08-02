@@ -23,7 +23,7 @@ class AuthenticationTest extends TestCase
         $this->seed(RolePermissionSeeder::class);
 
         $user = User::factory()->create();
-        $user->assignRole('Client');
+        $user->assignRole('Student');
 
         $response = $this->post('/login', [
             'email' => $user->email,
@@ -31,7 +31,7 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('client.dashboard', absolute: false));
+        $response->assertRedirect(route('student.dashboard', absolute: false));
     }
 
     public function test_users_can_not_authenticate_with_invalid_password(): void

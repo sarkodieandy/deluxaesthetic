@@ -95,4 +95,23 @@ class LoginPortalRedirectTest extends TestCase
 
         $this->assertGuest();
     }
+
+    public function test_account_without_an_admin_role_is_prepared_as_a_student(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'new-student@example.com',
+            'password' => bcrypt('Password1!'),
+            'is_active' => true,
+            'email_verified_at' => now(),
+        ]);
+
+        $this->post(route('login'), [
+            'email' => 'new-student@example.com',
+            'password' => 'Password1!',
+        ])->assertRedirect(route('student.dashboard'));
+
+        $this->assertTrue($user->fresh()->hasRole('Student'));
+        $this->assertDatabaseHas('student_profiles', ['user_id' => $user->id]);
+    }
+
 }

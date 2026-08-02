@@ -16,13 +16,9 @@ class EnsureAdminAccess
             abort(Response::HTTP_FORBIDDEN);
         }
 
-        if ($user->hasAnyRole(['Client', 'Student'])) {
-            abort(Response::HTTP_FORBIDDEN);
-        }
-
         $staffRoles = config('admin.roles', []);
 
-        if ($user->hasAnyRole($staffRoles) || $user->can('dashboard.view')) {
+        if ($user->hasAnyRole($staffRoles)) {
             return $next($request);
         }
 

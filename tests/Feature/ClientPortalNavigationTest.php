@@ -2,34 +2,16 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class ClientPortalNavigationTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function setUp(): void
+    public function test_customer_account_portal_routes_are_not_registered(): void
     {
-        parent::setUp();
-        $this->seed(RolePermissionSeeder::class);
-    }
-
-    public function test_client_can_open_all_portal_modules(): void
-    {
-        $client = User::factory()->create([
-            'is_active' => true,
-            'email_verified_at' => now(),
-        ]);
-        $client->assignRole(Role::findOrCreate('Client'));
-        \App\Models\ClientProfile::query()->create([
-            'user_id' => $client->id,
-            'referral_code' => 'CLI12345',
-        ]);
-
         foreach ([
             'client.dashboard',
             'client.appointments.index',
@@ -40,9 +22,7 @@ class ClientPortalNavigationTest extends TestCase
             'client.notifications.index',
             'client.profile.edit',
         ] as $routeName) {
-            $this->actingAs($client)
-                ->get(route($routeName))
-                ->assertOk();
+            $this->assertFalse(Route::has($routeName));
         }
     }
 }

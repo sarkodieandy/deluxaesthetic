@@ -21,6 +21,7 @@ class GoogleAuthenticationService
 {
     public function __construct(
         private readonly CreateGoogleUser $createGoogleUser,
+        private readonly LoginPortalService $loginPortals,
     ) {}
 
     public function oauthRedirectUrl(): string
@@ -76,6 +77,10 @@ class GoogleAuthenticationService
                 return ['type' => 'error', 'message' => __('auth.google.account_inactive')];
             }
 
+            if ($this->loginPortals->isCustomerOnly($user)) {
+                return ['type' => 'error', 'message' => 'Customers do not need an account. Please shop or book a consultation as a guest.'];
+            }
+
             $existingSocial->update([
                 'provider_email' => $google->email,
                 'provider_avatar_url' => $google->avatarUrl,
@@ -91,6 +96,10 @@ class GoogleAuthenticationService
         if ($existingUser) {
             if (! $existingUser->is_active) {
                 return ['type' => 'error', 'message' => __('auth.google.account_inactive')];
+            }
+
+            if ($this->loginPortals->isCustomerOnly($existingUser)) {
+                return ['type' => 'error', 'message' => 'Customers do not need an account. Please shop or book a consultation as a guest.'];
             }
 
             if (! $existingUser->socialAccounts()->where('provider', 'google')->exists()) {
@@ -113,6 +122,8 @@ class GoogleAuthenticationService
 
     public function loginUser(User $user): void
     {
+        $user = $this->loginPortals->prepare($user);
+
         Auth::login($user);
         request()->session()->regenerate();
 

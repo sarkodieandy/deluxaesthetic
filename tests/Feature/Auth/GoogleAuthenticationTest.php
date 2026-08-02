@@ -60,7 +60,7 @@ class GoogleAuthenticationTest extends TestCase
         $this->get(route('auth.google.redirect'))->assertRedirect('https://accounts.google.com/o/oauth2/auth');
     }
 
-    public function test_existing_social_account_logs_in_and_redirects_to_portal(): void
+    public function test_existing_customer_social_account_cannot_log_in(): void
     {
         $user = User::factory()->create(['is_active' => true, 'email_verified_at' => now()]);
         $user->assignRole('Client');
@@ -86,8 +86,9 @@ class GoogleAuthenticationTest extends TestCase
 
         $response = $this->get(route('auth.google.callback'));
 
-        $response->assertRedirect(route('client.dashboard'));
-        $this->assertAuthenticatedAs($user);
+        $response->assertRedirect(route('login'));
+        $response->assertSessionHasErrors('email');
+        $this->assertGuest();
     }
 
     public function test_existing_user_with_same_email_logs_in_without_password_link(): void

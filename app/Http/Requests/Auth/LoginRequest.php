@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Services\Auth\LoginPortalService;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -52,16 +53,19 @@ class LoginRequest extends FormRequest
 
         $user = Auth::user();
 
-        if ($user?->hasRole('Client') && ! $user->hasAnyRole(array_merge(
-            config('admin.roles', []),
-            ['Student']
-        ))) {
+        $portals = app(LoginPortalService::class);
+
+        if ($user && $portals->isCustomerOnly($user)) {
             Auth::guard('web')->logout();
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
                 'email' => 'Customers do not need an account. Please shop or book a consultation as a guest.',
             ]);
+        }
+
+        if ($user) {
+            $portals->prepare($user);
         }
 
         RateLimiter::clear($this->throttleKey());
