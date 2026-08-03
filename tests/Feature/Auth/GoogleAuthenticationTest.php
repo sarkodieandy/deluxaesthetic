@@ -91,6 +91,60 @@ class GoogleAuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_existing_admin_social_account_cannot_use_google_login(): void
+    {
+        $admin = User::factory()->create(['is_active' => true, 'email_verified_at' => now()]);
+        $admin->assignRole('Super Administrator');
+
+        SocialAccount::create([
+            'user_id' => $admin->id,
+            'provider' => 'google',
+            'provider_user_id' => 'google-admin',
+            'provider_email' => $admin->email,
+            'linked_at' => now(),
+        ]);
+
+        $provider = $this->mockGoogleProvider();
+        $provider->shouldReceive('user')->once()->andReturn($this->fakeGoogleUser([
+            'id' => 'google-admin',
+            'email' => $admin->email,
+            'name' => $admin->name,
+        ]));
+        Socialite::shouldReceive('driver')->with('google')->andReturn($provider);
+
+        $response = $this->get(route('auth.google.callback'));
+
+        $response->assertRedirect(route('login'));
+        $response->assertSessionHasErrors([
+            'email' => 'Administrator accounts must sign in with their admin email and password. Google sign-in is for students only.',
+        ]);
+        $this->assertGuest();
+    }
+
+    public function test_google_email_matching_admin_account_cannot_be_linked_or_logged_in(): void
+    {
+        $admin = User::factory()->create(['is_active' => true, 'email_verified_at' => now()]);
+        $admin->assignRole('Clinic Administrator');
+
+        $provider = $this->mockGoogleProvider();
+        $provider->shouldReceive('user')->once()->andReturn($this->fakeGoogleUser([
+            'id' => 'new-google-admin',
+            'email' => $admin->email,
+            'name' => $admin->name,
+        ]));
+        Socialite::shouldReceive('driver')->with('google')->andReturn($provider);
+
+        $this->get(route('auth.google.callback'))
+            ->assertRedirect(route('login'))
+            ->assertSessionHasErrors('email');
+
+        $this->assertGuest();
+        $this->assertDatabaseMissing('social_accounts', [
+            'user_id' => $admin->id,
+            'provider' => 'google',
+        ]);
+    }
+
     public function test_existing_user_with_same_email_logs_in_without_password_link(): void
     {
         $user = User::factory()->create([

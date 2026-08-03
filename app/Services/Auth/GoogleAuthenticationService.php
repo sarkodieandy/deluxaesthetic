@@ -77,6 +77,10 @@ class GoogleAuthenticationService
                 return ['type' => 'error', 'message' => __('auth.google.account_inactive')];
             }
 
+            if ($this->loginPortals->isAdminAccount($user)) {
+                return ['type' => 'error', 'message' => 'Administrator accounts must sign in with their admin email and password. Google sign-in is for students only.'];
+            }
+
             if ($this->loginPortals->isCustomerOnly($user)) {
                 return ['type' => 'error', 'message' => 'Customers do not need an account. Please shop or book a consultation as a guest.'];
             }
@@ -96,6 +100,10 @@ class GoogleAuthenticationService
         if ($existingUser) {
             if (! $existingUser->is_active) {
                 return ['type' => 'error', 'message' => __('auth.google.account_inactive')];
+            }
+
+            if ($this->loginPortals->isAdminAccount($existingUser)) {
+                return ['type' => 'error', 'message' => 'Administrator accounts must sign in with their admin email and password. Google sign-in is for students only.'];
             }
 
             if ($this->loginPortals->isCustomerOnly($existingUser)) {
