@@ -23,7 +23,8 @@ class StudentPortalRegistrationTest extends TestCase
 
         $this->get(route('web.academy.student-portal.create'))
             ->assertOk()
-            ->assertSee(__('web.student_portal.form_title'));
+            ->assertSee('Student application')
+            ->assertSee('Approved student login');
     }
 
     public function test_guest_application_is_pending_and_cannot_login_before_approval(): void
