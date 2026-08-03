@@ -74,8 +74,11 @@
                     @if($quote['tax'] > 0)<div class="flex justify-between"><span>Tax</span><span>GHS {{ number_format($quote['tax'], 2) }}</span></div>@endif
                     <div class="flex justify-between font-medium text-base"><span>Total</span><span>GHS {{ number_format($quote['grand_total'], 2) }}</span></div>
                 </div>
-                <button type="submit" class="btn btn-primary w-full">Pay securely with Paystack</button>
-                <p class="mt-3 text-center text-xs text-[var(--color-soft-grey)]">You’ll be redirected to Paystack’s secure checkout to complete payment.</p>
+                <button type="submit" class="btn btn-whatsapp w-full">
+                    @include('web.components.whatsapp-icon', ['class' => 'btn-whatsapp__icon'])
+                    Continue on WhatsApp
+                </button>
+                <p class="mt-3 text-center text-xs text-[var(--color-soft-grey)]">You’ll chat directly with our team to confirm availability, delivery and payment.</p>
             </aside>
         </form>
     </div>

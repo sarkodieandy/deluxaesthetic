@@ -1,6 +1,9 @@
 <?php
 
 return [
+    'whatsapp_checkout' => (bool) env('STORE_WHATSAPP_CHECKOUT', true),
+    'whatsapp_number' => env('STORE_WHATSAPP_NUMBER', env('BUSINESS_WHATSAPP')),
+
     'currency' => env('DEFAULT_CURRENCY', 'GHS'),
     'currency_display' => env('STORE_CURRENCY_DISPLAY', 'GH₵'),
     'tax_percent' => (float) env('STORE_TAX_PERCENT', 0),

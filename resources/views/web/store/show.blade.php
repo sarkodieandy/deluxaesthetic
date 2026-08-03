@@ -69,12 +69,17 @@
                             <input class="field w-24" id="quantity" type="number" name="quantity" value="1" min="1" max="{{ $product->stock_quantity }}">
                         </div>
                         <button type="submit" class="btn btn-primary">Add to cart</button>
-                        <button type="submit" name="buy_now" value="1" class="btn btn-secondary">Buy with Paystack</button>
+                        <button type="submit" name="buy_now" value="1" class="btn btn-whatsapp">
+                            @include('web.components.whatsapp-icon', ['class' => 'btn-whatsapp__icon'])
+                            Order on WhatsApp
+                        </button>
                         <a href="{{ route('web.cart.index') }}" class="btn btn-secondary">View cart</a>
                     </form>
                 @else
                     <p class="text-[var(--color-error)]">Currently unavailable.</p>
                 @endif
+
+                <p class="mt-4 text-sm text-[var(--color-soft-grey)]">You’ll chat directly with {{ config('clinic.ceo.name') }} to confirm availability, delivery and payment.</p>
 
                 @if($product->usage_instructions)
                     <div class="mt-10">

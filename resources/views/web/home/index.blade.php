@@ -156,7 +156,7 @@
     </article>
     <article class="home-v3-duo__panel home-v3-duo__panel--store reveal reveal-delay-2">
         <img src="{{ asset('assets/web/images/treatments/skincare-ritual.webp') }}" alt="Curated De Luxe skincare products" loading="lazy" decoding="async">
-        <div><p class="text-label">The De Luxe Edit</p><h2>Your routine,<br>carefully considered.</h2><p>Discover clinic-selected skincare and beauty essentials, available through secure Paystack checkout.</p><a href="{{ route('web.store.index') }}" class="btn btn-light">Shop products</a></div>
+        <div><p class="text-label">The De Luxe Edit</p><h2>Your routine,<br>carefully considered.</h2><p>Discover clinic-selected skincare and beauty essentials, available to order directly through WhatsApp.</p><a href="{{ route('web.store.index') }}" class="btn btn-light">Shop products</a></div>
     </article>
 </section>
 

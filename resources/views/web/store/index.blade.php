@@ -17,7 +17,7 @@
             </div>
             <div class="store-v2-assurance">
                 <span>Clinic selected</span>
-                <span>Secure Paystack checkout</span>
+                <span>Order directly on WhatsApp</span>
                 <span>Delivery or pickup</span>
             </div>
         </div>
@@ -142,12 +142,10 @@
                                     @endif
                                 @endif
                             </div>
-                            @if($product->isPurchasable() && !in_array($product->id, $cartProductIds))
-                                <form method="POST" action="{{ route('web.cart.store') }}" class="store-v2-card__buy">
-                                    @csrf
-                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                    <button type="submit" name="buy_now" value="1">Buy now with Paystack</button>
-                                </form>
+                            @if($product->isPurchasable())
+                                <a class="store-v2-card__buy" href="{{ $whatsAppOrderUrls[$product->id] }}" target="_blank" rel="noopener noreferrer">
+                                    <span>Order on WhatsApp</span>
+                                </a>
                             @endif
                         </div>
                     </article>

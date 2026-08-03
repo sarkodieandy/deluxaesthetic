@@ -1859,21 +1859,22 @@
 }
 
 .store-v2-card__buy {
-  margin-top: .75rem;
-}
-
-.store-v2-card__buy button {
+  display: block;
   width: 100%;
+  margin-top: .75rem;
   padding: .78rem 1rem;
   border: 1px solid #1b1b19;
+  color: #1b1b19;
   font-size: .68rem;
   font-weight: 700;
   letter-spacing: .08em;
+  text-align: center;
+  text-decoration: none;
   text-transform: uppercase;
   transition: background .2s, color .2s;
 }
 
-.store-v2-card__buy button:hover {
+.store-v2-card__buy:hover {
   background: #1b1b19;
   color: #fff;
 }

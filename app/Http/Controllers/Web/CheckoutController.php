@@ -10,6 +10,7 @@ use App\Models\Payment;
 use App\Services\Cart\CartService;
 use App\Services\Checkout\CheckoutService;
 use App\Services\Checkout\OrderPricingService;
+use App\Support\WhatsAppOrder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -33,6 +34,14 @@ class CheckoutController extends Controller
             return redirect()->route('web.cart.index')->withErrors(['cart' => 'Your cart is empty.']);
         }
 
+        if (WhatsAppOrder::enabled()) {
+            return redirect()->away(WhatsAppOrder::cartUrl(
+                $summary['items'],
+                (float) $summary['subtotal'],
+                (float) $summary['discount'],
+            ));
+        }
+
         $user = auth()->user();
         $quote = $this->pricing->quote($cart, $cart->fulfillment_type?->value);
 
@@ -54,6 +63,20 @@ class CheckoutController extends Controller
 
     public function pay(Request $request): RedirectResponse
     {
+        if (WhatsAppOrder::enabled()) {
+            $summary = $this->carts->summary($this->carts->resolve());
+
+            if ($summary['count'] < 1) {
+                return redirect()->route('web.cart.index')->withErrors(['cart' => 'Your cart is empty.']);
+            }
+
+            return redirect()->away(WhatsAppOrder::cartUrl(
+                $summary['items'],
+                (float) $summary['subtotal'],
+                (float) $summary['discount'],
+            ));
+        }
+
         $rules = [
             'name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email', 'max:255'],
@@ -101,7 +124,7 @@ class CheckoutController extends Controller
 
             return back()
                 ->withInput()
-                ->withErrors(['payment' => 'Paystack checkout is temporarily unavailable. Please try again.']);
+                ->withErrors(['payment' => 'Online payment is temporarily unavailable. Please place your order through WhatsApp.']);
         }
 
         return redirect()->away($result['authorization_url']);

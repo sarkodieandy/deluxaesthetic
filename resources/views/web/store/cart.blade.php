@@ -71,7 +71,11 @@
                             <button class="btn btn-secondary" type="submit">Remove coupon</button>
                         </form>
                     @endif
-                    <a href="{{ route('web.checkout.show') }}" class="btn btn-primary w-full mb-3">Checkout</a>
+                    <a href="{{ $whatsAppCheckoutUrl }}" class="btn btn-whatsapp w-full mb-3" target="_blank" rel="noopener noreferrer">
+                        @include('web.components.whatsapp-icon', ['class' => 'btn-whatsapp__icon'])
+                        Order on WhatsApp
+                    </a>
+                    <p class="mb-4 text-xs text-center text-[var(--color-soft-grey)]">Your order summary will be sent to {{ config('clinic.ceo.name') }}. Delivery and payment will be confirmed in the chat.</p>
                     <a href="{{ route('web.store.index') }}" class="btn btn-secondary w-full">Continue shopping</a>
                 </aside>
             </div>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CartItem;
 use App\Models\Product;
 use App\Services\Cart\CartService;
+use App\Support\WhatsAppOrder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -19,7 +20,14 @@ class CartController extends Controller
     {
         $summary = $this->carts->summary($this->carts->resolve());
 
-        return view('web.store.cart', $summary);
+        return view('web.store.cart', [
+            ...$summary,
+            'whatsAppCheckoutUrl' => WhatsAppOrder::cartUrl(
+                $summary['items'],
+                (float) $summary['subtotal'],
+                (float) $summary['discount'],
+            ),
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -36,6 +44,10 @@ class CartController extends Controller
             $this->carts->add($product, (int) ($data['quantity'] ?? 1));
         } catch (InvalidArgumentException $e) {
             return back()->withErrors(['cart' => $e->getMessage()]);
+        }
+
+        if (($data['buy_now'] ?? false) && WhatsAppOrder::enabled()) {
+            return redirect()->away(WhatsAppOrder::productUrl($product, (int) ($data['quantity'] ?? 1)));
         }
 
         return redirect()

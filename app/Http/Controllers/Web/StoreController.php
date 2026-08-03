@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Services\Cart\CartService;
+use App\Support\WhatsAppOrder;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -47,8 +48,12 @@ class StoreController extends Controller
         $cart = $this->carts->resolve();
         $cartProductIds = $cart->items->pluck('product_id')->all();
 
+        $products = $query->paginate(12)->withQueryString();
+
         return view('web.store.index', [
-            'products' => $query->paginate(12)->withQueryString(),
+            'products' => $products,
+            'whatsAppOrderUrls' => $products->getCollection()
+                ->mapWithKeys(fn (Product $product) => [$product->id => WhatsAppOrder::productUrl($product)]),
             'categories' => ProductCategory::query()
                 ->where('is_active', true)
                 ->withCount(['products' => fn ($query) => $query->where('is_active', true)])
@@ -84,6 +89,11 @@ class StoreController extends Controller
         $cart = $this->carts->resolve();
         $inCart = $cart->items->contains('product_id', $product->id);
 
-        return view('web.store.show', compact('product', 'related', 'inCart'));
+        return view('web.store.show', [
+            'product' => $product,
+            'related' => $related,
+            'inCart' => $inCart,
+            'whatsAppOrderUrl' => WhatsAppOrder::productUrl($product),
+        ]);
     }
 }
