@@ -98,6 +98,24 @@
                     </div>
                 </div>
 
+                <div>
+                    <label class="text-label mb-2 block" for="course_id">Course or training pathway</label>
+                    <select class="field" id="course_id" name="course_id">
+                        <option value="">I need guidance choosing a course</option>
+                        @foreach($courses as $course)<option value="{{ $course->id }}" @selected((string)old('course_id') === (string)$course->id)>{{ $course->name }}</option>@endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-label mb-2 block" for="professional_background">Professional background <span class="normal-case tracking-normal">(optional)</span></label>
+                    <input class="field" id="professional_background" name="professional_background" value="{{ old('professional_background') }}" placeholder="e.g. Beauty therapist, nurse, beginner">
+                </div>
+
+                <div>
+                    <label class="text-label mb-2 block" for="message">What would you like to study?</label>
+                    <textarea class="field" id="message" name="message" rows="4" required placeholder="Tell admissions about the training or procedures that interest you.">{{ old('message') }}</textarea>
+                </div>
+
                 <div class="grid gap-5 sm:grid-cols-2">
                     <div>
                         <label class="text-label mb-2 block" for="password">{{ __('web.student_portal.password') }}</label>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Academy\StoreStudentPortalRegistrationRequest;
+use App\Models\Course;
 use App\Services\Academy\StudentPortalRegistrationService;
 use App\Services\Notifications\InAppNotificationService;
 use Illuminate\Http\RedirectResponse;
@@ -29,6 +30,7 @@ class StudentPortalRegistrationController extends Controller
 
         return view('web.academy.student-portal-register', [
             'loggedInAsClient' => (bool) $request->user()?->hasRole('Client'),
+            'courses' => Course::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -41,7 +43,7 @@ class StudentPortalRegistrationController extends Controller
 
         $notifications->notifyAdmins([
             'title' => 'New student application awaiting approval',
-            'message' => $user->name.' applied for physical academy training. Contact the applicant before approving portal access.',
+            'message' => $user->name.' applied for physical academy training. Review the course enquiry and contact the applicant before approving portal access.',
             'action_url' => route('admin.students.index', absolute: false),
             'category' => 'student_registration',
         ]);

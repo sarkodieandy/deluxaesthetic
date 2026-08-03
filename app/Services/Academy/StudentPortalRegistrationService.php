@@ -2,6 +2,7 @@
 
 namespace App\Services\Academy;
 
+use App\Models\CourseEnquiry;
 use App\Models\StudentProfile;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +16,7 @@ class StudentPortalRegistrationService
     ) {}
 
     /**
-     * @param  array{name: string, email: string, phone?: string|null, password: string}  $data
+     * @param  array{name: string, email: string, phone?: string|null, course_id?: int|null, professional_background?: string|null, message: string, password: string}  $data
      */
     public function register(array $data): User
     {
@@ -40,6 +41,19 @@ class StudentPortalRegistrationService
                 'student_number' => $this->enrolments->allocateStudentNumber(),
                 'phone' => $data['phone'] ?? null,
                 'profile_completed_at' => now(),
+            ]);
+
+            CourseEnquiry::create([
+                'course_id' => $data['course_id'] ?? null,
+                'user_id' => $user->id,
+                'full_name' => $user->name,
+                'email' => $user->email,
+                'phone' => $data['phone'] ?? '',
+                'professional_background' => $data['professional_background'] ?? null,
+                'preferred_contact_method' => 'whatsapp',
+                'message' => $data['message'],
+                'privacy_consent' => true,
+                'status' => 'submitted',
             ]);
 
             return $user->fresh(['studentProfile']);

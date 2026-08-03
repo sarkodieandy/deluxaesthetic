@@ -9,7 +9,7 @@
             <h1>@if($cmsPage?->hero_title){!! nl2br(e($cmsPage->hero_title)) !!}@else Learn the science.<br><em>Master the technique.</em>@endif</h1>
             <p class="academy-v2-hero__lead">{{ $cmsPage?->hero_body ?: 'Clinic-led aesthetics education built for confident, safe and commercially ready practitioners—from your first consultation to advanced injectable and skin procedures.' }}</p>
             <div class="academy-v2-hero__actions">
-                <a href="{{ route('web.enrol') }}" class="btn btn-primary">Enquire about training</a>
+                <a href="{{ route('web.academy.student-portal.create') }}" class="btn btn-primary">Apply as a student</a>
                 <a href="#programmes" class="btn btn-secondary">Explore programmes</a>
             </div>
             <dl class="academy-v2-proof">
@@ -157,7 +157,7 @@
                     <div><h3>Clinical safety</h3><p>Patient selection, product handling, aftercare and complication management.</p></div>
                 </article>
             </div>
-            <a href="{{ route('web.enrol') }}" class="btn btn-primary">Enquire about Botox training</a>
+            <a href="{{ route('web.academy.student-portal.create') }}" class="btn btn-primary">Apply for Botox training</a>
         </div>
     </div>
 </section>
@@ -236,11 +236,11 @@
     <div class="container-site academy-v2-final__inner">
         <p class="text-label">Your next chapter</p>
         <h2>Ready to train with De Luxe?</h2>
-        <p>Tell us which procedures interest you. Our academy team will help you choose the right pathway and explain the physical enrolment process.</p>
-        <p class="academy-v2-final__portal">Create your student portal account to track enrolment, courses and academy updates.</p>
+        <p>Submit one student application and tell us which procedures interest you. Admissions will contact you before approving portal access.</p>
+        <p class="academy-v2-final__portal">Already approved? Use Student login to enter your portal.</p>
         <div>
-            <a href="{{ route('web.enrol') }}" class="btn btn-primary">Start an academy enquiry</a>
-            <a href="{{ route('web.academy.student-portal.create') }}" class="btn btn-secondary">Create student account</a>
+            <a href="{{ route('web.academy.student-portal.create') }}" class="btn btn-primary">Submit student application</a>
+            <a href="{{ route('login') }}" class="btn btn-secondary">Student login</a>
         </div>
     </div>
 </section>

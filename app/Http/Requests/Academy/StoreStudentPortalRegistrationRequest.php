@@ -4,6 +4,7 @@ namespace App\Http\Requests\Academy;
 
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 
 class StoreStudentPortalRegistrationRequest extends FormRequest
@@ -28,6 +29,9 @@ class StoreStudentPortalRegistrationRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'phone' => ['required', 'string', 'max:50'],
+            'course_id' => ['nullable', Rule::exists('courses', 'id')->where(fn ($query) => $query->where('is_active', true)->whereNull('deleted_at'))],
+            'professional_background' => ['nullable', 'string', 'max:1000'],
+            'message' => ['required', 'string', 'min:10', 'max:5000'],
             'password' => ['required', 'confirmed', Rules\Password::min(8)],
             'privacy_consent' => ['accepted'],
         ];

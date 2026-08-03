@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\Notifications\InAppNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class StudentController extends Controller
@@ -52,5 +53,31 @@ class StudentController extends Controller
         ]);
 
         return back()->with('status', $student->name.' can now sign in to the student portal.');
+    }
+
+    public function destroy(User $student): RedirectResponse
+    {
+        abort_unless($student->hasRole('Student') && $student->studentProfile, 404);
+
+        if ($student->is_active) {
+            return back()->withErrors(['delete' => 'Active students cannot be deleted from the applications queue. Suspend or archive them through student management.']);
+        }
+
+        $profile = $student->studentProfile;
+        $hasEnrolments = DB::table('enrolments')->where('student_profile_id', $profile->id)->exists();
+        $hasConvertedEnquiry = DB::table('course_enquiries')->where('user_id', $student->id)
+            ->where(fn ($query) => $query->whereNotNull('converted_enrolment_id')->orWhereNotNull('converted_student_profile_id'))
+            ->exists();
+
+        if ($hasEnrolments || $hasConvertedEnquiry) {
+            return back()->withErrors(['delete' => 'This applicant already has an admissions or enrolment record and cannot be deleted.']);
+        }
+
+        DB::transaction(function () use ($student) {
+            DB::table('course_enquiries')->where('user_id', $student->id)->delete();
+            $student->delete();
+        });
+
+        return back()->with('status', 'Pending student application deleted.');
     }
 }

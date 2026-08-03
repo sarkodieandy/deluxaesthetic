@@ -70,10 +70,14 @@ Route::middleware(['auth', 'active.account', 'admin.access'])
         Route::middleware('permission:students.view')->get('/students', [StudentController::class, 'index'])->name('students.index');
         Route::post('/students/{student}/approve', [StudentController::class, 'approve'])
             ->middleware('permission:students.activate')->name('students.approve');
+        Route::delete('/students/{student}', [StudentController::class, 'destroy'])
+            ->middleware('permission:students.archive')->name('students.destroy');
         Route::middleware('permission:courses.view')->get('/trainers', [ConnectedIndexController::class, 'trainers'])->name('trainers.index');
         Route::middleware('permission:course_enquiries.view')->group(function () {
             Route::get('/course-enquiries', [CourseEnquiryController::class, 'index'])->name('course-enquiries.index');
             Route::get('/course-enquiries/{courseEnquiry}', [CourseEnquiryController::class, 'show'])->name('course-enquiries.show');
+            Route::put('/course-enquiries/{courseEnquiry}', [CourseEnquiryController::class, 'update'])->middleware('permission:course_enquiries.manage')->name('course-enquiries.update');
+            Route::delete('/course-enquiries/{courseEnquiry}', [CourseEnquiryController::class, 'destroy'])->middleware('permission:course_enquiries.manage')->name('course-enquiries.destroy');
         });
 
         Route::middleware('permission:students.create')->group(function () {

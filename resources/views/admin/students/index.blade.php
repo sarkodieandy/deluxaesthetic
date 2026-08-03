@@ -33,6 +33,9 @@
                             @can('students.activate')
                             <form method="POST" action="{{ route('admin.students.approve', $student) }}" class="inline" onsubmit="return confirm('Confirm that admissions contacted this applicant and approve portal access?')">@csrf<input type="hidden" name="contact_confirmed" value="1"><button class="btn btn-primary btn-sm">Contacted · Approve access</button></form>
                             @endcan
+                            @can('students.archive')
+                            <form method="POST" action="{{ route('admin.students.destroy', $student) }}" class="inline" onsubmit="return confirm('Delete this pending student application and account? This cannot be undone.')">@csrf @method('DELETE')<button class="btn btn-secondary btn-sm">Delete application</button></form>
+                            @endcan
                         @endif
                     </td>
                 </tr>

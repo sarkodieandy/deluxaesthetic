@@ -17,7 +17,9 @@ class StudentPortalRegistrationTest extends TestCase
     {
         $this->get(route('web.academy.index'))
             ->assertOk()
-            ->assertSee(route('web.academy.student-portal.create'));
+            ->assertSee(route('web.academy.student-portal.create'))
+            ->assertSee('Apply as a student')
+            ->assertSee('Student login');
 
         $this->get(route('web.academy.student-portal.create'))
             ->assertOk()
@@ -32,6 +34,7 @@ class StudentPortalRegistrationTest extends TestCase
             'name' => 'Ama Mensah',
             'email' => 'ama.student@example.com',
             'phone' => '+233200000099',
+            'message' => 'I would like to study advanced skin treatments at the academy.',
             'password' => 'Password1!',
             'password_confirmation' => 'Password1!',
             'privacy_consent' => '1',
@@ -46,6 +49,11 @@ class StudentPortalRegistrationTest extends TestCase
         $this->assertNotNull($user->studentProfile->profile_completed_at);
         $this->assertFalse($user->is_active);
         $this->assertNull($user->studentProfile->portal_activated_at);
+        $this->assertDatabaseHas('course_enquiries', [
+            'user_id' => $user->id,
+            'email' => 'ama.student@example.com',
+            'status' => 'submitted',
+        ]);
         $this->assertGuest();
 
         $this->post(route('login'), [
@@ -67,6 +75,7 @@ class StudentPortalRegistrationTest extends TestCase
             'name' => '  Akosua Boateng  ',
             'email' => 'AKOSUA.STUDENT@EXAMPLE.COM',
             'phone' => ' +233200000100 ',
+            'message' => 'I want to study Botox and facial assessment in person.',
             'password' => 'student123',
             'password_confirmation' => 'student123',
             'privacy_consent' => '1',
@@ -108,6 +117,29 @@ class StudentPortalRegistrationTest extends TestCase
             'password' => 'student123',
         ])->assertRedirect(route('student.dashboard'));
         $this->assertAuthenticatedAs($student);
+    }
+
+    public function test_admin_can_delete_unapproved_student_application(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+        $admin = User::factory()->create(['is_active' => true]);
+        $admin->assignRole('Super Administrator');
+
+        $this->post(route('web.academy.student-portal.store'), [
+            'name' => 'Pending Applicant',
+            'email' => 'pending.student@example.com',
+            'phone' => '+233200000101',
+            'message' => 'I am interested in joining the next physical aesthetics class.',
+            'password' => 'student123',
+            'password_confirmation' => 'student123',
+            'privacy_consent' => '1',
+        ])->assertRedirect(route('web.academy.student-portal.create'));
+
+        $student = User::query()->where('email', 'pending.student@example.com')->firstOrFail();
+        $this->actingAs($admin)->delete(route('admin.students.destroy', $student))->assertRedirect();
+
+        $this->assertDatabaseMissing('users', ['id' => $student->id]);
+        $this->assertDatabaseMissing('course_enquiries', ['user_id' => $student->id]);
     }
 
     public function test_logged_in_student_is_redirected_from_academy_to_dashboard(): void
