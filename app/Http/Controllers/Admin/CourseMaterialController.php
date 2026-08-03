@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use App\Services\Notifications\InAppNotificationService;
 
 class CourseMaterialController extends Controller
 {
@@ -31,11 +32,20 @@ class CourseMaterialController extends Controller
         return $this->formView('admin.course-materials.create', new CourseMaterial);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, InAppNotificationService $notifications): RedirectResponse
     {
         $data = $this->validated($request);
         $data['file_path'] = $request->file('file')?->store('course-materials', 'public');
         $material = CourseMaterial::query()->create($data);
+        $student = $material->enrolment?->studentProfile?->user;
+        if ($material->is_published && $student) {
+            $notifications->notifyUser($student, [
+                'title' => 'New course material available',
+                'message' => $material->title.' is ready in your student materials.',
+                'action_url' => route('student.materials.index', absolute: false),
+                'category' => 'course_material',
+            ]);
+        }
 
         return redirect()->route('admin.course-materials.edit', $material)->with('status', 'Course material uploaded successfully.');
     }
@@ -83,7 +93,7 @@ class CourseMaterialController extends Controller
     {
         $data = $request->validate([
             'course_id' => ['required', 'integer', Rule::exists('courses', 'id')->whereNull('deleted_at')],
-            'enrolment_id' => ['nullable', 'integer', Rule::exists('enrolments', 'id')->whereNull('deleted_at')],
+            'enrolment_id' => ['required', 'integer', Rule::exists('enrolments', 'id')->whereNull('deleted_at')],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:2000'],
             'type' => ['required', Rule::in(['document', 'video', 'link', 'worksheet', 'guide'])],

@@ -45,6 +45,7 @@ class CourseMaterialManagementTest extends TestCase
 
         $material = CourseMaterial::query()->firstOrFail();
         Storage::disk('public')->assertExists($material->file_path);
+        $this->assertDatabaseHas('notifications', ['notifiable_id' => $wendy->id]);
 
         $this->actingAs($wendy)->get(route('student.materials.index'))
             ->assertOk()->assertSee('Private practical guide');

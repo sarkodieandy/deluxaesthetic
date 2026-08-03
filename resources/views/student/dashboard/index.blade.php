@@ -19,7 +19,9 @@
     <div class="student-panel">
         <p class="font-display text-xl mb-2">Next class</p>
         @if($metrics['upcoming_session'])
-            <p>{{ $metrics['upcoming_session']->session_date?->format('d M Y') }} · {{ $metrics['upcoming_session']->topic ?: 'Training session' }}</p>
+            <p class="font-medium">{{ $metrics['upcoming_session']->session_date?->format('l, d M Y') }}</p>
+            <p>{{ $metrics['upcoming_session']->starts_at ? substr($metrics['upcoming_session']->starts_at, 0, 5) : 'Time TBC' }} · {{ $metrics['upcoming_session']->topic ?: 'Training session' }}</p>
+            @if($metrics['upcoming_session']->location)<p class="text-sm text-[var(--color-soft-grey)] mt-1">{{ $metrics['upcoming_session']->location }}</p>@endif
             <a href="{{ route('student.calendar.index') }}" class="student-action mt-4">Open calendar</a>
         @else
             <p class="text-[var(--color-soft-grey)]">No upcoming session scheduled.</p>

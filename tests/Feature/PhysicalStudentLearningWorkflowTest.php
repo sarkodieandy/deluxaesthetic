@@ -6,7 +6,6 @@ use App\Models\Assignment;
 use App\Models\Course;
 use App\Models\CourseCategory;
 use App\Models\CourseSchedule;
-use App\Models\CourseSession;
 use App\Models\Enrolment;
 use App\Models\StudentProfile;
 use App\Models\StudentSupportRequest;
@@ -30,21 +29,25 @@ class PhysicalStudentLearningWorkflowTest extends TestCase
         $admin = User::factory()->create(['is_active' => true]);
         $admin->assignRole('Super Administrator');
 
-        CourseSession::create([
-            'course_schedule_id' => $schedule->id, 'session_date' => now()->addDay()->toDateString(),
+        $this->actingAs($admin)->post(route('admin.course-schedules.sessions.store', $schedule), [
+            'session_date' => now()->addDay()->toDateString(),
             'starts_at' => '09:00', 'ends_at' => '12:00', 'topic' => 'Practical techniques', 'status' => 'scheduled',
-        ]);
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('notifications', ['notifiable_id' => $student->id]);
 
         $this->actingAs($student)->get(route('student.course.show'))->assertOk()->assertSee($course->name);
         $this->actingAs($student)->get(route('student.calendar.index'))->assertOk()->assertSee('Practical techniques');
 
         $this->actingAs($admin)->post(route('admin.assignments.store'), [
             'course_id' => $course->id, 'title' => 'Clinical worksheet', 'instructions' => 'Complete the attached worksheet.',
+            'enrolment_id' => $enrolment->id,
             'due_at' => now()->addWeek()->format('Y-m-d H:i:s'),
             'attachment' => UploadedFile::fake()->create('worksheet.pdf', 100, 'application/pdf'),
             'allow_resubmission' => '1',
         ])->assertRedirect();
         $assignment = Assignment::firstOrFail();
+        $this->assertGreaterThanOrEqual(2, $student->notifications()->count());
 
         $this->actingAs($student)->get(route('student.assignments.index'))->assertOk()->assertSee('Clinical worksheet');
         $this->actingAs($student)->get(route('student.assignments.download', $assignment))->assertOk();

@@ -16,10 +16,14 @@ class CalendarController extends Controller
 
     public function index(Request $request): View
     {
+        $sessions = $this->sessionsFor($request);
+
         return $this->portal->viewOrNoEnrolment($request->user(), 'student.calendar.index', [
             'title' => __('student.nav.calendar'),
             'heading' => __('student.nav.calendar'),
-            'sessions' => $this->sessionsFor($request),
+            'sessions' => $sessions,
+            'upcomingSessions' => $sessions->filter(fn (CourseSession $session) => $session->session_date?->isToday() || $session->session_date?->isFuture()),
+            'pastSessions' => $sessions->filter(fn (CourseSession $session) => $session->session_date?->isPast() && ! $session->session_date?->isToday())->reverse(),
         ]);
     }
 

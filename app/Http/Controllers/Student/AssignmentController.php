@@ -28,6 +28,7 @@ class AssignmentController extends Controller
             fn ($enrolment) => [
                 'assignments' => Assignment::query()
                     ->where('course_id', $enrolment->course_id)
+                    ->where(fn ($query) => $query->whereNull('enrolment_id')->orWhere('enrolment_id', $enrolment->id))
                     ->orderBy('due_at')
                     ->get(),
             ],
@@ -54,6 +55,7 @@ class AssignmentController extends Controller
         }
 
         abort_unless((int) $assignment->course_id === (int) $enrolment->course_id, 403);
+        abort_unless($assignment->enrolment_id === null || (int) $assignment->enrolment_id === (int) $enrolment->id, 403);
 
         $submission = AssignmentSubmission::query()
             ->where('assignment_id', $assignment->id)
@@ -72,6 +74,7 @@ class AssignmentController extends Controller
         }
 
         abort_unless((int) $assignment->course_id === (int) $enrolment->course_id, 403);
+        abort_unless($assignment->enrolment_id === null || (int) $assignment->enrolment_id === (int) $enrolment->id, 403);
 
         $data = $request->validate([
             'notes' => ['nullable', 'string', 'max:5000'],
@@ -106,6 +109,7 @@ class AssignmentController extends Controller
         $enrolment = $this->portal->primaryEnrolment($request->user());
         abort_unless($this->portal->hasLearningModuleAccess($enrolment), 403);
         abort_unless((int) $assignment->course_id === (int) $enrolment->course_id, 403);
+        abort_unless($assignment->enrolment_id === null || (int) $assignment->enrolment_id === (int) $enrolment->id, 403);
         abort_unless($assignment->attachment_path, 404);
 
         return Storage::disk('public')->download($assignment->attachment_path, basename($assignment->attachment_path));

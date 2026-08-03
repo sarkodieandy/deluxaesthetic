@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Assignment extends Model
 {
-    protected $fillable = ['course_id', 'title', 'instructions', 'due_at', 'attachment_path', 'allow_resubmission'];
+    protected $fillable = ['course_id', 'enrolment_id', 'title', 'instructions', 'due_at', 'attachment_path', 'allow_resubmission'];
 
     protected function casts(): array
     {
@@ -23,5 +23,10 @@ class Assignment extends Model
     public function course(): BelongsTo
     {
         return $this->belongsTo(Course::class);
+    }
+
+    public function enrolment(): BelongsTo
+    {
+        return $this->belongsTo(Enrolment::class);
     }
 }
