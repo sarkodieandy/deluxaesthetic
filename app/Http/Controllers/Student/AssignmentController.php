@@ -9,6 +9,8 @@ use App\Services\Student\StudentPortalService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class AssignmentController extends Controller
@@ -76,12 +78,20 @@ class AssignmentController extends Controller
             'file' => ['nullable', 'file', 'max:5120', 'mimes:pdf,doc,docx,jpg,jpeg,png'],
         ]);
 
+        $existing = AssignmentSubmission::query()
+            ->where('assignment_id', $assignment->id)
+            ->where('enrolment_id', $enrolment->id)
+            ->first();
+        if ($existing && ! $assignment->allow_resubmission) {
+            return back()->withErrors(['file' => 'This assignment has already been submitted and resubmission is closed.']);
+        }
+
         $path = $request->file('file')?->store('assignments/submissions', 'public');
 
         AssignmentSubmission::updateOrCreate(
             ['assignment_id' => $assignment->id, 'enrolment_id' => $enrolment->id],
             [
-                'file_path' => $path,
+                'file_path' => $path ?: $existing?->file_path,
                 'notes' => $data['notes'] ?? null,
                 'submitted_at' => now(),
                 'is_late' => $assignment->due_at ? now()->gt($assignment->due_at) : false,
@@ -89,5 +99,15 @@ class AssignmentController extends Controller
         );
 
         return back()->with('status', __('student.assignments.submitted'));
+    }
+
+    public function download(Request $request, Assignment $assignment): StreamedResponse
+    {
+        $enrolment = $this->portal->primaryEnrolment($request->user());
+        abort_unless($this->portal->hasLearningModuleAccess($enrolment), 403);
+        abort_unless((int) $assignment->course_id === (int) $enrolment->course_id, 403);
+        abort_unless($assignment->attachment_path, 404);
+
+        return Storage::disk('public')->download($assignment->attachment_path, basename($assignment->attachment_path));
     }
 }

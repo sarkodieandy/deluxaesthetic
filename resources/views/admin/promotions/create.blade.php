@@ -1,0 +1,1 @@
+@extends('admin.layouts.app') @section('title','Create promotion') @section('heading','Create promotion') @section('breadcrumb','Marketing / Promotions / New') @section('content')<form method="POST" action="{{ route('admin.promotions.store') }}" enctype="multipart/form-data">@csrf @include('admin.promotions._form')</form>@endsection

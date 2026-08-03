@@ -4,29 +4,27 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Academy\StoreEnrolmentEnquiryRequest;
-use App\Models\Course;
 use App\Models\CourseEnquiry;
+use App\Services\Messaging\EmailNotificationService;
 use App\Services\Notifications\InAppNotificationService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
 
 class AcademyEnrolmentController extends Controller
 {
-    public function create(): View
+    public function create(): RedirectResponse
     {
         $courseId = request()->integer('course');
 
-        return view('web.academy.enrol', [
-            'courses' => Course::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
-            'selectedCourseId' => $courseId ?: old('course_id'),
-        ]);
+        return redirect()->route('web.academy.student-portal.create', array_filter([
+            'course' => $courseId ?: null,
+        ]));
     }
 
     public function store(
         StoreEnrolmentEnquiryRequest $request,
         InAppNotificationService $notifications,
-    ): RedirectResponse
-    {
+        EmailNotificationService $email,
+    ): RedirectResponse {
         $data = $request->validated();
 
         $enquiry = CourseEnquiry::create([
@@ -50,8 +48,16 @@ class AcademyEnrolmentController extends Controller
             'category' => 'academy_enquiry',
         ]);
 
+        $email->queueTo(
+            'academy.application_received',
+            $enquiry->email,
+            $enquiry->full_name,
+            ['recipient_name' => $enquiry->full_name],
+            related: $enquiry,
+        );
+
         return redirect()
-            ->route('web.enrol')
+            ->route('web.academy.student-portal.create')
             ->with('status', 'Your course information request was received. Our admissions team will contact you about physical enrolment at the academy.');
     }
 }

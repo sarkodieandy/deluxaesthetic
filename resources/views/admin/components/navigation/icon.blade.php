@@ -29,6 +29,7 @@
         'gallery' => '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>',
         'media' => '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/>',
         'review' => '<path d="m12 2 3 6 6.5 1-4.7 4.6 1.1 6.4-5.9-3.1L6.1 20l1.1-6.4L2.5 9 9 8z"/>',
+        'megaphone' => '<path d="m3 11 15-6v14L3 13z"/><path d="M11 16v4a2 2 0 0 1-4 0v-5M21 9v6"/>',
         'loyalty' => '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>',
         'referral' => '<circle cx="8" cy="8" r="3"/><circle cx="18" cy="8" r="3"/><path d="M2 21v-2a6 6 0 0 1 12 0v2M14 14a6 6 0 0 1 8 5v2M14 5h2M15 4v2"/>',
         'notification' => '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',

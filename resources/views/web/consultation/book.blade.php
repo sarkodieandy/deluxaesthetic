@@ -114,7 +114,7 @@
             Looking for academy training?
             <a href="{{ route('web.academy.index') }}" class="underline">Create a student portal account</a>
             or
-            <a href="{{ route('web.enrol') }}" class="underline">send an enrolment enquiry</a>.
+            <a href="{{ route('web.academy.student-portal.create') }}" class="underline">submit a student application</a>.
         </p>
     </div>
 </section>

@@ -90,7 +90,7 @@
                     </div></fieldset>
 
                     <fieldset><legend><span>02</span> Training interest</legend><div class="student-apply__fields">
-                        <label class="student-apply__field student-apply__field--wide"><span>Course or pathway</span><select id="course_id" name="course_id"><option value="">I need guidance choosing a course</option>@foreach($courses as $course)<option value="{{ $course->id }}" @selected((string)old('course_id') === (string)$course->id)>{{ $course->name }}</option>@endforeach</select></label>
+                        <label class="student-apply__field student-apply__field--wide"><span>Course or pathway</span><select id="course_id" name="course_id"><option value="">I need guidance choosing a course</option>@foreach($courses as $course)<option value="{{ $course->id }}" @selected((string) old('course_id', $selectedCourseId ?? '') === (string) $course->id)>{{ $course->name }}</option>@endforeach</select></label>
                         <label class="student-apply__field student-apply__field--wide"><span>Professional background</span><input id="professional_background" name="professional_background" value="{{ old('professional_background') }}" placeholder="Beauty therapist, nurse, beginner…"></label>
                         <label class="student-apply__field student-apply__field--wide"><span>What would you like to study? *</span><textarea id="message" name="message" rows="5" required placeholder="Tell us about the techniques, procedures or career goals that interest you.">{{ old('message') }}</textarea></label>
                     </div></fieldset>

@@ -54,7 +54,7 @@ class SupportController extends Controller
         $this->notifications->notifyAdmins([
             'title' => 'Student support request',
             'message' => $request->user()->name.' submitted '.$support->reference.': '.$support->subject,
-            'action_url' => route('admin.dashboard', absolute: false),
+            'action_url' => route('admin.student-support.index', absolute: false),
             'category' => 'support',
         ]);
 

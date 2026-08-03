@@ -1,0 +1,1 @@
+@extends('admin.layouts.app') @section('title','Add testimonial') @section('heading','Add testimonial') @section('breadcrumb','Marketing / Testimonials / New') @section('content')<form method="POST" action="{{ route('admin.testimonials.store') }}" enctype="multipart/form-data">@csrf @include('admin.testimonials._form')</form>@endsection

@@ -122,6 +122,7 @@ class StudentPortalService
 
         return CourseMaterial::query()
             ->where('course_id', $enrolment->course_id)
+            ->where(fn ($query) => $query->whereNull('enrolment_id')->orWhere('enrolment_id', $enrolment->id))
             ->where('is_published', true)
             ->orderBy('id')
             ->get();

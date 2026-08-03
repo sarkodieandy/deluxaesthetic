@@ -52,7 +52,7 @@
             </div>
             <aside class="panel p-6 space-y-4">
                 <h2 class="text-section">Admissions actions</h2>
-                <a href="{{ route('web.enrol', ['course' => $course->id]) }}" class="btn btn-primary w-full text-center">Request course information</a>
+                <a href="{{ route('web.academy.student-portal.create', ['course' => $course->id]) }}" class="btn btn-primary w-full text-center">Apply for this course</a>
                 @if($whatsapp)
                     <a class="btn btn-whatsapp w-full text-center" href="https://wa.me/{{ $whatsapp }}?text={{ $whatsappText }}" target="_blank" rel="noopener">Chat on WhatsApp</a>
                 @endif

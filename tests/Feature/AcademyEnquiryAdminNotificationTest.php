@@ -26,7 +26,7 @@ class AcademyEnquiryAdminNotificationTest extends TestCase
             'professional_background' => 'Beauty therapist',
             'message' => 'I would like information about the next training intake.',
             'consent' => '1',
-        ])->assertRedirect(route('web.enrol'));
+        ])->assertRedirect(route('web.academy.student-portal.create'));
 
         $enquiry = CourseEnquiry::query()->where('email', 'ama.enquiry@example.com')->firstOrFail();
 

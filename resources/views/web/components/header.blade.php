@@ -56,7 +56,7 @@
 
             <div class="header-cta-group">
                 <div class="header-cta">
-                    <a href="{{ route('web.enrol') }}" class="btn btn-ghost">{{ __('web.enrol') }}</a>
+                    <a href="{{ route('web.academy.student-portal.create') }}" class="btn btn-ghost">{{ __('web.enrol') }}</a>
                     <a href="{{ route('web.booking.create') }}" class="btn btn-primary">{{ __('web.book_short') }}</a>
                 </div>
 

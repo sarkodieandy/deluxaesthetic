@@ -19,7 +19,7 @@
             <ul class="site-footer__links">
                 <li><a href="{{ route('web.academy.index') }}">{{ __('web.nav.academy') }}</a></li>
                 <li><a href="{{ route('web.courses.index') }}">{{ __('web.nav.courses') }}</a></li>
-                <li><a href="{{ route('web.enrol') }}">{{ __('web.enrol') }}</a></li>
+                <li><a href="{{ route('web.academy.student-portal.create') }}">{{ __('web.enrol') }}</a></li>
                 <li><a href="{{ route('web.store.index') }}">{{ __('web.nav.store') }}</a></li>
             </ul>
         </div>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Academy\StoreCourseRequest;
 use App\Http\Requests\Admin\Academy\UpdateCourseRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -101,6 +102,29 @@ class CourseController extends Controller
         DB::table('courses')->where('id', $course)->update(['deleted_at' => now()]);
 
         return redirect()->route('admin.courses.index')->with('status', 'Course removed.');
+    }
+
+    public function storeSchedule(Request $request, int $course): RedirectResponse
+    {
+        DB::table('courses')->where('id', $course)->whereNull('deleted_at')->firstOrFail();
+        $data = $request->validate([
+            'starts_on' => ['required', 'date'],
+            'ends_on' => ['required', 'date', 'after_or_equal:starts_on'],
+            'capacity' => ['required', 'integer', 'min:1', 'max:500'],
+        ]);
+
+        DB::table('course_schedules')->insert([
+            'course_id' => $course,
+            'starts_on' => $data['starts_on'],
+            'ends_on' => $data['ends_on'],
+            'capacity' => $data['capacity'],
+            'enrolled_count' => 0,
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return back()->with('status', 'Training schedule added. The course can now be assigned to students.');
     }
 
     private function resolveCategory(string $name): int

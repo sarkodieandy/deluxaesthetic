@@ -16,7 +16,7 @@
 </form>
 <div class="student-panel">
     @forelse($requests as $item)
-        <p class="mb-2 last:mb-0">{{ $item->reference }} · {{ $item->subject }} · {{ ucfirst($item->status) }}</p>
+        <article class="mb-4 border-b border-[var(--color-border)] pb-4 last:mb-0 last:border-0 last:pb-0"><p class="font-medium">{{ $item->reference }} · {{ $item->subject }}</p><p class="text-sm">{{ ucfirst($item->status) }}</p><p class="mt-2">{{ $item->message }}</p>@if($item->admin_response)<div class="mt-3 border-l-2 border-[var(--color-gold)] pl-4"><p class="text-sm font-medium">Academy response</p><p>{{ $item->admin_response }}</p></div>@endif</article>
     @empty
         <p class="text-[var(--color-soft-grey)]">No support requests yet.</p>
     @endforelse

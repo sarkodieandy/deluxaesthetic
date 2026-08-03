@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\AppointmentController;
+use App\Http\Controllers\Admin\AssignmentController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\BlogPostController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ConnectedIndexController;
 use App\Http\Controllers\Admin\ConsultationController;
 use App\Http\Controllers\Admin\CourseController;
+use App\Http\Controllers\Admin\CourseMaterialController;
 use App\Http\Controllers\Admin\CourseEnquiryController;
 use App\Http\Controllers\Admin\CourseSessionController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -18,15 +20,20 @@ use App\Http\Controllers\Admin\EmailTemplateController;
 use App\Http\Controllers\Admin\EnrolmentController;
 use App\Http\Controllers\Admin\GalleryController;
 use App\Http\Controllers\Admin\InventoryController;
+use App\Http\Controllers\Admin\LoyaltyController;
 use App\Http\Controllers\Admin\ModulePlaceholderController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PhysicalEnrolmentController;
 use App\Http\Controllers\Admin\PractitionerController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\PromotionController;
+use App\Http\Controllers\Admin\ReferralController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\StudentController;
+use App\Http\Controllers\Admin\StudentSupportController;
+use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\TreatmentController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\WebPageController;
@@ -97,6 +104,22 @@ Route::middleware(['auth', 'active.account', 'admin.access'])
             Route::put('/enrolments/{enrolment}', [EnrolmentController::class, 'update'])->name('enrolments.update');
         });
 
+        Route::middleware('permission:materials.manage')->group(function () {
+            Route::resource('course-materials', CourseMaterialController::class)->except(['show']);
+        });
+
+        Route::middleware('permission:assessments.manage')->group(function () {
+            Route::resource('assignments', AssignmentController::class)->except(['show']);
+            Route::put('/assignment-submissions/{submission}', [AssignmentController::class, 'review'])->name('assignment-submissions.review');
+            Route::get('/assignment-submissions/{submission}/download', [AssignmentController::class, 'downloadSubmission'])->name('assignment-submissions.download');
+        });
+
+        Route::middleware('permission:notifications.view')->group(function () {
+            Route::get('/student-support', [StudentSupportController::class, 'index'])->name('student-support.index');
+            Route::get('/student-support/{studentSupport}', [StudentSupportController::class, 'show'])->name('student-support.show');
+            Route::put('/student-support/{studentSupport}', [StudentSupportController::class, 'update'])->name('student-support.update');
+        });
+
         Route::middleware('permission:certificates.view')->group(function () {
             Route::get('/certificates', [CertificateController::class, 'index'])->name('certificates.index');
             Route::get('/certificates/create', [CertificateController::class, 'create'])->middleware('permission:certificates.issue')->name('certificates.create');
@@ -132,6 +155,7 @@ Route::middleware(['auth', 'active.account', 'admin.access'])
             Route::get('/courses/{course}/edit', [CourseController::class, 'edit'])->middleware('permission:courses.update')->name('courses.edit');
             Route::put('/courses/{course}', [CourseController::class, 'update'])->middleware('permission:courses.update')->name('courses.update');
             Route::delete('/courses/{course}', [CourseController::class, 'destroy'])->middleware('permission:courses.delete')->name('courses.destroy');
+            Route::post('/courses/{course}/schedules', [CourseController::class, 'storeSchedule'])->middleware('permission:courses.update')->name('courses.schedules.store');
             Route::get('/course-schedules/{courseSchedule}/sessions', [CourseSessionController::class, 'index'])->name('course-schedules.sessions.index');
             Route::post('/course-schedules/{courseSchedule}/sessions', [CourseSessionController::class, 'store'])->middleware('permission:courses.update')->name('course-schedules.sessions.store');
         });
@@ -168,10 +192,20 @@ Route::middleware(['auth', 'active.account', 'admin.access'])
             Route::get('/pages/{page}/edit', [WebPageController::class, 'edit'])->name('pages.edit');
             Route::put('/pages/{page}', [WebPageController::class, 'update'])->name('pages.update');
             Route::get('/pages/{page}/preview', [WebPageController::class, 'preview'])->name('pages.preview');
+            Route::resource('promotions', PromotionController::class)->except(['show']);
+            Route::resource('testimonials', TestimonialController::class)->except(['show']);
         });
 
         Route::middleware('permission:blog.manage')->group(function () {
             Route::resource('blog', BlogPostController::class)->except(['show']);
+        });
+
+        Route::middleware('permission:loyalty.manage')->group(function () {
+            Route::get('/loyalty', [LoyaltyController::class, 'index'])->name('loyalty.index');
+            Route::post('/loyalty/{client}/adjust', [LoyaltyController::class, 'adjust'])->name('loyalty.adjust');
+            Route::get('/referrals', [ReferralController::class, 'index'])->name('referrals.index');
+            Route::post('/referrals', [ReferralController::class, 'store'])->name('referrals.store');
+            Route::put('/referrals/{referral}', [ReferralController::class, 'update'])->name('referrals.update');
         });
 
         Route::middleware('permission:notifications.view')->group(function () {
@@ -195,9 +229,6 @@ Route::middleware(['auth', 'active.account', 'admin.access'])
             ['path' => 'deliveries', 'name' => 'deliveries.index', 'title' => 'Deliveries'],
             ['path' => 'reviews', 'name' => 'reviews.index', 'title' => 'Reviews'],
             ['path' => 'refunds', 'name' => 'refunds.index', 'title' => 'Refunds'],
-            ['path' => 'testimonials', 'name' => 'testimonials.index', 'title' => 'Testimonials'],
-            ['path' => 'loyalty', 'name' => 'loyalty.index', 'title' => 'Loyalty programme'],
-            ['path' => 'referrals', 'name' => 'referrals.index', 'title' => 'Referrals'],
             ['path' => 'faqs', 'name' => 'faqs.index', 'title' => 'FAQs'],
             ['path' => 'media', 'name' => 'media.index', 'title' => 'Media library'],
             ['path' => 'translations', 'name' => 'translations.index', 'title' => 'Translations'],

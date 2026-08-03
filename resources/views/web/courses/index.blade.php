@@ -15,7 +15,7 @@
         @if ($courses->isEmpty())
             <div class="catalogue-empty">
                 <p class="font-display text-2xl mb-2">{{ __('web.pages.coming_soon') }}</p>
-                <a href="{{ route('web.enrol') }}" class="btn btn-primary">Request course information</a>
+                <a href="{{ route('web.academy.student-portal.create') }}" class="btn btn-primary">Apply for academy training</a>
             </div>
         @else
             <div class="grid gap-0 border border-[var(--color-border)] md:grid-cols-2">

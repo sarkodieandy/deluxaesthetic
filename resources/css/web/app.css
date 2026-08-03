@@ -47,6 +47,86 @@
   text-transform: uppercase;
 }
 
+.promotion-stack {
+  position: relative;
+  z-index: 35;
+}
+
+.promotion-banner {
+  position: relative;
+  overflow: hidden;
+  min-height: 4.5rem;
+  background: var(--promo-bg, #171613);
+  color: var(--promo-text, #fff);
+}
+
+.promotion-banner + .promotion-banner {
+  border-top: 1px solid rgb(255 255 255 / 0.14);
+}
+
+.promotion-banner picture,
+.promotion-banner picture img,
+.promotion-banner__veil {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.promotion-banner picture img {
+  object-fit: cover;
+}
+
+.promotion-banner__veil {
+  background: linear-gradient(90deg, rgb(16 14 11 / 0.86), rgb(16 14 11 / 0.46));
+}
+
+.promotion-banner__content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem 1.5rem;
+  min-height: 4.5rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  text-align: center;
+}
+
+.promotion-banner__content p {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 3vw, 2rem);
+  line-height: 1;
+}
+
+.promotion-banner__content span {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.72rem;
+  opacity: 0.82;
+}
+
+.promotion-banner__content strong {
+  padding: 0.4rem 0.65rem;
+  border: 1px dashed currentColor;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.promotion-banner__content a {
+  color: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+}
+
 .cms-preview-bar a {
   color: #d7b57b;
   text-decoration: underline;

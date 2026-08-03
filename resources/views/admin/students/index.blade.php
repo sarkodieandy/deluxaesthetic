@@ -37,6 +37,9 @@
                             <form method="POST" action="{{ route('admin.students.destroy', $student) }}" class="inline" onsubmit="return confirm('Delete this pending student application and account? This cannot be undone.')">@csrf @method('DELETE')<button class="btn btn-secondary btn-sm">Delete application</button></form>
                             @endcan
                         @endif
+                        @if($student?->is_active)
+                            @can('enrolments.create')<a href="{{ route('admin.physical-enrolment.create', ['student' => $profile->id]) }}" class="btn btn-primary btn-sm">Assign course</a>@endcan
+                        @endif
                     </td>
                 </tr>
             @empty

@@ -34,6 +34,7 @@ Route::middleware(['auth', 'active.account', 'student.role'])
         Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
         Route::get('/assignments', [AssignmentController::class, 'index'])->name('assignments.index');
         Route::get('/assignments/{assignment}', [AssignmentController::class, 'show'])->name('assignments.show');
+        Route::get('/assignments/{assignment}/download', [AssignmentController::class, 'download'])->name('assignments.download');
         Route::post('/assignments/{assignment}/submit', [AssignmentController::class, 'submit'])->name('assignments.submit');
         Route::get('/assessments', [AssessmentController::class, 'index'])->name('assessments.index');
         Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');

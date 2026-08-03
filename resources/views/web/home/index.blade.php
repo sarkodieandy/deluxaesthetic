@@ -170,7 +170,8 @@
         </div>
         <header class="home-v3-heading reveal"><div><p class="text-label">Client words</p><h2>Care people remember.</h2></div></header>
         <div class="home-v3-testimonials">
-            @foreach(__('web.home.testimonials') as $index => $quote)
+            @php($testimonialFeed = $managedTestimonials->isNotEmpty() ? $managedTestimonials->map(fn($item) => ['quote' => $item->quote, 'name' => $item->name, 'context' => $item->context]) : collect(__('web.home.testimonials')))
+            @foreach($testimonialFeed as $index => $quote)
                 <blockquote class="reveal">
                     <span>0{{ $index + 1 }}</span>
                     <p>“{{ $quote['quote'] }}”</p>

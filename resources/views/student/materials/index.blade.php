@@ -13,6 +13,8 @@
             </div>
             @if($material->file_path)
                 <a class="student-action shrink-0" href="{{ route('student.materials.download', $material) }}">Download</a>
+            @elseif($material->external_url)
+                <a class="student-action shrink-0" href="{{ $material->external_url }}" target="_blank" rel="noopener noreferrer">Open resource</a>
             @endif
         </div>
     @empty

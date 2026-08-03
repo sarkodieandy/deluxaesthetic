@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Jobs\Emails\SendTemplatedEmail;
 use App\Models\StudentProfile;
 use App\Models\User;
+use Database\Seeders\EmailTemplateSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -25,6 +28,20 @@ class StudentPortalRegistrationTest extends TestCase
             ->assertOk()
             ->assertSee('Student application')
             ->assertSee('Approved student login');
+    }
+
+    public function test_public_enrolment_links_use_the_pending_student_application(): void
+    {
+        $applicationUrl = route('web.academy.student-portal.create');
+
+        $this->get(route('web.academy.index'))->assertSee($applicationUrl, false);
+        $this->get(route('web.contact'))->assertSee($applicationUrl, false);
+    }
+
+    public function test_legacy_enrolment_page_redirects_to_student_application(): void
+    {
+        $this->get(route('web.enrol', ['course' => 42]))
+            ->assertRedirect(route('web.academy.student-portal.create', ['course' => 42]));
     }
 
     public function test_guest_application_is_pending_and_cannot_login_before_approval(): void
@@ -68,7 +85,9 @@ class StudentPortalRegistrationTest extends TestCase
 
     public function test_registration_normalizes_email_and_notifies_admin(): void
     {
+        Queue::fake([SendTemplatedEmail::class]);
         $this->seed(RolePermissionSeeder::class);
+        $this->seed(EmailTemplateSeeder::class);
         $admin = User::factory()->create(['is_active' => true]);
         $admin->assignRole('Super Administrator');
 
@@ -91,6 +110,12 @@ class StudentPortalRegistrationTest extends TestCase
             'notifiable_id' => $admin->id,
             'notifiable_type' => User::class,
         ]);
+        $this->assertDatabaseHas('email_logs', [
+            'recipient_email' => 'akosua.student@example.com',
+            'template_key' => 'academy.application_received',
+            'status' => 'queued',
+        ]);
+        Queue::assertPushed(SendTemplatedEmail::class);
 
         $this->actingAs($admin)
             ->get(route('admin.dashboard'))

@@ -41,6 +41,7 @@ class MaterialController extends Controller
         }
 
         abort_unless($enrolment && (int) $material->course_id === (int) $enrolment->course_id, 403);
+        abort_unless($material->enrolment_id === null || (int) $material->enrolment_id === (int) $enrolment->id, 403);
         abort_unless($material->is_published && $material->file_path, 404);
 
         MaterialDownload::query()->create([

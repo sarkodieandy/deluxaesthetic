@@ -17,10 +17,16 @@ use Symfony\Component\HttpFoundation\RedirectResponse as SymfonyRedirect;
 
 class GoogleAuthController extends Controller
 {
-    public function redirect(GoogleAuthenticationService $google): RedirectResponse|SymfonyRedirect
+    public function redirect(Request $request, GoogleAuthenticationService $google): RedirectResponse|SymfonyRedirect
     {
         if (! GoogleAuth::enabled()) {
             return redirect()->route('login')->withErrors(['email' => __('auth.google.disabled')]);
+        }
+
+        $preferredRole = $request->query('account_type');
+        if (is_string($preferredRole)
+            && in_array($preferredRole, config('authentication.google.public_roles', []), true)) {
+            session()->put('google_oauth.preferred_role', $preferredRole);
         }
 
         return $google->redirect();
@@ -58,9 +64,22 @@ class GoogleAuthController extends Controller
 
         return match ($result['type']) {
             'logged_in' => PortalRedirect::afterLogin($result['user'], request()),
-            'select_account_type' => redirect()->route('auth.google.select-account-type'),
+            'select_account_type' => $this->redirectAfterAccountTypeSelection(),
             default => redirect()->route('login')->withErrors(['email' => $result['message'] ?? __('auth.google.provider_error')]),
         };
+    }
+
+    private function redirectAfterAccountTypeSelection(): RedirectResponse
+    {
+        $preferredRole = session()->pull('google_oauth.preferred_role');
+        if (is_string($preferredRole)
+            && in_array($preferredRole, config('authentication.google.public_roles', []), true)) {
+            session()->put('google_oauth.selected_role', $preferredRole);
+
+            return redirect()->route('auth.google.complete-profile');
+        }
+
+        return redirect()->route('auth.google.select-account-type');
     }
 
     private function handleLinkCallback(GoogleAuthenticationService $google, int $linkUserId): RedirectResponse

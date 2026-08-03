@@ -4,7 +4,6 @@ namespace App\Services\Messaging;
 
 use App\Jobs\Emails\SendTemplatedEmail;
 use App\Models\EmailLog;
-use App\Models\EmailTemplate;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
@@ -57,7 +56,7 @@ class EmailNotificationService
             'status' => 'queued',
             'attempt_count' => 0,
             'queued_at' => now(),
-            'metadata' => ['variables' => array_keys($merged)],
+            'metadata' => ['variables' => $merged],
         ]);
 
         SendTemplatedEmail::dispatch($log->id);

@@ -113,6 +113,10 @@
         {{ $announcement ?? __('web.announcement') }}
     </div>
 
+    @if(($livePromotions ?? collect())->isNotEmpty())
+        @include('web.components.promotion-banners', ['promotions' => $livePromotions])
+    @endif
+
     @include('web.components.header')
 
     <main id="main-content">

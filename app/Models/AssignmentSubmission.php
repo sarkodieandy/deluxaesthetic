@@ -24,4 +24,9 @@ class AssignmentSubmission extends Model
     {
         return $this->belongsTo(Assignment::class);
     }
+
+    public function enrolment(): BelongsTo
+    {
+        return $this->belongsTo(Enrolment::class);
+    }
 }

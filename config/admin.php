@@ -58,6 +58,8 @@ return [
                 ['label' => 'Course enquiries', 'route' => 'admin.course-enquiries.index', 'permission' => 'course_enquiries.view'],
                 ['label' => 'Physical enrolment', 'route' => 'admin.physical-enrolment.create', 'permission' => 'enrolments.create'],
                 ['label' => 'Enrolments', 'route' => 'admin.enrolments.index', 'permission' => 'enrolments.manage'],
+                ['label' => 'Course materials', 'route' => 'admin.course-materials.index', 'permission' => 'materials.manage'],
+                ['label' => 'Assignments', 'route' => 'admin.assignments.index', 'permission' => 'assessments.manage'],
                 ['label' => 'Attendance', 'route' => 'admin.attendance.index', 'permission' => 'attendance.manage'],
                 ['label' => 'Assessments', 'route' => 'admin.assessments.index', 'permission' => 'assessments.manage'],
                 ['label' => 'Certificates', 'route' => 'admin.certificates.index', 'permission' => 'certificates.view'],
@@ -87,6 +89,7 @@ return [
             'key' => 'marketing',
             'label' => 'Marketing',
             'items' => [
+                ['label' => 'Promotions', 'route' => 'admin.promotions.index', 'permission' => 'content.manage'],
                 ['label' => 'Testimonials', 'route' => 'admin.testimonials.index', 'permission' => 'content.manage'],
                 ['label' => 'Loyalty', 'route' => 'admin.loyalty.index', 'permission' => 'loyalty.manage'],
                 ['label' => 'Referrals', 'route' => 'admin.referrals.index', 'permission' => 'loyalty.manage'],
@@ -110,6 +113,7 @@ return [
             'label' => 'Communication',
             'items' => [
                 ['label' => 'Inbox', 'route' => 'admin.notifications.index', 'permission' => 'notifications.view', 'icon' => 'notification'],
+                ['label' => 'Student support', 'route' => 'admin.student-support.index', 'permission' => 'notifications.view'],
                 ['label' => 'Email templates', 'route' => 'admin.email-templates.index', 'permission' => 'notifications.view'],
                 ['label' => 'Email logs', 'route' => 'admin.email-logs.index', 'permission' => 'notifications.view'],
                 ['label' => 'AI knowledge', 'route' => 'admin.ai.index', 'permission' => 'ai_knowledge.manage'],

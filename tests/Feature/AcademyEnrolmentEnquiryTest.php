@@ -23,7 +23,7 @@ class AcademyEnrolmentEnquiryTest extends TestCase
             'consent' => '1',
         ]);
 
-        $response->assertRedirect(route('web.enrol'));
+        $response->assertRedirect(route('web.academy.student-portal.create'));
         $this->assertDatabaseHas('course_enquiries', [
             'email' => 'jane@example.com',
             'status' => 'submitted',

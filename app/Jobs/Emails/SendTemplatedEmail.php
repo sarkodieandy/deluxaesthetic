@@ -62,7 +62,8 @@ class SendTemplatedEmail implements ShouldQueue
             return;
         }
 
-        $merged = $variables->mergeDefaults([], $log->user);
+        $storedVariables = $log->metadata['variables'] ?? [];
+        $merged = $variables->mergeDefaults(is_array($storedVariables) ? $storedVariables : [], $log->user);
         $html = $variables->render($template->body_html, $merged);
         $text = $template->body_text
             ? $variables->render($template->body_text, $merged)

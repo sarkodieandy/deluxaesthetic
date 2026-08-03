@@ -49,7 +49,7 @@
             <article class="reveal">
                 <span>02</span><p class="text-label">Academy</p><h3>Training & admissions</h3>
                 <p>Discuss Botox, fillers, advanced skin training, certification and physical enrolment.</p>
-                <a href="{{ route('web.enrol') }}">Make an academy enquiry →</a>
+                <a href="{{ route('web.academy.student-portal.create') }}">Apply for academy training →</a>
             </article>
             <article class="reveal">
                 <span>03</span><p class="text-label">Store</p><h3>Products & orders</h3>
