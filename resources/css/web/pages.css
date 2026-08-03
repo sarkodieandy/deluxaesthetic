@@ -4884,3 +4884,149 @@
     color: var(--color-charcoal);
   }
 }
+/* Premium academy enrolment */
+.enrol-eyebrow {
+  margin: 0 0 1rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.enrol-hero {
+  position: relative;
+  display: flex;
+  min-height: min(52rem, calc(100vh - var(--announcement-height)));
+  overflow: hidden;
+  background: #171813;
+  color: #fff;
+}
+
+.enrol-hero__media,
+.enrol-hero__media img,
+.enrol-hero__veil {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.enrol-hero__media img { object-fit: cover; object-position: center 35%; transform: scale(1.02); }
+.enrol-hero__veil { background: linear-gradient(90deg, rgb(12 14 11 / 0.91) 0%, rgb(12 14 11 / 0.72) 44%, rgb(12 14 11 / 0.24) 75%, rgb(12 14 11 / 0.42) 100%); }
+
+.enrol-hero__inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-items: end;
+  gap: 3rem;
+  width: 100%;
+  padding-top: clamp(7rem, 12vw, 11rem);
+  padding-bottom: clamp(3rem, 6vw, 5rem);
+}
+
+.enrol-hero__copy { max-width: 49rem; }
+.enrol-hero__copy .enrol-eyebrow { color: #d9bd8b; }
+.enrol-hero h1 { margin: 0; color: #fff; font-family: var(--font-display); font-size: clamp(3.25rem, 7vw, 6.8rem); font-weight: 400; letter-spacing: -0.045em; line-height: 0.88; }
+.enrol-hero h1 em { color: #e1c89d; font-weight: 400; }
+.enrol-hero__lead { max-width: 43rem; margin: 2rem 0 0; color: rgb(255 255 255 / 0.78); font-size: clamp(1rem, 1.4vw, 1.18rem); line-height: 1.8; }
+.enrol-hero__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.75rem; margin-top: 2.1rem; }
+.enrol-hero__text-link { color: #fff; font-size: 0.76rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; }
+.enrol-hero__text-link span { margin-left: 0.35rem; color: #d9bd8b; }
+
+.enrol-hero__proof { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-self: end; margin: 0; border-top: 1px solid rgb(255 255 255 / 0.28); }
+.enrol-hero__proof div { padding: 1.25rem 1.2rem 0 0; }
+.enrol-hero__proof dt { color: #d9bd8b; font-family: var(--font-display); font-size: 1.35rem; }
+.enrol-hero__proof dd { max-width: 9rem; margin: 0.25rem 0 0; color: rgb(255 255 255 / 0.76); font-size: 0.72rem; letter-spacing: 0.06em; line-height: 1.5; text-transform: uppercase; }
+
+.enrol-journey { padding: clamp(4.5rem, 8vw, 8rem) 0; background: #f4f0e8; }
+.enrol-journey__grid { display: grid; gap: clamp(3rem, 7vw, 7rem); }
+.enrol-journey__intro { max-width: 35rem; }
+.enrol-journey__intro .enrol-eyebrow { color: var(--color-bronze); }
+.enrol-journey__intro h2 { margin: 0; font-family: var(--font-display); font-size: clamp(2.7rem, 5vw, 4.8rem); font-weight: 400; letter-spacing: -0.04em; line-height: 0.96; }
+.enrol-steps { margin: 0; padding: 0; list-style: none; }
+.enrol-steps li { display: grid; grid-template-columns: 3.5rem 1fr; gap: 1rem; padding: 1.65rem 0; border-top: 1px solid #cbc2b5; }
+.enrol-steps li:last-child { border-bottom: 1px solid #cbc2b5; }
+.enrol-steps > li > span { color: var(--color-bronze); font-family: var(--font-display); font-size: 1.35rem; }
+.enrol-steps h3 { margin: 0 0 0.45rem; font-family: var(--font-display); font-size: 1.65rem; font-weight: 500; }
+.enrol-steps p { max-width: 34rem; margin: 0; color: var(--color-soft-grey); font-size: 0.9rem; line-height: 1.7; }
+
+.enrol-application { padding: clamp(4.5rem, 8vw, 8rem) 0; background: #fff; }
+.enrol-application__grid { display: grid; gap: clamp(2rem, 5vw, 5rem); align-items: start; }
+.enrol-alert { display: grid; grid-template-columns: 2.25rem 1fr; gap: 1rem; margin-bottom: 2rem; padding: 1.25rem; border: 1px solid; }
+.enrol-alert > span { display: grid; width: 2.25rem; height: 2.25rem; place-items: center; border: 1px solid currentColor; border-radius: 50%; font-weight: 700; }
+.enrol-alert strong { display: block; margin-bottom: 0.2rem; }
+.enrol-alert p, .enrol-alert ul { margin: 0; font-size: 0.85rem; }
+.enrol-alert--success { border-color: #92af9b; background: #f3f8f4; color: var(--color-success); }
+.enrol-alert--error { border-color: #c99b9b; background: #fff7f7; color: var(--color-error); }
+
+.enrol-admissions { position: relative; background: #1b1c18; color: #fff; }
+.enrol-admissions__image { position: relative; height: clamp(18rem, 36vw, 29rem); overflow: hidden; }
+.enrol-admissions__image::after { position: absolute; inset: 0; content: ""; background: linear-gradient(180deg, transparent 50%, rgb(18 19 16 / 0.52)); }
+.enrol-admissions__image img { width: 100%; height: 100%; object-fit: cover; }
+.enrol-admissions__image > span { position: absolute; z-index: 1; right: 1.5rem; bottom: 1.5rem; display: grid; width: 5.5rem; height: 5.5rem; place-items: center; border: 1px solid rgb(255 255 255 / 0.62); border-radius: 50%; color: #fff; font-size: 0.67rem; letter-spacing: 0.12em; line-height: 1.5; text-align: center; text-transform: uppercase; }
+.enrol-admissions__body { padding: clamp(2rem, 4vw, 3rem); }
+.enrol-admissions__body .enrol-eyebrow { color: #d9bd8b; }
+.enrol-admissions__body h2 { margin: 0; color: #fff; font-family: var(--font-display); font-size: clamp(2.3rem, 4vw, 3.5rem); font-weight: 400; letter-spacing: -0.035em; line-height: 0.98; }
+.enrol-admissions__body > p:not(.enrol-eyebrow) { margin: 1.25rem 0 1.7rem; color: rgb(255 255 255 / 0.66); font-size: 0.88rem; line-height: 1.75; }
+.enrol-admissions dl { margin: 0 0 1.8rem; border-top: 1px solid rgb(255 255 255 / 0.17); }
+.enrol-admissions dl div { display: grid; grid-template-columns: 4.5rem 1fr; gap: 1rem; padding: 0.9rem 0; border-bottom: 1px solid rgb(255 255 255 / 0.17); }
+.enrol-admissions dt { color: #d9bd8b; font-size: 0.64rem; letter-spacing: 0.13em; text-transform: uppercase; }
+.enrol-admissions dd { margin: 0; color: rgb(255 255 255 / 0.82); font-size: 0.78rem; line-height: 1.55; }
+.enrol-admissions dd a { color: inherit; text-decoration: none; }
+.enrol-admissions__whatsapp { width: 100%; justify-content: center; }
+
+.enrol-form { padding: clamp(1.7rem, 4vw, 3.5rem); border: 1px solid #d9d1c6; background: #fbfaf7; }
+.enrol-form__header { padding-bottom: 2rem; border-bottom: 1px solid #d9d1c6; }
+.enrol-form__header .enrol-eyebrow { color: var(--color-bronze); }
+.enrol-form__header h2 { margin: 0; font-family: var(--font-display); font-size: clamp(2.5rem, 5vw, 4.2rem); font-weight: 400; letter-spacing: -0.04em; line-height: 0.95; }
+.enrol-form__header > p:last-child { max-width: 36rem; margin: 1rem 0 0; color: var(--color-soft-grey); font-size: 0.84rem; line-height: 1.7; }
+.enrol-form__header > p span, .enrol-control label span, .enrol-consent strong { color: var(--color-bronze); }
+.enrol-form__section { min-width: 0; margin: 0; padding: 2.2rem 0; border: 0; border-bottom: 1px solid #d9d1c6; }
+.enrol-form__section legend { display: flex; align-items: center; gap: 0.8rem; width: 100%; margin-bottom: 1.5rem; padding: 0; font-family: var(--font-display); font-size: 1.45rem; }
+.enrol-form__section legend span { display: grid; width: 2rem; height: 2rem; place-items: center; border: 1px solid #bda27a; border-radius: 50%; color: var(--color-bronze); font-family: var(--font-body); font-size: 0.58rem; }
+.enrol-form__grid { display: grid; gap: 1.25rem; }
+.enrol-control { min-width: 0; }
+.enrol-control label { display: block; margin-bottom: 0.55rem; color: #4e4b46; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.enrol-control input, .enrol-control select, .enrol-control textarea { width: 100%; min-height: 3.5rem; padding: 0.85rem 1rem; border: 1px solid #cfc6ba; border-radius: 0; outline: 0; background: #fff; color: var(--color-charcoal); font: inherit; font-size: 0.9rem; transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease; }
+.enrol-control textarea { min-height: 9rem; resize: vertical; }
+.enrol-control input::placeholder, .enrol-control textarea::placeholder { color: #9a958d; }
+.enrol-control input:focus, .enrol-control select:focus, .enrol-control textarea:focus { border-color: var(--color-bronze); box-shadow: 0 0 0 3px rgb(150 116 82 / 0.12); }
+.enrol-control .is-invalid { border-color: var(--color-error); background: #fffafa; }
+.enrol-control small, .enrol-form__error { display: block; margin-top: 0.4rem; color: var(--color-error); font-size: 0.72rem; }
+.enrol-consent { display: grid; grid-template-columns: 1.1rem 1fr; gap: 0.8rem; align-items: start; padding: 1.5rem 0 0; color: var(--color-soft-grey); font-size: 0.77rem; line-height: 1.65; cursor: pointer; }
+.enrol-consent input { width: 1.05rem; height: 1.05rem; margin-top: 0.15rem; accent-color: var(--color-charcoal); }
+.enrol-form__footer { display: flex; flex-direction: column; align-items: flex-start; gap: 1rem; margin-top: 1.75rem; }
+.enrol-form__footer .btn { min-width: 13rem; justify-content: center; }
+.enrol-form__footer .btn span { margin-left: 0.7rem; font-size: 1rem; }
+.enrol-form__footer p { max-width: 27rem; margin: 0; color: #8b867f; font-size: 0.68rem; line-height: 1.6; }
+
+.enrol-aftercare { padding: clamp(4.5rem, 8vw, 7rem) 0; background: #e6ded1; text-align: center; }
+.enrol-aftercare__inner { max-width: 48rem; }
+.enrol-aftercare .enrol-eyebrow { color: var(--color-bronze); }
+.enrol-aftercare h2 { margin: 0; font-family: var(--font-display); font-size: clamp(2.6rem, 5vw, 4.7rem); font-weight: 400; letter-spacing: -0.04em; line-height: 0.95; }
+.enrol-aftercare p:not(.enrol-eyebrow) { max-width: 38rem; margin: 1.25rem auto 1.8rem; color: var(--color-soft-grey); }
+
+@media (min-width: 760px) {
+  .enrol-form__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .enrol-control--wide { grid-column: 1 / -1; }
+  .enrol-form__footer { flex-direction: row; align-items: center; justify-content: space-between; }
+}
+
+@media (min-width: 960px) {
+  .enrol-hero__inner { grid-template-columns: minmax(0, 1.25fr) minmax(22rem, 0.75fr); }
+  .enrol-journey__grid { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); align-items: start; }
+  .enrol-application__grid { grid-template-columns: minmax(19rem, 0.72fr) minmax(0, 1.28fr); }
+  .enrol-admissions { position: sticky; top: calc(var(--header-height-sticky) + 1.5rem); }
+}
+
+@media (max-width: 759px) {
+  .enrol-hero { min-height: 43rem; }
+  .enrol-hero__veil { background: linear-gradient(180deg, rgb(12 14 11 / 0.28) 0%, rgb(12 14 11 / 0.88) 58%, rgb(12 14 11 / 0.96) 100%); }
+  .enrol-hero__inner { align-content: end; }
+  .enrol-hero__proof { gap: 0.75rem; }
+  .enrol-hero__proof div { padding-right: 0; }
+  .enrol-hero__proof dd { font-size: 0.6rem; }
+  .enrol-steps li { grid-template-columns: 2.7rem 1fr; }
+}
