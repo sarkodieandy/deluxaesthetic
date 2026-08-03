@@ -28,6 +28,8 @@ class StudentPortalRegistrationService
                 'email_verified_at' => now(),
                 'locale' => app()->getLocale(),
                 'is_active' => true,
+                'profile_completed_at' => now(),
+                'accepted_privacy_at' => now(),
             ]);
 
             $user->assignRole(Role::findOrCreate('Student'));

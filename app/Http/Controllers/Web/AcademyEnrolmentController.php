@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Academy\StoreEnrolmentEnquiryRequest;
 use App\Models\Course;
 use App\Models\CourseEnquiry;
+use App\Services\Notifications\InAppNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -21,11 +22,14 @@ class AcademyEnrolmentController extends Controller
         ]);
     }
 
-    public function store(StoreEnrolmentEnquiryRequest $request): RedirectResponse
+    public function store(
+        StoreEnrolmentEnquiryRequest $request,
+        InAppNotificationService $notifications,
+    ): RedirectResponse
     {
         $data = $request->validated();
 
-        CourseEnquiry::create([
+        $enquiry = CourseEnquiry::create([
             'course_id' => $data['course_id'] ?? null,
             'user_id' => $request->user()?->id,
             'full_name' => $data['name'],
@@ -37,6 +41,13 @@ class AcademyEnrolmentController extends Controller
             'message' => $data['message'],
             'privacy_consent' => true,
             'status' => 'submitted',
+        ]);
+
+        $notifications->notifyAdmins([
+            'title' => 'New academy training enquiry',
+            'message' => $enquiry->full_name.' submitted an academy enquiry'.($enquiry->course?->name ? ' for '.$enquiry->course->name : '').'.',
+            'action_url' => route('admin.course-enquiries.show', $enquiry, absolute: false),
+            'category' => 'academy_enquiry',
         ]);
 
         return redirect()

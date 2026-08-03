@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Academy\StoreStudentPortalRegistrationRequest;
 use App\Services\Academy\StudentPortalRegistrationService;
+use App\Services\Notifications\InAppNotificationService;
 use App\Support\PortalRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -35,10 +36,19 @@ class StudentPortalRegistrationController extends Controller
     public function store(
         StoreStudentPortalRegistrationRequest $request,
         StudentPortalRegistrationService $registration,
+        InAppNotificationService $notifications,
     ): RedirectResponse {
         $user = $registration->register($request->validated());
 
         auth()->login($user);
+        $request->session()->regenerate();
+
+        $notifications->notifyAdmins([
+            'title' => 'New student portal registration',
+            'message' => $user->name.' created a student portal account and is awaiting physical enrolment.',
+            'action_url' => route('admin.students.index', absolute: false),
+            'category' => 'student_registration',
+        ]);
 
         return PortalRedirect::afterRegistration($user)
             ->with('status', __('web.student_portal.register_success'));

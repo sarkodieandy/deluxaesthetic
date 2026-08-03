@@ -34,6 +34,12 @@
         <p class="admin-metric__label">Active students</p>
         <p class="admin-metric__value">{{ $metrics['active_students'] }}</p>
     </div>
+    @if($newCourseEnquiries !== null)
+        <a href="{{ route('admin.course-enquiries.index') }}" class="admin-metric admin-metric--primary" style="text-decoration:none;">
+            <p class="admin-metric__label">New academy enquiries</p>
+            <p class="admin-metric__value">{{ $newCourseEnquiries }}</p>
+        </a>
+    @endif
     <div class="admin-metric">
         <p class="admin-metric__label">Open orders</p>
         <p class="admin-metric__value">{{ $metrics['new_orders'] }}</p>
@@ -103,6 +109,32 @@
         </div>
     </div>
 </section>
+
+@can('course_enquiries.view')
+<section class="admin-panel mb-6">
+    <div class="admin-panel__head">
+        <div>
+            <h2 class="admin-panel__title">Latest academy enquiries</h2>
+            <p class="mt-1 text-sm text-[var(--admin-text-muted)]">New training enquiries submitted from the public enrolment page.</p>
+        </div>
+        <a href="{{ route('admin.course-enquiries.index') }}" class="btn btn-secondary btn-sm">View all enquiries</a>
+    </div>
+    <div class="admin-panel__body">
+        @forelse($latestCourseEnquiries as $enquiry)
+            <a href="{{ route('admin.course-enquiries.show', $enquiry) }}" class="admin-activity-list__item" style="text-decoration:none;">
+                <span class="admin-activity-list__time">{{ $enquiry->created_at->diffForHumans() }}</span>
+                <span class="admin-activity-list__text"><strong>{{ $enquiry->full_name }}</strong> · {{ $enquiry->course?->name ?? 'General academy enquiry' }}</span>
+                <span class="admin-status admin-status--info">{{ ucfirst($enquiry->status) }}</span>
+            </a>
+        @empty
+            <div class="admin-empty">
+                <p class="admin-empty__title">No academy enquiries yet</p>
+                <p class="admin-empty__copy">New submissions from the enrolment page will appear here and in Communication → Inbox.</p>
+            </div>
+        @endforelse
+    </div>
+</section>
+@endcan
 
 <div class="admin-panel">
     <div class="admin-panel__head">

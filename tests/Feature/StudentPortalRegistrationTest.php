@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
+use Database\Seeders\RolePermissionSeeder;
 use Tests\TestCase;
 
 class StudentPortalRegistrationTest extends TestCase
@@ -43,6 +44,31 @@ class StudentPortalRegistrationTest extends TestCase
         $this->assertNotNull($user->studentProfile);
         $this->assertNotNull($user->studentProfile->profile_completed_at);
         $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_registration_normalizes_email_and_notifies_admin(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+        $admin = User::factory()->create(['is_active' => true]);
+        $admin->assignRole('Super Administrator');
+
+        $this->post(route('web.academy.student-portal.store'), [
+            'name' => '  Akosua Boateng  ',
+            'email' => 'AKOSUA.STUDENT@EXAMPLE.COM',
+            'phone' => ' +233200000100 ',
+            'password' => 'student123',
+            'password_confirmation' => 'student123',
+            'privacy_consent' => '1',
+        ])->assertRedirect(route('student.dashboard'));
+
+        $student = User::query()->where('email', 'akosua.student@example.com')->firstOrFail();
+        $this->assertSame('Akosua Boateng', $student->name);
+        $this->assertTrue($student->hasRole('Student'));
+        $this->assertFalse($student->hasAnyRole(config('admin.roles')));
+        $this->assertDatabaseHas('notifications', [
+            'notifiable_id' => $admin->id,
+            'notifiable_type' => User::class,
+        ]);
     }
 
     public function test_logged_in_student_is_redirected_from_academy_to_dashboard(): void

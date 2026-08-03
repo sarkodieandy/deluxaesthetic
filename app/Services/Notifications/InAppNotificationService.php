@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Notifications\PortalAlertNotification;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Notification;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class InAppNotificationService
 {
@@ -38,13 +40,27 @@ class InAppNotificationService
      */
     public function adminRecipients(): Collection
     {
-        $byPermission = User::permission('notifications.view')
-            ->where('is_active', true)
-            ->get();
+        $byPermission = collect();
+        if (Permission::query()
+            ->where('name', 'notifications.view')
+            ->where('guard_name', 'web')
+            ->exists()) {
+            $byPermission = User::permission('notifications.view')
+                ->where('is_active', true)
+                ->get();
+        }
 
-        $byRole = User::role(['Super Administrator', 'Clinic Administrator'])
-            ->where('is_active', true)
-            ->get();
+        $adminRoles = Role::query()
+            ->where('guard_name', 'web')
+            ->whereIn('name', ['Super Administrator', 'Clinic Administrator'])
+            ->pluck('name')
+            ->all();
+
+        $byRole = empty($adminRoles)
+            ? collect()
+            : User::role($adminRoles)
+                ->where('is_active', true)
+                ->get();
 
         return $byPermission
             ->merge($byRole)
