@@ -27,8 +27,9 @@ class StudentPortalRegistrationService
                 'password' => Hash::make($data['password']),
                 'email_verified_at' => now(),
                 'locale' => app()->getLocale(),
-                'is_active' => true,
+                'is_active' => false,
                 'profile_completed_at' => now(),
+                'portal_activated_at' => null,
                 'accepted_privacy_at' => now(),
             ]);
 

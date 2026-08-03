@@ -64,6 +64,20 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        if ($user && ! $user->is_active) {
+            $isPendingStudent = $user->hasRole('Student')
+                && ! $user->studentProfile?->portal_activated_at;
+
+            Auth::guard('web')->logout();
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => $isPendingStudent
+                    ? 'Your academy application is awaiting approval. Our admissions team will contact you before portal access is activated.'
+                    : 'Your account is inactive. Contact the clinic.',
+            ]);
+        }
+
         if ($user) {
             $portals->prepare($user);
         }

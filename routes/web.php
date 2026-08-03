@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Web\AboutController;
 use App\Http\Controllers\Web\AcademyEnrolmentController;
 use App\Http\Controllers\Web\BookingController;
+use App\Http\Controllers\Web\BlogController;
 use App\Http\Controllers\Web\CourseController;
 use App\Http\Controllers\Web\GalleryController;
 use App\Http\Controllers\Web\StudentPortalRegistrationController;
@@ -48,7 +49,8 @@ Route::get('/checkout/failure/{reference}', [CheckoutController::class, 'failure
 Route::get('/payments/mock/{reference}', [CheckoutController::class, 'mockPay'])->name('web.payments.mock');
 Route::post('/payments/mock/{reference}/complete', [CheckoutController::class, 'mockComplete'])->name('web.payments.mock.complete');
 Route::get('/gallery', [GalleryController::class, 'index'])->name('web.gallery');
-Route::view('/blog', 'web.blog.index')->name('web.blog.index');
+Route::get('/blog', [BlogController::class, 'index'])->name('web.blog.index');
+Route::get('/blog/{post}', [BlogController::class, 'show'])->name('web.blog.show');
 Route::view('/contact', 'web.contact.index')->name('web.contact');
 Route::get('/enrol', [AcademyEnrolmentController::class, 'create'])->name('web.enrol');
 Route::post('/enrol', [AcademyEnrolmentController::class, 'store'])->name('web.enrol.store');

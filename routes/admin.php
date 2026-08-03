@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\AppointmentController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\BranchController;
+use App\Http\Controllers\Admin\BlogPostController;
 use App\Http\Controllers\Admin\CertificateController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ConnectedIndexController;
@@ -25,6 +26,7 @@ use App\Http\Controllers\Admin\PractitionerController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ScheduleController;
+use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\TreatmentController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\WebPageController;
@@ -65,7 +67,9 @@ Route::middleware(['auth', 'active.account', 'admin.access'])
             Route::get('/clients/{client}', [ClientController::class, 'show'])->name('clients.show');
         });
 
-        Route::middleware('permission:students.view')->get('/students', [ConnectedIndexController::class, 'students'])->name('students.index');
+        Route::middleware('permission:students.view')->get('/students', [StudentController::class, 'index'])->name('students.index');
+        Route::post('/students/{student}/approve', [StudentController::class, 'approve'])
+            ->middleware('permission:students.activate')->name('students.approve');
         Route::middleware('permission:courses.view')->get('/trainers', [ConnectedIndexController::class, 'trainers'])->name('trainers.index');
         Route::middleware('permission:course_enquiries.view')->group(function () {
             Route::get('/course-enquiries', [CourseEnquiryController::class, 'index'])->name('course-enquiries.index');
@@ -162,6 +166,10 @@ Route::middleware(['auth', 'active.account', 'admin.access'])
             Route::get('/pages/{page}/preview', [WebPageController::class, 'preview'])->name('pages.preview');
         });
 
+        Route::middleware('permission:blog.manage')->group(function () {
+            Route::resource('blog', BlogPostController::class)->except(['show']);
+        });
+
         Route::middleware('permission:notifications.view')->group(function () {
             Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
             Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
@@ -186,7 +194,6 @@ Route::middleware(['auth', 'active.account', 'admin.access'])
             ['path' => 'testimonials', 'name' => 'testimonials.index', 'title' => 'Testimonials'],
             ['path' => 'loyalty', 'name' => 'loyalty.index', 'title' => 'Loyalty programme'],
             ['path' => 'referrals', 'name' => 'referrals.index', 'title' => 'Referrals'],
-            ['path' => 'blog', 'name' => 'blog.index', 'title' => 'Blog'],
             ['path' => 'faqs', 'name' => 'faqs.index', 'title' => 'FAQs'],
             ['path' => 'media', 'name' => 'media.index', 'title' => 'Media library'],
             ['path' => 'translations', 'name' => 'translations.index', 'title' => 'Translations'],

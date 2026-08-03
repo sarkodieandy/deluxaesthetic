@@ -2,12 +2,16 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\ClientProfile;
 use App\Models\SocialAccount;
+use App\Models\StudentProfile;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Socialite\Contracts\Provider;
 use Laravel\Socialite\Facades\Socialite;
 use Mockery;
+use Mockery\MockInterface;
 use Tests\TestCase;
 
 class GoogleAuthenticationTest extends TestCase
@@ -42,9 +46,9 @@ class GoogleAuthenticationTest extends TestCase
         return $user;
     }
 
-    private function mockGoogleProvider(): \Mockery\MockInterface
+    private function mockGoogleProvider(): MockInterface
     {
-        $provider = Mockery::mock(\Laravel\Socialite\Contracts\Provider::class);
+        $provider = Mockery::mock(Provider::class);
         $provider->shouldReceive('redirectUrl')->andReturnSelf();
         $provider->shouldReceive('scopes')->andReturnSelf();
 
@@ -64,7 +68,7 @@ class GoogleAuthenticationTest extends TestCase
     {
         $user = User::factory()->create(['is_active' => true, 'email_verified_at' => now()]);
         $user->assignRole('Client');
-        \App\Models\ClientProfile::create(['user_id' => $user->id, 'referral_code' => 'TEST1234']);
+        ClientProfile::create(['user_id' => $user->id, 'referral_code' => 'TEST1234']);
 
         SocialAccount::create([
             'user_id' => $user->id,
@@ -152,7 +156,7 @@ class GoogleAuthenticationTest extends TestCase
             'email_verified_at' => now(),
         ]);
         $user->assignRole('Student');
-        \App\Models\StudentProfile::query()->create([
+        StudentProfile::query()->create([
             'user_id' => $user->id,
             'student_number' => 'STU-2026-0001',
         ]);
@@ -178,7 +182,7 @@ class GoogleAuthenticationTest extends TestCase
         ]);
     }
 
-    public function test_new_google_user_is_sent_to_account_type_selection(): void
+    public function test_new_google_user_must_submit_student_application_first(): void
     {
         $abstractUser = $this->fakeGoogleUser([
             'id' => 'google-new',
@@ -191,6 +195,12 @@ class GoogleAuthenticationTest extends TestCase
         Socialite::shouldReceive('driver')->with('google')->andReturn($provider);
 
         $this->get(route('auth.google.callback'))
-            ->assertRedirect(route('auth.google.select-account-type'));
+            ->assertRedirect(route('login'))
+            ->assertSessionHasErrors([
+                'email' => 'Submit your academy application first. After staff approval, you can use Google with the same email to sign in.',
+            ]);
+
+        $this->assertGuest();
+        $this->assertDatabaseMissing('users', ['email' => 'new-google@example.com']);
     }
 }

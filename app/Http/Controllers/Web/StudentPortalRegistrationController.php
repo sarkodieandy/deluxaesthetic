@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Academy\StoreStudentPortalRegistrationRequest;
 use App\Services\Academy\StudentPortalRegistrationService;
 use App\Services\Notifications\InAppNotificationService;
-use App\Support\PortalRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -40,17 +39,14 @@ class StudentPortalRegistrationController extends Controller
     ): RedirectResponse {
         $user = $registration->register($request->validated());
 
-        auth()->login($user);
-        $request->session()->regenerate();
-
         $notifications->notifyAdmins([
-            'title' => 'New student portal registration',
-            'message' => $user->name.' created a student portal account and is awaiting physical enrolment.',
+            'title' => 'New student application awaiting approval',
+            'message' => $user->name.' applied for physical academy training. Contact the applicant before approving portal access.',
             'action_url' => route('admin.students.index', absolute: false),
             'category' => 'student_registration',
         ]);
 
-        return PortalRedirect::afterRegistration($user)
+        return redirect()->route('web.academy.student-portal.create')
             ->with('status', __('web.student_portal.register_success'));
     }
 }

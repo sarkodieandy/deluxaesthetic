@@ -2,13 +2,13 @@
 
 namespace App\Services\Auth;
 
-use App\Support\GoogleAuth;
 use App\Actions\Auth\CreateGoogleUser;
 use App\DTOs\Auth\GoogleUserData;
 use App\Events\Auth\GoogleAccountLinked;
 use App\Events\Auth\GoogleAccountUnlinked;
 use App\Models\SocialAccount;
 use App\Models\User;
+use App\Support\GoogleAuth;
 use App\Support\PortalRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -123,9 +123,10 @@ class GoogleAuthenticationService
             return ['type' => 'logged_in', 'user' => $existingUser];
         }
 
-        $this->putPendingGoogleData($google);
-
-        return ['type' => 'select_account_type'];
+        return [
+            'type' => 'error',
+            'message' => 'Submit your academy application first. After staff approval, you can use Google with the same email to sign in.',
+        ];
     }
 
     public function loginUser(User $user): void

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\BlogPost;
 use App\Models\Course;
 use App\Models\Product;
 use App\Models\Treatment;
@@ -57,9 +58,17 @@ class SeoController extends Controller
                 'priority' => '0.7',
             ]));
 
+        BlogPost::query()->published()
+            ->select(['slug', 'updated_at'])
+            ->each(fn (BlogPost $post) => $urls->push([
+                'loc' => route('web.blog.show', $post),
+                'lastmod' => $post->updated_at?->toAtomString(),
+                'changefreq' => 'monthly',
+                'priority' => '0.6',
+            ]));
+
         return response()
             ->view('web.seo.sitemap', ['urls' => $urls])
             ->header('Content-Type', 'application/xml; charset=UTF-8');
     }
 }
-

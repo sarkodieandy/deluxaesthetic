@@ -7,7 +7,7 @@
 @php
     $whatsapp = preg_replace('/\D+/', '', (string) config('clinic.whatsapp'));
     $academyName = __('web.pages.academy_title');
-    $whatsappText = rawurlencode("Hello {$academyName}, I have created my student portal account and need help with physical enrolment.");
+    $whatsappText = rawurlencode("Hello {$academyName}, I submitted a student application and would like to discuss physical training enrolment.");
 @endphp
 
 <section class="section">
@@ -82,11 +82,6 @@
                     <h2 class="text-section mb-3">{{ __('web.student_portal.form_title') }}</h2>
                     <p class="text-[var(--color-soft-grey)]">{{ __('web.student_portal.form_copy') }}</p>
                 </div>
-
-                @if (\App\Support\GoogleAuth::enabled())
-                    <x-google-sign-in-button :label="__('auth.google.continue_student')" />
-                    <div class="auth-divider my-2"><span>{{ __('or') }}</span></div>
-                @endif
 
                 <div class="grid gap-5 sm:grid-cols-2">
                     <div class="sm:col-span-2">

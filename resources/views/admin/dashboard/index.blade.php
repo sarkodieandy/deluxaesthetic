@@ -40,6 +40,12 @@
             <p class="admin-metric__value">{{ $newCourseEnquiries }}</p>
         </a>
     @endif
+    @can('students.view')
+        <a href="{{ route('admin.students.index', ['status' => 'pending']) }}" class="admin-metric admin-metric--primary" style="text-decoration:none;">
+            <p class="admin-metric__label">Student applications</p>
+            <p class="admin-metric__value">{{ $pendingStudentApplications->count() }}</p>
+        </a>
+    @endcan
     <div class="admin-metric">
         <p class="admin-metric__label">Open orders</p>
         <p class="admin-metric__value">{{ $metrics['new_orders'] }}</p>
@@ -131,6 +137,26 @@
                 <p class="admin-empty__title">No academy enquiries yet</p>
                 <p class="admin-empty__copy">New submissions from the enrolment page will appear here and in Communication → Inbox.</p>
             </div>
+        @endforelse
+    </div>
+</section>
+@endcan
+
+@can('students.view')
+<section class="admin-panel mb-6">
+    <div class="admin-panel__head">
+        <div><h2 class="admin-panel__title">Student applications awaiting approval</h2><p class="mt-1 text-sm text-[var(--admin-text-muted)]">Contact each applicant before activating portal access.</p></div>
+        <a href="{{ route('admin.students.index', ['status' => 'pending']) }}" class="btn btn-secondary btn-sm">Review applications</a>
+    </div>
+    <div class="admin-panel__body">
+        @forelse($pendingStudentApplications->take(5) as $application)
+            <a href="{{ route('admin.students.index', ['status' => 'pending']) }}" class="admin-activity-list__item" style="text-decoration:none;">
+                <span class="admin-activity-list__time">{{ $application->created_at->diffForHumans() }}</span>
+                <span class="admin-activity-list__text"><strong>{{ $application->user?->name }}</strong> · {{ $application->user?->phone }}</span>
+                <span class="admin-status admin-status--warning">Pending</span>
+            </a>
+        @empty
+            <div class="admin-empty"><p class="admin-empty__title">No pending student applications</p><p class="admin-empty__copy">New academy account requests will appear here and trigger the notification indicator.</p></div>
         @endforelse
     </div>
 </section>
