@@ -2,10 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\Certificate;
 use App\Models\Course;
 use App\Models\CourseCategory;
 use App\Models\CourseSchedule;
 use App\Models\Enrolment;
+use App\Models\StudentProfile;
 use App\Models\User;
 use App\Services\Academy\CertificateIssuanceService;
 use Database\Seeders\RolePermissionSeeder;
@@ -22,6 +24,7 @@ class StudentCertificateDownloadTest extends TestCase
     {
         parent::setUp();
         $this->seed(RolePermissionSeeder::class);
+        Storage::fake('academy_private');
         Storage::fake('public');
     }
 
@@ -34,7 +37,8 @@ class StudentCertificateDownloadTest extends TestCase
             ->assertOk()
             ->assertHeader('content-disposition');
 
-        Storage::disk('public')->assertExists($certificate->fresh()->pdf_path);
+        Storage::disk('academy_private')->assertExists($certificate->fresh()->pdf_path);
+        Storage::disk('public')->assertMissing($certificate->fresh()->pdf_path);
     }
 
     public function test_student_cannot_download_another_students_certificate(): void
@@ -43,7 +47,7 @@ class StudentCertificateDownloadTest extends TestCase
 
         $intruder = User::factory()->create(['email_verified_at' => now(), 'is_active' => true]);
         $intruder->assignRole(Role::findOrCreate('Student'));
-        \App\Models\StudentProfile::query()->create([
+        StudentProfile::query()->create([
             'user_id' => $intruder->id,
             'student_number' => 'STU-2026-0199',
             'profile_completed_at' => now(),
@@ -66,7 +70,7 @@ class StudentCertificateDownloadTest extends TestCase
     }
 
     /**
-     * @return array{0: User, 1: \App\Models\Certificate}
+     * @return array{0: User, 1: Certificate}
      */
     private function seedStudentWithCertificate(): array
     {
@@ -75,7 +79,7 @@ class StudentCertificateDownloadTest extends TestCase
             'email_verified_at' => now(),
         ]);
         $student->assignRole(Role::findOrCreate('Student'));
-        $profile = \App\Models\StudentProfile::query()->create([
+        $profile = StudentProfile::query()->create([
             'user_id' => $student->id,
             'student_number' => 'STU-2026-0100',
             'profile_completed_at' => now(),

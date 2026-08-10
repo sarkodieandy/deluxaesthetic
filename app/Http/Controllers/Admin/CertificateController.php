@@ -123,7 +123,7 @@ class CertificateController extends Controller
         abort_unless(auth()->user()?->can('certificates.view'), 403);
         abort_unless($certificate->isDownloadable(), 404);
 
-        return Storage::disk('public')->download(
+        return Storage::disk('academy_private')->download(
             $certificate->pdf_path,
             $certificate->downloadFilename(),
             ['Content-Type' => 'application/pdf']

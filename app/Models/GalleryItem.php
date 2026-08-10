@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
@@ -11,7 +12,7 @@ class GalleryItem extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'title', 'slug', 'type', 'description', 'image_path', 'before_image_path', 'after_image_path',
+        'treatment_id', 'title', 'slug', 'type', 'description', 'image_path', 'before_image_path', 'after_image_path',
         'alt_text', 'is_featured', 'is_active', 'sort_order',
     ];
 
@@ -21,6 +22,11 @@ class GalleryItem extends Model
             'is_featured' => 'boolean',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function treatment(): BelongsTo
+    {
+        return $this->belongsTo(Treatment::class);
     }
 
     public function imageUrl(): ?string

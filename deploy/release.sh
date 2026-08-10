@@ -39,11 +39,18 @@ trap cleanup_uploads EXIT
 
 mkdir -p \
     "$RELEASE_DIR" \
+    "${SHARED_DIR}/storage/app/private/academy" \
     "${SHARED_DIR}/storage/app/public" \
     "${SHARED_DIR}/storage/framework/cache/data" \
     "${SHARED_DIR}/storage/framework/sessions" \
     "${SHARED_DIR}/storage/framework/views" \
     "${SHARED_DIR}/storage/logs"
+
+ACADEMY_PRIVATE_PARENT="${SHARED_DIR}/storage/app/private"
+ACADEMY_PRIVATE_DIR="${ACADEMY_PRIVATE_PARENT}/academy"
+chgrp www-data "$ACADEMY_PRIVATE_PARENT" "$ACADEMY_PRIVATE_DIR"
+chmod ug+rwX,o-rwx "$ACADEMY_PRIVATE_PARENT" "$ACADEMY_PRIVATE_DIR"
+chmod g+s "$ACADEMY_PRIVATE_PARENT" "$ACADEMY_PRIVATE_DIR"
 
 tar -xzf "$ARCHIVE_PATH" -C "$RELEASE_DIR"
 
@@ -65,6 +72,7 @@ php artisan route:clear
 php artisan view:clear
 php artisan migrate --force
 php artisan db:seed --class=ProductionSeeder --force
+php artisan academy:secure-files
 php artisan storage:link
 php artisan optimize
 

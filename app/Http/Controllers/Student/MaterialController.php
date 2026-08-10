@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
-use App\Models\Assignment;
-use App\Models\AssignmentSubmission;
 use App\Models\CourseMaterial;
 use App\Models\MaterialDownload;
 use App\Services\Student\StudentPortalService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -26,23 +25,23 @@ class MaterialController extends Controller
             $request->user(),
             'student.materials.index',
             __('student.nav.materials'),
-            fn ($enrolment) => [
-                'materials' => $this->portal->publishedMaterials($enrolment),
+            fn ($enrolments) => [
+                'materials' => $this->portal->publishedMaterialsForUser($request->user()),
             ],
         );
     }
 
     public function download(Request $request, CourseMaterial $material): StreamedResponse|RedirectResponse
     {
-        $enrolment = $this->portal->primaryEnrolment($request->user());
+        $enrolment = $this->portal->learningEnrolmentForResource(
+            $request->user(),
+            (int) $material->course_id,
+            $material->enrolment_id ? (int) $material->enrolment_id : null,
+        );
 
-        if (! $this->portal->hasLearningModuleAccess($enrolment)) {
-            abort(Response::HTTP_FORBIDDEN);
-        }
-
-        abort_unless($enrolment && (int) $material->course_id === (int) $enrolment->course_id, 403);
-        abort_unless($material->enrolment_id === null || (int) $material->enrolment_id === (int) $enrolment->id, 403);
+        abort_unless($enrolment, Response::HTTP_FORBIDDEN);
         abort_unless($material->is_published && $material->file_path, 404);
+        abort_unless(Storage::disk('academy_private')->exists($material->file_path), 404);
 
         MaterialDownload::query()->create([
             'course_material_id' => $material->id,
@@ -52,6 +51,6 @@ class MaterialController extends Controller
             'downloaded_at' => now(),
         ]);
 
-        return \Illuminate\Support\Facades\Storage::disk('public')->download($material->file_path, basename($material->file_path));
+        return Storage::disk('academy_private')->download($material->file_path, basename($material->file_path));
     }
 }

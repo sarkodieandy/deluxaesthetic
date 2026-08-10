@@ -40,7 +40,7 @@ class Appointment extends Model
 
     public function treatment(): BelongsTo
     {
-        return $this->belongsTo(Treatment::class);
+        return $this->belongsTo(Treatment::class)->withTrashed();
     }
 
     public function practitioner(): BelongsTo

@@ -3,6 +3,8 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\GalleryItem;
+use App\Models\Treatment;
+use App\Models\TreatmentCategory;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -90,5 +92,38 @@ class GalleryBeforeAfterUploadTest extends TestCase
         $this->assertSame('https://cdn.example.test/before.jpg', $item->before_image_path);
         $this->assertSame('https://cdn.example.test/after.jpg', $item->after_image_path);
         $this->assertTrue($item->hasBeforeAfterPair());
+    }
+
+    public function test_admin_can_link_before_and_after_work_to_a_specific_procedure(): void
+    {
+        $admin = User::factory()->create(['is_active' => true, 'email_verified_at' => now()]);
+        $admin->assignRole('Clinic Administrator');
+        $category = TreatmentCategory::create([
+            'name' => 'Injectables',
+            'slug' => 'injectables-gallery',
+            'is_active' => true,
+        ]);
+        $treatment = Treatment::create([
+            'treatment_category_id' => $category->id,
+            'name' => 'Linked Procedure',
+            'slug' => 'linked-procedure-gallery',
+            'duration_minutes' => 60,
+            'price' => 500,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($admin)->post(route('admin.gallery.store'), [
+            'title' => 'Linked result',
+            'type' => 'before_after',
+            'treatment_id' => $treatment->id,
+            'before_image_url' => 'https://cdn.example.test/linked-before.jpg',
+            'after_image_url' => 'https://cdn.example.test/linked-after.jpg',
+            'is_active' => '1',
+        ])->assertRedirect(route('admin.gallery.index'));
+
+        $this->assertDatabaseHas('gallery_items', [
+            'slug' => 'linked-result',
+            'treatment_id' => $treatment->id,
+        ]);
     }
 }

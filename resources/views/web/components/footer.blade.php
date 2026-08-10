@@ -6,10 +6,12 @@
         </div>
 
         <div class="site-footer__col">
-            <p class="site-footer__heading">{{ __('web.footer.treatments') }}</p>
+            <p class="site-footer__heading">Clinical Procedures</p>
             <ul class="site-footer__links">
-                <li><a href="{{ route('web.treatments.index') }}">{{ __('web.nav.treatments') }}</a></li>
-                <li><a href="{{ route('web.practitioners.index') }}">{{ __('web.nav.practitioners') }}</a></li>
+                <li><a href="{{ route('web.clinical.index') }}">All Procedures</a></li>
+                <li><a href="{{ route('web.clinical.index', ['category' => 'injectable-treatments']) }}">Injectable Treatments</a></li>
+                <li><a href="{{ route('web.clinical.index', ['category' => 'facial-treatments']) }}">Facial Treatments</a></li>
+                <li><a href="{{ route('web.clinical.index', ['category' => 'spa-therapy']) }}">Spa Therapy</a></li>
                 <li><a href="{{ route('web.booking.create') }}">{{ __('web.book') }}</a></li>
             </ul>
         </div>
@@ -20,7 +22,14 @@
                 <li><a href="{{ route('web.academy.index') }}">{{ __('web.nav.academy') }}</a></li>
                 <li><a href="{{ route('web.courses.index') }}">{{ __('web.nav.courses') }}</a></li>
                 <li><a href="{{ route('web.academy.student-portal.create') }}">{{ __('web.enrol') }}</a></li>
-                <li><a href="{{ route('web.store.index') }}">{{ __('web.nav.store') }}</a></li>
+            </ul>
+        </div>
+
+        <div class="site-footer__col">
+            <p class="site-footer__heading">Products</p>
+            <ul class="site-footer__links">
+                <li><a href="{{ route('web.store.index') }}">Shop All Products</a></li>
+                <li><a href="{{ route('web.cart.index') }}">{{ __('web.cart') }}</a></li>
             </ul>
         </div>
 

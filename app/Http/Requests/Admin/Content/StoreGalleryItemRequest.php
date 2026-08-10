@@ -5,6 +5,7 @@ namespace App\Http\Requests\Admin\Content;
 use App\Models\GalleryItem;
 use App\Support\GalleryMedia;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 class StoreGalleryItemRequest extends FormRequest
@@ -23,6 +24,10 @@ class StoreGalleryItemRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:190'],
             'type' => ['required', 'in:gallery,before_after'],
+            'treatment_id' => [
+                'nullable',
+                Rule::exists('treatments', 'id')->whereNull('deleted_at'),
+            ],
             'description' => ['nullable', 'string'],
             'alt_text' => ['nullable', 'string', 'max:255'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:8192'],

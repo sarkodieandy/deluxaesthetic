@@ -26,7 +26,7 @@ class StudentPortalRegistrationService
                 'email' => $data['email'],
                 'phone' => $data['phone'] ?? null,
                 'password' => Hash::make($data['password']),
-                'email_verified_at' => now(),
+                'email_verified_at' => null,
                 'locale' => app()->getLocale(),
                 'is_active' => false,
                 'profile_completed_at' => now(),
@@ -38,7 +38,7 @@ class StudentPortalRegistrationService
 
             StudentProfile::create([
                 'user_id' => $user->id,
-                'student_number' => $this->enrolments->allocateStudentNumber(),
+                'student_number' => $this->enrolments->allocateStudentNumber($user->id),
                 'phone' => $data['phone'] ?? null,
                 'profile_completed_at' => now(),
             ]);

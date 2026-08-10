@@ -47,7 +47,7 @@
 
             <div>
                 <label class="text-label mb-2 block" for="treatment_id">Treatment</label>
-                <select class="field" id="treatment_id" name="treatment_id" x-model="treatmentId" @change="loadSlots()" required>
+                <select class="field" id="treatment_id" name="treatment_id" x-model="treatmentId" @change="syncPractitioners()" required>
                     <option value="">Select treatment</option>
                     @foreach ($treatments as $treatment)
                         <option value="{{ $treatment->id }}" @selected(old('treatment_id', $selectedTreatment) == $treatment->id)>
@@ -66,13 +66,15 @@
             </div>
             <div>
                 <label class="text-label mb-2 block" for="practitioner_profile_id">Practitioner</label>
-                <select class="field" id="practitioner_profile_id" name="practitioner_profile_id" x-model="practitionerId" @change="loadSlots()" required>
+                <select class="field" id="practitioner_profile_id" name="practitioner_profile_id" x-ref="practitionerSelect" x-model="practitionerId" @change="loadSlots()" required>
+                    <option value="">Select practitioner</option>
                     @foreach ($practitioners as $practitioner)
-                        <option value="{{ $practitioner->id }}" @selected(old('practitioner_profile_id', $practitioners->first()?->id) == $practitioner->id)>
+                        <option value="{{ $practitioner->id }}" data-treatment-ids='@json($practitioner->treatments->pluck('id')->values())' @selected(old('practitioner_profile_id') == $practitioner->id)>
                             {{ $practitioner->user?->name }} — {{ $practitioner->professional_title }}
                         </option>
                     @endforeach
                 </select>
+                <p class="mt-2 text-sm text-[var(--color-soft-grey)]" x-show="treatmentId && availablePractitionerCount === 0">No online practitioner is assigned to this procedure yet. Please contact the clinic for assistance.</p>
             </div>
             <div>
                 <label class="text-label mb-2 block" for="date">Date</label>
@@ -124,7 +126,8 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('bookingForm', () => ({
         treatmentId: @json(old('treatment_id', $selectedTreatment)),
         branchId: @json((string) old('branch_id', $branches->first()?->id)),
-        practitionerId: @json((string) old('practitioner_profile_id', $practitioners->first()?->id)),
+        practitionerId: @json((string) old('practitioner_profile_id', '')),
+        availablePractitionerCount: 0,
         date: '',
         slots: [],
         startsAt: '',
@@ -135,6 +138,31 @@ document.addEventListener('alpine:init', () => {
             const d = new Date(this.startsAt);
             const pad = (n) => String(n).padStart(2, '0');
             return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        },
+        init() {
+            this.$nextTick(() => this.syncPractitioners(false));
+        },
+        syncPractitioners(loadAvailability = true) {
+            const options = Array.from(this.$refs.practitionerSelect?.options || []).filter(option => option.value);
+            let firstAvailable = '';
+            this.availablePractitionerCount = 0;
+
+            options.forEach(option => {
+                let treatmentIds = [];
+                try { treatmentIds = JSON.parse(option.dataset.treatmentIds || '[]').map(String); } catch (e) {}
+                const available = Boolean(this.treatmentId) && treatmentIds.includes(String(this.treatmentId));
+                option.hidden = !available;
+                option.disabled = !available;
+                if (available) {
+                    this.availablePractitionerCount += 1;
+                    firstAvailable ||= option.value;
+                }
+            });
+
+            const selectedStillAvailable = options.some(option => option.value === String(this.practitionerId) && !option.disabled);
+            if (!selectedStillAvailable) this.practitionerId = firstAvailable;
+
+            if (loadAvailability) this.loadSlots();
         },
         async loadSlots() {
             this.startsAt = '';

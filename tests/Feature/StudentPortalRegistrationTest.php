@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Jobs\Emails\SendTemplatedEmail;
+use App\Models\Course;
 use App\Models\StudentProfile;
 use App\Models\User;
 use Database\Seeders\EmailTemplateSeeder;
@@ -63,6 +64,7 @@ class StudentPortalRegistrationTest extends TestCase
         $user = User::query()->where('email', 'ama.student@example.com')->first();
         $this->assertNotNull($user);
         $this->assertTrue($user->hasRole('Student'));
+        $this->assertNull($user->email_verified_at);
         $this->assertNotNull($user->studentProfile);
         $this->assertNotNull($user->studentProfile->profile_completed_at);
         $this->assertFalse($user->is_active);
@@ -135,6 +137,7 @@ class StudentPortalRegistrationTest extends TestCase
 
         $student->refresh();
         $this->assertTrue($student->is_active);
+        $this->assertNotNull($student->email_verified_at);
         $this->assertNotNull($student->studentProfile->fresh()->portal_activated_at);
 
         $this->post(route('logout'));
@@ -183,5 +186,26 @@ class StudentPortalRegistrationTest extends TestCase
         $this->actingAs($student)
             ->get(route('web.academy.index'))
             ->assertRedirect(route('student.dashboard'));
+    }
+
+    public function test_application_cannot_select_a_course_in_a_hidden_category(): void
+    {
+        Role::findOrCreate('Student');
+        $course = Course::query()->where('slug', 'basic-aesthetics-class')->firstOrFail();
+        $course->category()->update(['is_active' => false]);
+
+        $this->post(route('web.academy.student-portal.store'), [
+            'name' => 'Hidden Course Applicant',
+            'email' => 'hidden.course@example.com',
+            'phone' => '+233200000102',
+            'course_id' => $course->id,
+            'message' => 'I would like to apply for this physical academy course.',
+            'password' => 'Password1!',
+            'password_confirmation' => 'Password1!',
+            'privacy_consent' => '1',
+        ])->assertSessionHasErrors('course_id');
+
+        $this->assertDatabaseMissing('users', ['email' => 'hidden.course@example.com']);
+        $this->assertDatabaseMissing('course_enquiries', ['email' => 'hidden.course@example.com']);
     }
 }

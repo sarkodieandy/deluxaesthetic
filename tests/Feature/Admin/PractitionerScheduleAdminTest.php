@@ -107,6 +107,7 @@ class PractitionerScheduleAdminTest extends TestCase
             'price' => 200,
             'is_active' => true,
         ]);
+        $treatment->practitioners()->attach($practitioner);
 
         $date = CarbonImmutable::now(config('clinic.timezone'))->next(CarbonImmutable::TUESDAY)->startOfDay();
 

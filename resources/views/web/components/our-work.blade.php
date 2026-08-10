@@ -38,7 +38,7 @@
             @else
                 <div class="our-work__placeholder">
                     <p class="text-label mb-2">{{ __('web.home.ba_before') }} / {{ __('web.home.ba_after') }}</p>
-                    <p>{{ __('web.home.ba_upload_hint') }}</p>
+                    <p>{{ __('web.home.ba_placeholder') }}</p>
                 </div>
             @endif
         </div>

@@ -42,7 +42,10 @@ class StudentController extends Controller
         $request->validate(['contact_confirmed' => ['accepted']]);
         abort_unless($student->hasRole('Student') && $student->studentProfile, 404);
 
-        $student->update(['is_active' => true]);
+        $student->update([
+            'is_active' => true,
+            'email_verified_at' => $student->email_verified_at ?? now(),
+        ]);
         $student->studentProfile->update(['portal_activated_at' => now()]);
 
         $notifications->notifyUser($student, [

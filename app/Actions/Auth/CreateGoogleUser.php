@@ -50,7 +50,7 @@ class CreateGoogleUser
             } else {
                 StudentProfile::create([
                     'user_id' => $user->id,
-                    'student_number' => $this->enrolments->allocateStudentNumber(),
+                    'student_number' => $this->enrolments->allocateStudentNumber($user->id),
                     'phone' => $profile['phone'] ?? null,
                     'profile_completed_at' => now(),
                 ]);

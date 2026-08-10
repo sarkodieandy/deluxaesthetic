@@ -16,7 +16,7 @@ class WebsitePerformanceTest extends TestCase
 
         $this->get('/')
             ->assertOk()
-            ->assertSee('spa-treatment-room.webp')
+            ->assertSee('hero-botox.webp')
             ->assertSee('rel="preload"', false)
             ->assertDontSee('fonts.googleapis.com');
 

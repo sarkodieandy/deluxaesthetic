@@ -16,6 +16,7 @@ use App\Http\Controllers\Web\LocaleController;
 use App\Http\Controllers\Web\PractitionerController;
 use App\Http\Controllers\Web\SeoController;
 use App\Http\Controllers\Web\TreatmentController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('web.home');
@@ -23,13 +24,18 @@ Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('seo.sitemap
 Route::get('/about', [AboutController::class, 'index'])->name('web.about');
 Route::get('/locale/{locale}', [LocaleController::class, 'switch'])->name('locale.switch');
 
-Route::get('/treatments', [TreatmentController::class, 'index'])->name('web.treatments.index');
+Route::get('/clinical-procedures', [TreatmentController::class, 'index'])->name('web.clinical.index');
+Route::get('/treatments', function (Request $request) {
+    return redirect()->route('web.clinical.index', $request->query(), 301);
+})->name('web.treatments.index');
 Route::get('/treatments/{slug}', [TreatmentController::class, 'show'])->name('web.treatments.show');
 Route::get('/practitioners', [PractitionerController::class, 'index'])->name('web.practitioners.index');
 Route::get('/academy', [StudentPortalRegistrationController::class, 'create'])->name('web.academy.index');
 Route::get('/academy/student-portal', [StudentPortalRegistrationController::class, 'register'])
     ->name('web.academy.student-portal.create');
-Route::post('/academy/student-portal', [StudentPortalRegistrationController::class, 'store'])->name('web.academy.student-portal.store');
+Route::post('/academy/student-portal', [StudentPortalRegistrationController::class, 'store'])
+    ->middleware('throttle:academy-submissions')
+    ->name('web.academy.student-portal.store');
 Route::get('/courses', [CourseController::class, 'index'])->name('web.courses.index');
 Route::get('/courses/{slug}', [CourseController::class, 'show'])->name('web.courses.show');
 Route::get('/store', [StoreController::class, 'index'])->name('web.store.index');
@@ -53,11 +59,13 @@ Route::get('/blog', [BlogController::class, 'index'])->name('web.blog.index');
 Route::get('/blog/{post}', [BlogController::class, 'show'])->name('web.blog.show');
 Route::view('/contact', 'web.contact.index')->name('web.contact');
 Route::get('/enrol', [AcademyEnrolmentController::class, 'create'])->name('web.enrol');
-Route::post('/enrol', [AcademyEnrolmentController::class, 'store'])->name('web.enrol.store');
+Route::post('/enrol', [AcademyEnrolmentController::class, 'store'])
+    ->middleware('throttle:academy-submissions')
+    ->name('web.enrol.store');
 
 Route::get('/book', [BookingController::class, 'create'])->name('web.booking.create');
-Route::get('/book/slots', [BookingController::class, 'slots'])->name('web.booking.slots');
-Route::post('/book', [BookingController::class, 'store'])->name('web.booking.store');
+Route::get('/book/slots', [BookingController::class, 'slots'])->middleware('throttle:60,1')->name('web.booking.slots');
+Route::post('/book', [BookingController::class, 'store'])->middleware('throttle:booking-submissions')->name('web.booking.store');
 Route::get('/book/confirmation/{reference}', [BookingController::class, 'confirmation'])
     ->name('web.booking.confirmation');
 

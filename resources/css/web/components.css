@@ -208,6 +208,28 @@ body.is-menu-open .whatsapp-float {
     width: 100%;
 }
 
+/* Pillar nav links — Clinical Procedures, Academy, Products */
+.nav-link--pillar {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-charcoal);
+}
+
+.nav-link--pillar::after {
+    background: var(--color-charcoal);
+    height: 2px;
+}
+
+.nav-link--pillar:hover,
+.nav-link--pillar[aria-current="page"] {
+    color: var(--color-bronze);
+}
+
+.nav-link--pillar:hover::after,
+.nav-link--pillar[aria-current="page"]::after {
+    background: var(--color-bronze);
+    width: 100%;
+}
+
 .header-cta {
     display: none;
     align-items: center;
@@ -414,6 +436,15 @@ body.is-menu-open .header-burger__lines span:nth-child(3) {
     letter-spacing: 0.12em;
     text-transform: uppercase;
     opacity: 1;
+}
+
+/* Pillar links in mobile menu — bigger and bolder */
+.mobile-menu__link--pillar {
+    font-size: 1rem;
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: 0.08em;
+    color: var(--color-charcoal);
+    border-bottom-color: var(--color-charcoal);
 }
 
 .mobile-menu__inner--open .mobile-menu__link,

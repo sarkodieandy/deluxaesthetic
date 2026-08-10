@@ -5,7 +5,9 @@ namespace Tests\Feature;
 use App\Models\Assignment;
 use App\Models\Course;
 use App\Models\CourseCategory;
+use App\Models\CourseMaterial;
 use App\Models\CourseSchedule;
+use App\Models\CourseSession;
 use App\Models\Enrolment;
 use App\Models\StudentProfile;
 use App\Models\StudentSupportRequest;
@@ -23,6 +25,7 @@ class PhysicalStudentLearningWorkflowTest extends TestCase
 
     public function test_physical_student_can_use_course_calendar_assignment_and_support_workflows(): void
     {
+        Storage::fake('academy_private');
         Storage::fake('public');
         $this->seed(RolePermissionSeeder::class);
         [$student, $course, $schedule, $enrolment] = $this->activeStudentEnrolment();
@@ -47,6 +50,8 @@ class PhysicalStudentLearningWorkflowTest extends TestCase
             'allow_resubmission' => '1',
         ])->assertRedirect();
         $assignment = Assignment::firstOrFail();
+        Storage::disk('academy_private')->assertExists($assignment->attachment_path);
+        Storage::disk('public')->assertMissing($assignment->attachment_path);
         $this->assertGreaterThanOrEqual(2, $student->notifications()->count());
 
         $this->actingAs($student)->get(route('student.assignments.index'))->assertOk()->assertSee('Clinical worksheet');
@@ -55,6 +60,8 @@ class PhysicalStudentLearningWorkflowTest extends TestCase
             'notes' => 'My completed work', 'file' => UploadedFile::fake()->create('answer.pdf', 80, 'application/pdf'),
         ])->assertRedirect();
         $submission = $assignment->submissions()->firstOrFail();
+        Storage::disk('academy_private')->assertExists($submission->file_path);
+        Storage::disk('public')->assertMissing($submission->file_path);
 
         $this->actingAs($admin)->put(route('admin.assignment-submissions.review', $submission), [
             'score' => 90, 'feedback' => 'Excellent practical understanding.',
@@ -73,6 +80,149 @@ class PhysicalStudentLearningWorkflowTest extends TestCase
             ->assertOk()->assertSee('Please bring your student kit and notebook.');
     }
 
+    public function test_student_with_multiple_active_enrolments_sees_only_their_courses_and_learning_resources(): void
+    {
+        Storage::fake('academy_private');
+        $this->seed(RolePermissionSeeder::class);
+
+        [$student, $firstCourse, $firstSchedule, $firstEnrolment] = $this->activeStudentEnrolment();
+        $profile = $student->studentProfile;
+        $category = $firstCourse->category;
+
+        $secondCourse = Course::query()->create([
+            'course_category_id' => $category->id,
+            'name' => 'Advanced Fillers Training',
+            'slug' => 'advanced-fillers-training',
+            'fee' => 2400,
+            'is_active' => true,
+        ]);
+        $secondSchedule = CourseSchedule::query()->create([
+            'course_id' => $secondCourse->id,
+            'starts_on' => now(),
+            'ends_on' => now()->addMonth(),
+            'capacity' => 10,
+            'is_active' => true,
+        ]);
+        $secondEnrolment = Enrolment::query()->create([
+            'reference' => 'ENR-FLOW-2',
+            'student_profile_id' => $profile->id,
+            'course_id' => $secondCourse->id,
+            'course_schedule_id' => $secondSchedule->id,
+            'status' => 'active',
+            'fee' => 2400,
+            'amount_paid' => 2400,
+            'outstanding_balance' => 0,
+            'policies_accepted' => true,
+            'activated_at' => now()->addMinute(),
+        ]);
+
+        $otherStudent = User::factory()->create(['is_active' => true, 'email_verified_at' => now()]);
+        $otherStudent->assignRole(Role::findOrCreate('Student'));
+        $otherProfile = StudentProfile::query()->create([
+            'user_id' => $otherStudent->id,
+            'student_number' => 'STU-FLOW-OTHER',
+            'profile_completed_at' => now(),
+        ]);
+        $otherSchedule = CourseSchedule::query()->create([
+            'course_id' => $secondCourse->id,
+            'starts_on' => now(),
+            'ends_on' => now()->addMonth(),
+            'capacity' => 10,
+            'is_active' => true,
+        ]);
+        $otherEnrolment = Enrolment::query()->create([
+            'reference' => 'ENR-FLOW-OTHER',
+            'student_profile_id' => $otherProfile->id,
+            'course_id' => $secondCourse->id,
+            'course_schedule_id' => $otherSchedule->id,
+            'status' => 'active',
+            'fee' => 2400,
+            'amount_paid' => 2400,
+            'outstanding_balance' => 0,
+            'policies_accepted' => true,
+            'activated_at' => now(),
+        ]);
+
+        $firstMaterial = $this->material($firstCourse, $firstEnrolment, 'Owned Botox Handbook', 'materials/owned-botox.pdf');
+        $secondMaterial = $this->material($secondCourse, $secondEnrolment, 'Owned Fillers Handbook', 'materials/owned-fillers.pdf');
+        $foreignMaterial = $this->material($secondCourse, $otherEnrolment, 'Other Student Private Handbook', 'materials/other-student.pdf');
+        foreach ([$firstMaterial, $secondMaterial, $foreignMaterial] as $material) {
+            Storage::disk('academy_private')->put($material->file_path, 'private material');
+        }
+
+        $firstAssignment = Assignment::query()->create([
+            'course_id' => $firstCourse->id,
+            'enrolment_id' => $firstEnrolment->id,
+            'title' => 'Owned Botox Assignment',
+        ]);
+        $secondAssignment = Assignment::query()->create([
+            'course_id' => $secondCourse->id,
+            'enrolment_id' => $secondEnrolment->id,
+            'title' => 'Owned Fillers Assignment',
+        ]);
+        $foreignAssignment = Assignment::query()->create([
+            'course_id' => $secondCourse->id,
+            'enrolment_id' => $otherEnrolment->id,
+            'title' => 'Other Student Private Assignment',
+        ]);
+
+        CourseSession::query()->create([
+            'course_schedule_id' => $firstSchedule->id,
+            'session_date' => now()->addDay(),
+            'starts_at' => '09:00',
+            'ends_at' => '11:00',
+            'topic' => 'Botox practical session',
+            'status' => 'scheduled',
+        ]);
+        CourseSession::query()->create([
+            'course_schedule_id' => $secondSchedule->id,
+            'session_date' => now()->addDays(2),
+            'starts_at' => '10:00',
+            'ends_at' => '12:00',
+            'topic' => 'Fillers practical session',
+            'status' => 'scheduled',
+        ]);
+        CourseSession::query()->create([
+            'course_schedule_id' => $otherSchedule->id,
+            'session_date' => now()->addDays(3),
+            'starts_at' => '13:00',
+            'ends_at' => '15:00',
+            'topic' => 'Other Student Private Session',
+            'status' => 'scheduled',
+        ]);
+
+        $this->actingAs($student)->get(route('student.course.show'))
+            ->assertOk()
+            ->assertSee($firstCourse->name)
+            ->assertSee($secondCourse->name);
+
+        $this->actingAs($student)->get(route('student.materials.index'))
+            ->assertOk()
+            ->assertSee('Owned Botox Handbook')
+            ->assertSee('Owned Fillers Handbook')
+            ->assertDontSee('Other Student Private Handbook');
+        $this->actingAs($student)->get(route('student.materials.download', $secondMaterial))->assertOk();
+        $this->actingAs($student)->get(route('student.materials.download', $foreignMaterial))->assertForbidden();
+
+        $this->actingAs($student)->get(route('student.assignments.index'))
+            ->assertOk()
+            ->assertSee('Owned Botox Assignment')
+            ->assertSee('Owned Fillers Assignment')
+            ->assertDontSee('Other Student Private Assignment');
+        $this->actingAs($student)->get(route('student.assignments.show', $secondAssignment))->assertOk();
+        $this->actingAs($student)->get(route('student.assignments.show', $foreignAssignment))->assertForbidden();
+
+        $this->actingAs($student)->get(route('student.calendar.index'))
+            ->assertOk()
+            ->assertSee($firstCourse->name)
+            ->assertSee($secondCourse->name)
+            ->assertSee('Botox practical session')
+            ->assertSee('Fillers practical session')
+            ->assertDontSee('Other Student Private Session');
+
+        $this->assertNotSame($firstAssignment->id, $secondAssignment->id);
+    }
+
     private function activeStudentEnrolment(): array
     {
         $student = User::factory()->create(['is_active' => true, 'email_verified_at' => now()]);
@@ -88,5 +238,17 @@ class PhysicalStudentLearningWorkflowTest extends TestCase
         ]);
 
         return [$student, $course, $schedule, $enrolment];
+    }
+
+    private function material(Course $course, Enrolment $enrolment, string $title, string $path): CourseMaterial
+    {
+        return CourseMaterial::query()->create([
+            'course_id' => $course->id,
+            'enrolment_id' => $enrolment->id,
+            'title' => $title,
+            'type' => 'document',
+            'file_path' => $path,
+            'is_published' => true,
+        ]);
     }
 }

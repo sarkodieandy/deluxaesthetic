@@ -13,7 +13,9 @@ class CourseController extends Controller
         $courses = Course::query()
             ->with(['category', 'trainer.user'])
             ->where('is_active', true)
+            ->whereHas('category', fn ($category) => $category->where('is_active', true))
             ->orderByDesc('is_featured')
+            ->orderBy('sort_order')
             ->orderBy('name')
             ->get();
 
@@ -26,6 +28,7 @@ class CourseController extends Controller
             ->with(['category', 'trainer.user'])
             ->where('slug', $slug)
             ->where('is_active', true)
+            ->whereHas('category', fn ($category) => $category->where('is_active', true))
             ->firstOrFail();
 
         return view('web.courses.show', compact('course'));

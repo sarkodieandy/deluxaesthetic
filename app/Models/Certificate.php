@@ -62,7 +62,7 @@ class Certificate extends Model
     {
         return $this->isIssued()
             && $this->pdf_path
-            && Storage::disk('public')->exists($this->pdf_path);
+            && Storage::disk('academy_private')->exists($this->pdf_path);
     }
 
     public function downloadFilename(): string

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Enrolment;
 use App\Models\User;
 use App\Services\Academy\CertificateIssuanceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,6 +18,7 @@ class CertificateIssuanceTest extends TestCase
 
     public function test_admin_can_create_downloadable_certificate_for_completed_enrolment(): void
     {
+        Storage::fake('academy_private');
         Storage::fake('public');
 
         Permission::create(['name' => 'certificates.issue']);
@@ -98,7 +100,8 @@ class CertificateIssuanceTest extends TestCase
         $this->assertNotNull($certificate);
         $this->assertSame('issued', $certificate->status);
         $this->assertNotNull($certificate->pdf_path);
-        Storage::disk('public')->assertExists($certificate->pdf_path);
+        Storage::disk('academy_private')->assertExists($certificate->pdf_path);
+        Storage::disk('public')->assertMissing($certificate->pdf_path);
 
         $download = $this->actingAs($admin)->get(route('admin.certificates.download', $certificate->id));
         $download->assertOk();
@@ -106,6 +109,7 @@ class CertificateIssuanceTest extends TestCase
 
     public function test_student_can_download_their_issued_certificate(): void
     {
+        Storage::fake('academy_private');
         Storage::fake('public');
 
         Role::create(['name' => 'Student']);
@@ -168,7 +172,7 @@ class CertificateIssuanceTest extends TestCase
             'updated_at' => now(),
         ]);
 
-        $enrolment = \App\Models\Enrolment::query()->findOrFail($enrolmentId);
+        $enrolment = Enrolment::query()->findOrFail($enrolmentId);
         $certificate = app(CertificateIssuanceService::class)->createForEnrolment($enrolment, [
             'completion_date' => now()->toDateString(),
             'signatory' => 'Dr Evelyn Ejaife',

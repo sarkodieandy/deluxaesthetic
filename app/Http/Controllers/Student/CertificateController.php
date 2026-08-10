@@ -19,10 +19,11 @@ class CertificateController extends Controller
     public function index(Request $request): View
     {
         $profileId = $request->user()->studentProfile?->id;
+        abort_unless($profileId, 403);
 
         $certificates = Certificate::query()
             ->with('course')
-            ->when($profileId, fn ($query) => $query->where('student_profile_id', $profileId))
+            ->where('student_profile_id', $profileId)
             ->where('status', 'issued')
             ->latest('issued_at')
             ->get();
@@ -46,7 +47,7 @@ class CertificateController extends Controller
 
         abort_unless($certificate->isDownloadable(), 404);
 
-        return Storage::disk('public')->download(
+        return Storage::disk('academy_private')->download(
             $certificate->pdf_path,
             $certificate->downloadFilename(),
             ['Content-Type' => 'application/pdf']

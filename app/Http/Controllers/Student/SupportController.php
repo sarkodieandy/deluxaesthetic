@@ -21,10 +21,11 @@ class SupportController extends Controller
     public function index(Request $request): View
     {
         $profileId = $request->user()->studentProfile?->id;
+        abort_unless($profileId, 403);
 
         return view('student.support.index', [
             'requests' => StudentSupportRequest::query()
-                ->when($profileId, fn ($q) => $q->where('student_profile_id', $profileId))
+                ->where('student_profile_id', $profileId)
                 ->latest()
                 ->paginate(15),
         ]);

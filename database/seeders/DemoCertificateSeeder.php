@@ -128,16 +128,12 @@ class DemoCertificateSeeder extends Seeder
             return;
         }
 
-        $pdfUrl = $certificate->pdf_path
-            ? url('storage/'.$certificate->pdf_path)
-            : '(PDF not generated)';
-
         $this->command?->newLine();
         $this->command?->info('Demo certificate ready.');
         $this->command?->line('  Certificate number: '.$certificate->number);
         $this->command?->line('  Student: '.$certificate->student_name);
         $this->command?->line('  Course: '.$certificate->course_name);
-        $this->command?->line('  PDF URL: '.$pdfUrl);
+        $this->command?->line('  PDF: protected; use an authenticated download route');
         $this->command?->newLine();
         $this->command?->line('View in admin: '.url('/admin/certificates/'.$certificate->id.'/edit'));
         $this->command?->line('Download (admin): '.url('/admin/certificates/'.$certificate->id.'/download'));

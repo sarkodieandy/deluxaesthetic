@@ -7,6 +7,7 @@ use App\Models\Appointment;
 use App\Models\Branch;
 use App\Models\ClientProfile;
 use App\Models\PractitionerProfile;
+use App\Models\PractitionerSchedule;
 use App\Models\Treatment;
 use App\Models\TreatmentCategory;
 use App\Models\User;
@@ -67,6 +68,79 @@ class GuestAppointmentBookingTest extends TestCase
             ->assertSee('name="guest_name"', false);
     }
 
+    public function test_guest_cannot_book_an_unassigned_practitioner(): void
+    {
+        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+
+        [$branch, , $treatment] = $this->bookingFixtures();
+        $otherUser = User::factory()->create();
+        $otherUser->assignRole('Practitioner');
+        $unassigned = PractitionerProfile::create([
+            'user_id' => $otherUser->id,
+            'slug' => 'unassigned-booking-practitioner',
+            'professional_title' => 'Aesthetician',
+            'is_active' => true,
+        ]);
+
+        $this->post(route('web.booking.store'), [
+            'guest_name' => 'Invalid Guest',
+            'guest_email' => 'invalid.guest@example.com',
+            'guest_phone' => '+233200000099',
+            'treatment_id' => $treatment->id,
+            'practitioner_profile_id' => $unassigned->id,
+            'branch_id' => $branch->id,
+            'starts_at' => now()->addDays(3)->setTime(11, 0)->format('Y-m-d\TH:i'),
+            'goals' => 'Consultation',
+            'consent' => '1',
+        ])->assertSessionHasErrors('practitioner_profile_id');
+
+        $this->assertDatabaseMissing('client_profiles', ['guest_email' => 'invalid.guest@example.com']);
+        $this->assertDatabaseCount('appointments', 0);
+
+    }
+
+    public function test_slots_endpoint_rejects_an_unassigned_practitioner(): void
+    {
+        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+        [$branch, , $treatment] = $this->bookingFixtures();
+        $otherUser = User::factory()->create(['is_active' => true]);
+        $otherUser->assignRole('Practitioner');
+        $unassigned = PractitionerProfile::create([
+            'user_id' => $otherUser->id,
+            'slug' => 'unassigned-slots-practitioner',
+            'professional_title' => 'Aesthetician',
+            'is_active' => true,
+        ]);
+
+        $this->getJson(route('web.booking.slots', [
+            'treatment_id' => $treatment->id,
+            'practitioner_profile_id' => $unassigned->id,
+            'branch_id' => $branch->id,
+            'date' => now()->addDays(3)->toDateString(),
+        ]))->assertUnprocessable()->assertJsonValidationErrors('practitioner_profile_id');
+    }
+
+    public function test_guest_cannot_tamper_with_a_time_outside_the_published_schedule(): void
+    {
+        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+        [$branch, $practitioner, $treatment] = $this->bookingFixtures();
+
+        $this->post(route('web.booking.store'), [
+            'guest_name' => 'Late Guest',
+            'guest_email' => 'late.guest@example.com',
+            'guest_phone' => '+233200000098',
+            'treatment_id' => $treatment->id,
+            'practitioner_profile_id' => $practitioner->id,
+            'branch_id' => $branch->id,
+            'starts_at' => now()->addDays(3)->setTime(23, 0)->format('Y-m-d\TH:i'),
+            'goals' => 'Consultation',
+            'consent' => '1',
+        ])->assertSessionHasErrors('starts_at');
+
+        $this->assertDatabaseMissing('client_profiles', ['guest_email' => 'late.guest@example.com']);
+        $this->assertDatabaseCount('appointments', 0);
+    }
+
     public function test_authenticated_client_still_books_into_their_profile(): void
     {
         $this->seed(\Database\Seeders\RolePermissionSeeder::class);
@@ -114,7 +188,7 @@ class GuestAppointmentBookingTest extends TestCase
             'is_primary' => true,
         ]);
 
-        $practitionerUser = User::factory()->create();
+        $practitionerUser = User::factory()->create(['is_active' => true]);
         $practitionerUser->assignRole('Practitioner');
         $practitioner = PractitionerProfile::create([
             'user_id' => $practitionerUser->id,
@@ -139,6 +213,18 @@ class GuestAppointmentBookingTest extends TestCase
             'price' => 350,
             'is_active' => true,
         ]);
+        $treatment->practitioners()->attach($practitioner);
+
+        foreach (range(0, 6) as $dayOfWeek) {
+            PractitionerSchedule::create([
+                'practitioner_profile_id' => $practitioner->id,
+                'branch_id' => $branch->id,
+                'day_of_week' => $dayOfWeek,
+                'starts_at' => '08:00',
+                'ends_at' => '18:00',
+                'is_active' => true,
+            ]);
+        }
 
         return [$branch, $practitioner, $treatment];
     }

@@ -5,8 +5,8 @@
 @section('content')
 @if (session('status'))<p class="mb-4 border border-[var(--color-success)] bg-white px-4 py-3 text-[var(--color-success)]">{{ session('status') }}</p>@endif
 
-@if (! in_array($enrolment->status, ['active', 'graduated', 'completed', 'certificate_issued'], true))
-    @can('enrolments.activate')
+@if (in_array($enrolment->status, \App\Enums\EnrolmentStatus::activationSourceStatuses(), true))
+    @canany(['enrolments.activate', 'enrolments.manage'])
         <div class="admin-callout">
             <div>
                 <p class="admin-callout__title">Activate physical enrolment</p>
@@ -17,7 +17,7 @@
                 <button type="submit" class="btn btn-primary">Activate &amp; invite to portal</button>
             </form>
         </div>
-    @endcan
+    @endcanany
 @endif
 
 <form method="POST" action="{{ route('admin.enrolments.update', $enrolment) }}" class="admin-form">@csrf @method('PUT')

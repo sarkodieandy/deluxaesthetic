@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Content\StoreGalleryItemRequest;
 use App\Http\Requests\Admin\Content\UpdateGalleryItemRequest;
 use App\Models\GalleryItem;
+use App\Models\Treatment;
 use App\Support\GalleryMedia;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -18,7 +20,7 @@ class GalleryController extends Controller
 {
     public function index(): View
     {
-        $items = GalleryItem::query()->orderBy('type')->orderByDesc('is_featured')->orderBy('sort_order')->paginate(16);
+        $items = GalleryItem::query()->with('treatment:id,name')->orderBy('type')->orderByDesc('is_featured')->orderBy('sort_order')->paginate(16);
 
         return view('admin.gallery.index', compact('items'));
     }
@@ -30,7 +32,10 @@ class GalleryController extends Controller
             $type = null;
         }
 
-        return view('admin.gallery.create', ['defaultType' => $type]);
+        return view('admin.gallery.create', [
+            'defaultType' => $type,
+            'treatments' => $this->treatments(),
+        ]);
     }
 
     public function store(StoreGalleryItemRequest $request): RedirectResponse
@@ -39,6 +44,7 @@ class GalleryController extends Controller
         $type = $data['type'];
 
         GalleryItem::create([
+            'treatment_id' => $data['treatment_id'] ?? null,
             'title' => $data['title'],
             'slug' => $this->uniqueSlug($data['title']),
             'type' => $type,
@@ -54,7 +60,7 @@ class GalleryController extends Controller
                 : null,
             'alt_text' => $data['alt_text'] ?? null,
             'is_featured' => $request->boolean('is_featured'),
-            'is_active' => $request->boolean('is_active', true),
+            'is_active' => $request->boolean('is_active'),
             'sort_order' => (int) ($data['sort_order'] ?? 10),
         ]);
 
@@ -63,7 +69,10 @@ class GalleryController extends Controller
 
     public function edit(GalleryItem $gallery): View
     {
-        return view('admin.gallery.edit', ['item' => $gallery]);
+        return view('admin.gallery.edit', [
+            'item' => $gallery,
+            'treatments' => $this->treatments($gallery),
+        ]);
     }
 
     public function update(UpdateGalleryItemRequest $request, GalleryItem $gallery): RedirectResponse
@@ -72,12 +81,13 @@ class GalleryController extends Controller
         $type = $data['type'];
 
         $payload = [
+            'treatment_id' => $data['treatment_id'] ?? null,
             'title' => $data['title'],
             'type' => $type,
             'description' => $data['description'] ?? null,
             'alt_text' => $data['alt_text'] ?? null,
             'is_featured' => $request->boolean('is_featured'),
-            'is_active' => $request->boolean('is_active', true),
+            'is_active' => $request->boolean('is_active'),
             'sort_order' => (int) ($data['sort_order'] ?? 10),
         ];
 
@@ -91,8 +101,6 @@ class GalleryController extends Controller
                 $payload
             );
             if ($gallery->before_image_path || $gallery->after_image_path) {
-                $this->deletePath($gallery->before_image_path);
-                $this->deletePath($gallery->after_image_path);
                 $payload['before_image_path'] = null;
                 $payload['after_image_path'] = null;
             }
@@ -116,22 +124,43 @@ class GalleryController extends Controller
                 $payload
             );
             if ($gallery->image_path) {
-                $this->deletePath($gallery->image_path);
                 $payload['image_path'] = null;
             }
         }
 
-        $gallery->update($payload);
+        $previousPaths = array_filter([
+            $gallery->image_path,
+            $gallery->before_image_path,
+            $gallery->after_image_path,
+        ]);
+        $nextPaths = array_filter([
+            array_key_exists('image_path', $payload) ? $payload['image_path'] : $gallery->image_path,
+            array_key_exists('before_image_path', $payload) ? $payload['before_image_path'] : $gallery->before_image_path,
+            array_key_exists('after_image_path', $payload) ? $payload['after_image_path'] : $gallery->after_image_path,
+        ]);
+
+        DB::transaction(function () use ($gallery, $payload, $previousPaths, $nextPaths): void {
+            $gallery->update($payload);
+
+            foreach (array_diff($previousPaths, $nextPaths) as $obsoletePath) {
+                DB::afterCommit(fn () => $this->deletePath($obsoletePath));
+            }
+        });
 
         return redirect()->route('admin.gallery.index')->with('status', 'Gallery item updated successfully.');
     }
 
     public function destroy(GalleryItem $gallery): RedirectResponse
     {
-        $this->deletePath($gallery->image_path);
-        $this->deletePath($gallery->before_image_path);
-        $this->deletePath($gallery->after_image_path);
-        $gallery->delete();
+        DB::transaction(function () use ($gallery): void {
+            $paths = [$gallery->image_path, $gallery->before_image_path, $gallery->after_image_path];
+            $gallery->delete();
+            DB::afterCommit(function () use ($paths): void {
+                foreach ($paths as $path) {
+                    $this->deletePath($path);
+                }
+            });
+        });
 
         return redirect()->route('admin.gallery.index')->with('status', 'Gallery item removed.');
     }
@@ -166,14 +195,19 @@ class GalleryController extends Controller
         );
 
         if ($next !== $existing) {
-            $this->deletePath($existing);
             $payload[$column] = $next;
         }
     }
 
     private function storeImage(UploadedFile $file, string $dir): string
     {
-        return $file->store($dir, 'public');
+        $path = $file->store($dir, 'public');
+
+        if (! is_string($path) || $path === '') {
+            throw new \RuntimeException('The gallery image could not be stored.');
+        }
+
+        return $path;
     }
 
     private function deletePath(?string $path): void
@@ -199,5 +233,19 @@ class GalleryController extends Controller
         }
 
         return $slug;
+    }
+
+    /** @return \Illuminate\Database\Eloquent\Collection<int, Treatment> */
+    private function treatments(?GalleryItem $item = null)
+    {
+        return Treatment::query()
+            ->where(function ($query) use ($item) {
+                $query->where('is_active', true);
+                if ($item?->treatment_id) {
+                    $query->orWhereKey($item->treatment_id);
+                }
+            })
+            ->orderBy('name')
+            ->get(['id', 'name']);
     }
 }

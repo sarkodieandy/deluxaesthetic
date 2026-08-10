@@ -22,6 +22,7 @@
                     <th>Preview</th>
                     <th>Title</th>
                     <th>Type</th>
+                    <th>Procedure</th>
                     <th>Status</th>
                     <th>Order</th>
                     <th></th>
@@ -52,6 +53,7 @@
                         </td>
                         <td><strong>{{ $item->title }}</strong></td>
                         <td>{{ $item->type === 'before_after' ? 'Before / after' : 'Gallery image' }}</td>
+                        <td>{{ $item->treatment?->name ?? 'General clinic work' }}</td>
                         <td>
                             @if($item->is_active)
                                 <span class="admin-status admin-status--success">Active</span>
@@ -74,7 +76,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6">
+                        <td colspan="7">
                             <div class="admin-empty">
                                 <p class="admin-empty__title">No gallery items yet</p>
                                 <p class="admin-empty__copy">Use <strong>Add before / after</strong> for the homepage slider, or <strong>Add gallery photo</strong> for the three-tile row.</p>

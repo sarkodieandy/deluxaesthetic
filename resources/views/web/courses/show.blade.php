@@ -5,7 +5,7 @@
 @section('meta_image_alt', $course->name)
 @push('structured_data')
 <script type="application/ld+json">{!! json_encode([
-    '@context' => 'https://schema.org',
+    chr(64).'context' => 'https://schema.org',
     '@type' => 'Course',
     'name' => $course->name,
     'description' => $course->seo_description ?: strip_tags($course->description),
@@ -29,9 +29,9 @@
         <p class="text-label mb-3">{{ $course->category?->name }}</p>
         <h1 class="text-page-title mb-4">{{ $course->name }}</h1>
         <div class="panel mb-8 border-[var(--color-bronze)] p-5">
-            <p class="font-medium mb-1">Physical enrolment only</p>
+            <p class="font-medium mb-1">Physical, admissions-approved training</p>
             <p class="text-[var(--color-soft-grey)]">
-                Course enrolment is completed physically at our academy. Please contact our admissions team or visit our location to complete registration.
+                Submit your student application online. Admissions will contact you to confirm suitability, dates and the in-person registration steps before portal access is approved.
             </p>
         </div>
         <div class="grid gap-8 lg:grid-cols-[1.1fr,0.9fr]">
@@ -43,11 +43,24 @@
                         <p class="text-[var(--color-soft-grey)]">{{ $course->entry_requirements }}</p>
                     </div>
                 @endif
+                @if(!empty($course->learning_outcomes))
+                    <div>
+                        <p class="text-label mb-3">Course outline</p>
+                        <div class="border-t border-[var(--color-border)]">
+                            @foreach($course->learning_outcomes as $index => $module)
+                                <details class="border-b border-[var(--color-border)] py-4" @if($index === 0) open @endif>
+                                    <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-display text-xl"><span>{{ $module['name'] ?? 'Training module' }}</span><span aria-hidden="true">+</span></summary>
+                                    @if(!empty($module['topics']))<ul class="mt-4 grid gap-2 pl-5 text-sm text-[var(--color-soft-grey)]">@foreach($module['topics'] as $topic)<li class="list-disc">{{ $topic }}</li>@endforeach</ul>@endif
+                                </details>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
                 <ul class="text-[var(--color-soft-grey)] space-y-2">
-                    <li>Duration: {{ $course->duration_hours }} hours</li>
+                    @if($course->duration_hours > 0)<li>Duration: {{ $course->duration_hours }} hours</li>@endif
                     <li>Delivery: {{ ucfirst($course->delivery_mode) }}</li>
                     @if($course->venue)<li>Location: {{ $course->venue }}</li>@endif
-                    <li>Fee: GHS {{ number_format((float) $course->fee, 2) }}</li>
+                    <li>Fee: {{ $course->formattedFee() }}</li>
                 </ul>
             </div>
             <aside class="panel p-6 space-y-4">

@@ -35,37 +35,25 @@
         </button>
     </div>
     <div class="mobile-menu__inner" :class="open && 'mobile-menu__inner--open'">
-        @foreach ([
-            'web.home' => __('web.nav.home'),
-            'web.about' => __('web.nav.about'),
-            'web.treatments.index' => __('web.nav.treatments'),
-            'web.practitioners.index' => __('web.nav.practitioners'),
-            'web.academy.index' => __('web.nav.academy'),
-            'web.courses.index' => __('web.nav.courses'),
-            'web.store.index' => __('web.nav.store'),
-            'web.gallery' => __('web.nav.gallery'),
-            'web.blog.index' => __('web.nav.blog'),
-            'web.contact' => __('web.nav.contact'),
-        ] as $route => $label)
-            <a
-                class="mobile-menu__link"
-                href="{{ route($route) }}"
-                style="--menu-i: {{ $loop->index }}"
-                @click="close()"
-                @if(request()->routeIs($route) || request()->routeIs(str_replace('.index', '.*', $route))) aria-current="page" @endif
-            >{{ $label }}</a>
-        @endforeach
+        <a class="mobile-menu__link" href="{{ route('web.home') }}" style="--menu-i: 0" @click="close()" @if(request()->routeIs('web.home')) aria-current="page" @endif>Home</a>
+        <a class="mobile-menu__link mobile-menu__link--pillar" href="{{ route('web.clinical.index') }}" style="--menu-i: 1" @click="close()" @if(request()->routeIs('web.clinical.index') || request()->routeIs('web.treatments.*')) aria-current="page" @endif>Clinical Procedures</a>
+        <a class="mobile-menu__link mobile-menu__link--pillar" href="{{ route('web.academy.index') }}" style="--menu-i: 2" @click="close()" @if(request()->routeIs('web.academy.*') || request()->routeIs('web.courses.*')) aria-current="page" @endif>Academy</a>
+        <a class="mobile-menu__link mobile-menu__link--pillar" href="{{ route('web.store.index') }}" style="--menu-i: 3" @click="close()" @if(request()->routeIs('web.store.*') || request()->routeIs('web.cart.*')) aria-current="page" @endif>Products</a>
+        <a class="mobile-menu__link" href="{{ route('web.about') }}" style="--menu-i: 4" @click="close()" @if(request()->routeIs('web.about')) aria-current="page" @endif>About</a>
+        <a class="mobile-menu__link" href="{{ route('web.gallery') }}" style="--menu-i: 5" @click="close()" @if(request()->routeIs('web.gallery')) aria-current="page" @endif>Gallery</a>
+        <a class="mobile-menu__link" href="{{ route('web.blog.index') }}" style="--menu-i: 6" @click="close()" @if(request()->routeIs('web.blog.*')) aria-current="page" @endif>Blog</a>
+        <a class="mobile-menu__link" href="{{ route('web.contact') }}" style="--menu-i: 7" @click="close()" @if(request()->routeIs('web.contact')) aria-current="page" @endif>Contact</a>
         <div class="mobile-menu__actions">
             @guest
-                <a href="{{ route('login') }}" class="btn btn-secondary mobile-menu__action" style="--menu-i: 10" @click="close()">{{ __('Student login') }}</a>
+                <a href="{{ route('login') }}" class="btn btn-secondary mobile-menu__action" style="--menu-i: 8" @click="close()">{{ __('Student login') }}</a>
             @else
-                <a href="{{ route(auth()->user()->portalHomeRoute()) }}" class="btn btn-secondary mobile-menu__action" style="--menu-i: 10" @click="close()">{{ __('web.account') }}</a>
+                <a href="{{ route(auth()->user()->portalHomeRoute()) }}" class="btn btn-secondary mobile-menu__action" style="--menu-i: 8" @click="close()">{{ __('web.account') }}</a>
             @endguest
-            <a href="{{ route('web.store.index') }}" class="btn btn-secondary mobile-menu__btn--cart mobile-menu__action" style="--menu-i: 12" @click="close()">
+            <a href="{{ route('web.cart.index') }}" class="btn btn-secondary mobile-menu__btn--cart mobile-menu__action" style="--menu-i: 9" @click="close()">
                 @include('web.components.icon', ['name' => 'cart', 'class' => 'icon icon--sm'])
                 {{ __('web.cart') }}
             </a>
-            <a href="{{ route('web.booking.create') }}" class="btn btn-primary mobile-menu__action" style="--menu-i: 13" @click="close()">{{ __('web.book') }}</a>
+            <a href="{{ route('web.booking.create') }}" class="btn btn-primary mobile-menu__action" style="--menu-i: 10" @click="close()">{{ __('web.book') }}</a>
         </div>
     </div>
 </div>

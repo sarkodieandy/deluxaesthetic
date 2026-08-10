@@ -2,8 +2,10 @@
 
 @section('title', config('clinic.name').' — Aesthetics, Academy & Beauty')
 @section('meta_description', 'Premium medical-aesthetic treatments, professional training, and curated beauty care at '.config('clinic.name').' in Accra, Ghana.')
+@section('meta_image', $cmsPage?->hero_image_url ?: asset('assets/web/images/hero/hero-botox.webp'))
+@section('meta_image_alt', 'Expert injectable care at '.config('clinic.name'))
 @push('preload')
-<link rel="preload" as="image" href="{{ asset('assets/web/images/hero/spa-treatment-room.webp') }}" type="image/webp" fetchpriority="high">
+<link rel="preload" as="image" href="{{ $cmsPage?->hero_image_url ?: asset('assets/web/images/hero/hero-botox.webp') }}" fetchpriority="high">
 @endpush
 
 @section('content')
@@ -19,15 +21,16 @@
     <div class="container-site home-v3-hero__content">
         <div class="home-v3-hero__top" data-hero-brand>
             <span>Accra · Ghana</span>
-            <span>Clinic · Academy · Store</span>
+            <span>Clinical Procedures · Academy · Products</span>
         </div>
         <div class="home-v3-hero__main">
-            <p class="text-label" data-hero-brand>{{ $cmsPage?->hero_eyebrow ?: 'De Luxe Aesthetic Clinic' }}</p>
-            <h1 data-hero-headline>@if($cmsPage?->hero_title){!! nl2br(e($cmsPage->hero_title)) !!}@else Where clinical<br>expertise meets<br><em>beautiful restraint.</em>@endif</h1>
-            <p data-hero-support>{{ $cmsPage?->hero_body ?: 'Thoughtful aesthetic treatments, advanced professional education and carefully selected beauty essentials—all under one trusted name.' }}</p>
+            <p class="text-label" data-hero-brand>{{ $cmsPage?->hero_eyebrow ?: 'INJECTABLE TREATMENTS · ACADEMY · PREMIUM PRODUCTS' }}</p>
+            <h1 data-hero-headline>{{ $cmsPage?->hero_title ?: 'Expert Injectable Care. Professional Training. Premium Products.' }}</h1>
+            <p data-hero-support>{{ $cmsPage?->hero_body ?: 'An expert-led aesthetic clinic in Accra specialising in Botox, dermal fillers and advanced skin procedures — alongside internationally delivered academy training and curated professional products.' }}</p>
             <div class="home-v3-hero__actions" data-hero-actions>
-                <a href="{{ route('web.booking.create') }}" class="btn btn-primary">Book a consultation</a>
-                <a href="{{ route('web.treatments.index') }}" class="btn btn-light">Explore treatments</a>
+                <a href="{{ route('web.clinical.index') }}" class="btn btn-primary">Explore Clinical Procedures</a>
+                <a href="{{ route('web.academy.index') }}" class="btn btn-light">Discover the Academy</a>
+                <a href="{{ route('web.store.index') }}" class="btn btn-outline-light">Shop Products</a>
             </div>
         </div>
         <div class="home-v3-hero__footer">
@@ -43,75 +46,105 @@
     </div>
 </section>
 
-<div class="home-v3-marquee" aria-label="De Luxe services">
-    <div>
-        <span>Clinical aesthetics</span><i>✦</i><span>Skin health</span><i>✦</i><span>Body care</span><i>✦</i><span>Professional academy</span><i>✦</i><span>Curated beauty</span><i>✦</i>
-        <span aria-hidden="true">Clinical aesthetics</span><i aria-hidden="true">✦</i><span aria-hidden="true">Skin health</span><i aria-hidden="true">✦</i><span aria-hidden="true">Body care</span><i aria-hidden="true">✦</i><span aria-hidden="true">Professional academy</span><i aria-hidden="true">✦</i><span aria-hidden="true">Curated beauty</span><i aria-hidden="true">✦</i>
-    </div>
-</div>
-
 <section class="home-v3-intro" id="discover">
     <div class="container-site home-v3-intro__grid">
         <div class="reveal">
-            <p class="text-label">A complete aesthetics destination</p>
-            <h2>Care for today.<br>Knowledge for tomorrow.</h2>
+            <p class="text-label">The De Luxe Experience</p>
+            <h2>Three pillars. One trusted platform.</h2>
         </div>
         <div class="home-v3-intro__copy reveal reveal-delay-2">
-            <p>De Luxe brings treatment, education and aftercare into one considered experience. Every client and student receives personal attention, honest guidance and a standard of care shaped by clinical knowledge.</p>
-            <div>
-                <span>01</span><p>Personalised consultation before treatment</p>
-                <span>02</span><p>Professional, safety-led protocols</p>
-                <span>03</span><p>Continued support beyond your visit</p>
-            </div>
+            <p>Whether you're seeking advanced injectable care, professional aesthetics training, or premium beauty products — De Luxe brings all three together with clinical precision and elegance.</p>
         </div>
     </div>
 </section>
 
 <section class="home-v3-worlds">
     <div class="container-site">
-        <header class="home-v3-heading reveal">
-            <div><p class="text-label">Explore De Luxe</p><h2>Three worlds. One standard.</h2></div>
-            <p>Whether you are here to feel renewed, build a new skill or continue your care at home, your journey starts here.</p>
-        </header>
         <div class="home-v3-worlds__grid">
-            <a href="{{ route('web.treatments.index') }}" class="home-v3-world reveal" data-tilt-card>
-                <img src="{{ asset('assets/web/images/hero/hero-facial-tech.webp') }}" alt="Advanced facial treatment at De Luxe" loading="lazy" decoding="async">
-                <div><span>01 · Clinic</span><h3>Results-led treatments</h3><p>Facials, injectables, body care and restorative spa experiences.</p><strong>View treatments →</strong></div>
+            <a href="{{ route('web.clinical.index') }}" class="home-v3-world reveal" data-tilt-card>
+                <img src="{{ asset('assets/web/images/hero/hero-botox.webp') }}" alt="Expert injectable treatment — Botox and dermal fillers" loading="lazy" decoding="async">
+                <div><span>01 · Clinical Procedures</span><h3>Injectable & clinical treatments</h3><p>From Botox and dermal fillers to advanced skin protocols, spa therapy and body treatments — with transparent pricing and expert consultation.</p><strong>Explore Procedures →</strong></div>
             </a>
             <a href="{{ route('web.academy.index') }}" class="home-v3-world reveal reveal-delay-1" data-tilt-card>
                 <img src="{{ asset('assets/web/images/hero/hero-beauty-academy.webp') }}" alt="Professional aesthetics academy training" loading="lazy" decoding="async">
-                <div><span>02 · Academy</span><h3>Train with confidence</h3><p>Hands-on aesthetics education, certification and lifetime mentorship.</p><strong>Explore the academy →</strong></div>
+                <div><span>02 · Academy</span><h3>Professional training</h3><p>Internationally delivered aesthetics education — course outlines, training formats, student stories, certifications and admissions guidance.</p><strong>Explore the Academy →</strong></div>
             </a>
             <a href="{{ route('web.store.index') }}" class="home-v3-world reveal reveal-delay-2" data-tilt-card>
-                <img src="{{ asset('assets/web/images/treatments/skincare-ritual.webp') }}" alt="Curated skincare and beauty products" loading="lazy" decoding="async">
-                <div><span>03 · Store</span><h3>Continue your care</h3><p>Clinic-selected skincare and beauty essentials for everyday routines.</p><strong>Shop the edit →</strong></div>
+                <img src="{{ asset('assets/web/images/treatments/skincare-ritual.webp') }}" alt="Curated professional skincare and beauty products" loading="lazy" decoding="async">
+                <div><span>03 · Products</span><h3>Shop premium products</h3><p>Browse clinic-selected skincare, professional supplies, treatment kits and beauty essentials — add to cart and order directly through WhatsApp.</p><strong>Browse Products →</strong></div>
             </a>
         </div>
     </div>
 </section>
 
+@if($trainingCountries->isNotEmpty())
+<section class="home-v3-countries">
+    <div class="container-site">
+        <header class="home-v3-heading reveal">
+            <div><p class="text-label">The Academy across West Africa</p><h2>{{ $trainingCountries->count() }} {{ \Illuminate\Support\Str::plural('country', $trainingCountries->count()) }}.<br>One training standard.</h2></div>
+            <div class="home-v3-countries__intro">
+                <p>De Luxe has travelled across West Africa to deliver practical aesthetics education in {{ $trainingCountries->pluck('title')->join(', ', ' and ') }}.</p>
+                <a href="{{ route('web.academy.index') }}">Explore Academy masterclasses <span aria-hidden="true">→</span></a>
+            </div>
+        </header>
+        <div class="home-countries-elegant reveal reveal-delay-2">
+            @foreach($trainingCountries as $i => $country)
+                @php
+                    $countrySlug = match (\Illuminate\Support\Str::slug($country->title)) {
+                        'cote-divoire', 'cote-d-ivoire' => 'cote-divoire',
+                        'benin-republic' => 'benin',
+                        default => \Illuminate\Support\Str::slug($country->title),
+                    };
+                    $knownFlag = in_array($countrySlug, ['ghana', 'cameroon', 'cote-divoire', 'senegal', 'benin'], true);
+                @endphp
+                <article class="home-country-card reveal" style="--reveal-delay: {{ $i * 90 }}ms">
+                    <div class="home-country-card__header">
+                        <span class="home-country-card__badge">{{ sprintf('%02d', $i + 1) }}</span>
+                        <span class="home-country-card__flag">
+                            @if($country->imageUrl())
+                                <img src="{{ $country->imageUrl() }}" alt="{{ $country->title }} Academy training" width="900" height="600" loading="lazy">
+                            @elseif($knownFlag)
+                                <img src="{{ asset('assets/web/flags/'.$countrySlug.'.svg') }}" alt="" width="900" height="600" loading="lazy">
+                            @else
+                                <strong aria-hidden="true">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($country->title, 0, 2)) }}</strong>
+                            @endif
+                        </span>
+                    </div>
+                    <div class="home-country-card__body">
+                        @if($country->subtitle)<p class="home-country-card__city">{{ $country->subtitle }}</p>@endif
+                        <h3 class="home-country-card__name">{{ $country->title }}</h3>
+                        <p class="home-country-card__note">{{ $country->body }}</p>
+                    </div>
+                    <div class="home-country-card__accent" aria-hidden="true"></div>
+                </article>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
+@if($featuredTreatments->isNotEmpty())
 <section class="home-v3-treatments">
     <div class="container-site">
         <header class="home-v3-heading home-v3-heading--light reveal">
             <div><p class="text-label">Signature care</p><h2>Treatments with intention.</h2></div>
-            <a href="{{ route('web.treatments.index') }}">View all treatments →</a>
+            <a href="{{ route('web.clinical.index') }}">View all treatments →</a>
         </header>
         @php
             $fallbackImages = ['assets/web/images/treatments/facial-care.webp','assets/web/images/treatments/skincare-ritual.webp','assets/web/images/treatments/body-massage.webp'];
-            $cards = $featuredTreatments->isNotEmpty() ? $featuredTreatments : collect([
-                (object)['id'=>null,'slug'=>null,'name'=>'Signature Clinical Facial','short_description'=>'Barrier-focused facial care with a considered clinical assessment.','duration_minutes'=>60,'image_path'=>$fallbackImages[0],'category'=>(object)['name'=>'Facial'],'price'=>450],
-                (object)['id'=>null,'slug'=>null,'name'=>'Skin Clarity Protocol','short_description'=>'Targeted care designed around texture, congestion and clarity.','duration_minutes'=>75,'image_path'=>$fallbackImages[1],'category'=>(object)['name'=>'Skin'],'price'=>520],
-                (object)['id'=>null,'slug'=>null,'name'=>'Body Contour Care','short_description'=>'Measured body treatment protocols with restorative support.','duration_minutes'=>90,'image_path'=>$fallbackImages[2],'category'=>(object)['name'=>'Body'],'price'=>680],
-            ]);
+            $cards = $featuredTreatments;
         @endphp
         <div class="home-v3-treatments__grid">
             @foreach($cards as $index => $treatment)
                 @php
-                    $href = $treatment->slug ? route('web.treatments.show', $treatment->slug) : route('web.treatments.index');
+                    $href = $treatment->slug ? route('web.treatments.show', $treatment->slug) : route('web.clinical.index');
                     $bookHref = !empty($treatment->id) ? route('web.booking.create', ['treatment_id'=>$treatment->id]) : route('web.booking.create');
-                    $price = method_exists($treatment, 'effectivePrice') ? $treatment->effectivePrice() : ($treatment->price ?? 0);
-                    $img = $treatment->image_path ?: $fallbackImages[$index % 3];
-                    $img = str_starts_with($img, 'assets/') ? asset($img) : asset('storage/'.$img);
+                    $price = method_exists($treatment, 'effectivePrice') ? $treatment->effectivePrice() : ($treatment->price ?? null);
+                    $hasDuration = !empty($treatment->duration_minutes);
+                    $hasPrice = $price !== null && (float) $price > 0;
+                    $isPublishedTreatment = $treatment instanceof \App\Models\Treatment;
+                    $img = $isPublishedTreatment ? $treatment->imageUrl() : null;
+                    $img = $img ?: asset($fallbackImages[$index % 3]);
                 @endphp
                 <article class="home-v3-treatment reveal" data-parallax-card>
                     <a href="{{ $href }}" class="home-v3-treatment__media"><img src="{{ $img }}" alt="{{ $treatment->name }}" loading="lazy"></a>
@@ -119,19 +152,37 @@
                         <p><span>{{ str_pad((string)($index + 1), 2, '0', STR_PAD_LEFT) }}</span>{{ $treatment->category->name ?? 'Treatment' }}</p>
                         <h3>{{ $treatment->name }}</h3>
                         <p>{{ $treatment->short_description }}</p>
-                        <div><span>{{ $treatment->duration_minutes }} min · GHS {{ number_format((float)$price, 2) }}</span><a href="{{ $bookHref }}">Book →</a></div>
+                        <div>
+                            <span>
+                                @if($hasDuration || $hasPrice)
+                                    @if($hasDuration)
+                                        {{ $treatment->duration_minutes }} min
+                                    @endif
+                                    @if($hasDuration && $hasPrice)
+                                        ·
+                                    @endif
+                                    @if($hasPrice)
+                                        GHS {{ number_format((float) $price, 2) }}
+                                    @endif
+                                @else
+                                    View care options
+                                @endif
+                            </span>
+                            <a href="{{ $isPublishedTreatment ? $bookHref : $href }}">{{ $isPublishedTreatment ? 'Book' : 'Explore' }} →</a>
+                        </div>
                     </div>
                 </article>
             @endforeach
         </div>
     </div>
 </section>
+@endif
 
 <section class="home-v3-founder">
     <div class="container-site home-v3-founder__grid">
         <div class="home-v3-founder__visual reveal">
-            <div class="home-v3-founder__image home-v3-founder__image--main" data-parallax-image><img src="{{ asset($ceo?->photo_path ?? config('clinic.ceo.portrait_a')) }}" alt="{{ $ceo?->user?->name ?? config('clinic.ceo.name') }}"></div>
-            <div class="home-v3-founder__image home-v3-founder__image--small" data-parallax-image><img src="{{ asset(config('clinic.ceo.portrait_b')) }}" alt="{{ config('clinic.ceo.name') }}" loading="lazy"></div>
+            <div class="home-v3-founder__image home-v3-founder__image--main" data-parallax-image><img src="{{ $ceo?->photo_path ? $ceo->photoUrl() : asset('assets/web/images/team/ceo-academy-portrait.webp') }}" alt="{{ $ceo?->user?->name ?? config('clinic.ceo.name') }}" width="896" height="1152"></div>
+            <div class="home-v3-founder__image home-v3-founder__image--small" data-parallax-image><img src="{{ asset('assets/web/images/academy/academy-training.webp') }}" alt="Hands-on professional aesthetics training at De Luxe Academy" loading="lazy"></div>
             <span class="home-v3-founder__seal">Expert led<br>since day one</span>
         </div>
         <div class="home-v3-founder__copy reveal reveal-delay-2">
@@ -152,7 +203,7 @@
 <section class="home-v3-duo">
     <article class="home-v3-duo__panel home-v3-duo__panel--academy reveal">
         <img src="{{ asset('assets/web/images/hero/hero-beauty-academy.webp') }}" alt="De Luxe professional aesthetics academy" loading="lazy" decoding="async">
-        <div><p class="text-label">De Luxe Academy</p><h2>Learn the science.<br>Master the technique.</h2><p>Clinic-led training in Botox, fillers, skin science and advanced procedures—with practical support beyond certification.</p><a href="{{ route('web.academy.index') }}" class="btn btn-light">Explore training</a></div>
+        <div><p class="text-label">Academy masterclasses</p><h2>{{ $academyPathwayCount }} {{ \Illuminate\Support\Str::plural('pathway', $academyPathwayCount) }}.<br>Hands-on confidence.</h2><p>Explore physical, admissions-led masterclasses with published course outlines, fees and supervised practical training.</p><a href="{{ route('web.academy.index') }}#course-outlines" class="btn btn-light">View courses &amp; pricing</a></div>
     </article>
     <article class="home-v3-duo__panel home-v3-duo__panel--store reveal reveal-delay-2">
         <img src="{{ asset('assets/web/images/treatments/skincare-ritual.webp') }}" alt="Curated De Luxe skincare products" loading="lazy" decoding="async">
@@ -163,10 +214,10 @@
 <section class="home-v3-proof">
     <div class="container-site">
         <div class="home-v3-proof__stats reveal">
-            <div><strong data-count="1200">0</strong><span>Clients cared for</span></div>
-            <div><strong data-count="35">0</strong><span>Treatment protocols</span></div>
-            <div><strong data-count="180">0</strong><span>Students trained</span></div>
-            <div><strong data-count="8">0</strong><span>Years of expertise</span></div>
+            <div><strong data-count="3">0</strong><span>Business divisions</span></div>
+            <div><strong data-count="{{ $trainingCountries->count() }}">0</strong><span>Training countries</span></div>
+            <div><strong data-count="{{ $academyPathwayCount }}">0</strong><span>Academy pathways</span></div>
+            <div><strong data-count="1">0</strong><span>Standard of care</span></div>
         </div>
         <header class="home-v3-heading reveal"><div><p class="text-label">Client words</p><h2>Care people remember.</h2></div></header>
         <div class="home-v3-testimonials">

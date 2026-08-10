@@ -7,13 +7,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\CourseMaterial;
 use App\Models\Enrolment;
+use App\Services\Notifications\InAppNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
-use App\Services\Notifications\InAppNotificationService;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CourseMaterialController extends Controller
 {
@@ -35,7 +37,7 @@ class CourseMaterialController extends Controller
     public function store(Request $request, InAppNotificationService $notifications): RedirectResponse
     {
         $data = $this->validated($request);
-        $data['file_path'] = $request->file('file')?->store('course-materials', 'public');
+        $data['file_path'] = $request->file('file')?->store('course-materials', 'academy_private');
         $material = CourseMaterial::query()->create($data);
         $student = $material->enrolment?->studentProfile?->user;
         if ($material->is_published && $student) {
@@ -58,25 +60,42 @@ class CourseMaterialController extends Controller
     public function update(Request $request, CourseMaterial $courseMaterial): RedirectResponse
     {
         $data = $this->validated($request, $courseMaterial);
+        $oldPath = null;
         if ($request->hasFile('file')) {
-            if ($courseMaterial->file_path) {
-                Storage::disk('public')->delete($courseMaterial->file_path);
-            }
-            $data['file_path'] = $request->file('file')->store('course-materials', 'public');
+            $oldPath = $courseMaterial->file_path;
+            $data['file_path'] = $request->file('file')->store('course-materials', 'academy_private');
         }
-        $courseMaterial->update($data);
+
+        DB::transaction(function () use ($courseMaterial, $data, $oldPath): void {
+            $courseMaterial->update($data);
+            if ($oldPath && ($data['file_path'] ?? null) !== $oldPath) {
+                DB::afterCommit(fn () => $this->deleteMaterialFile($oldPath));
+            }
+        });
 
         return back()->with('status', 'Course material updated successfully.');
     }
 
     public function destroy(CourseMaterial $courseMaterial): RedirectResponse
     {
-        if ($courseMaterial->file_path) {
-            Storage::disk('public')->delete($courseMaterial->file_path);
-        }
-        $courseMaterial->delete();
+        DB::transaction(function () use ($courseMaterial): void {
+            $path = $courseMaterial->file_path;
+            $courseMaterial->delete();
+            DB::afterCommit(fn () => $this->deleteMaterialFile($path));
+        });
 
         return redirect()->route('admin.course-materials.index')->with('status', 'Course material removed.');
+    }
+
+    public function download(CourseMaterial $courseMaterial): StreamedResponse
+    {
+        abort_unless($courseMaterial->file_path, 404);
+        abort_unless(Storage::disk('academy_private')->exists($courseMaterial->file_path), 404);
+
+        return Storage::disk('academy_private')->download(
+            $courseMaterial->file_path,
+            basename($courseMaterial->file_path),
+        );
     }
 
     private function formView(string $view, CourseMaterial $material): View
@@ -117,5 +136,15 @@ class CourseMaterialController extends Controller
         unset($data['file']);
 
         return $data;
+    }
+
+    private function deleteMaterialFile(?string $path): void
+    {
+        if (! $path) {
+            return;
+        }
+
+        Storage::disk('academy_private')->delete($path);
+        Storage::disk('public')->delete($path);
     }
 }

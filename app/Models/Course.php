@@ -13,7 +13,7 @@ class Course extends Model
     protected $fillable = [
         'course_category_id', 'trainer_profile_id', 'name', 'slug', 'description', 'learning_outcomes',
         'entry_requirements', 'delivery_mode', 'duration_hours', 'venue', 'max_students', 'waiting_list_capacity',
-        'fee', 'deposit_amount', 'instalment_rules', 'included_materials', 'required_equipment', 'assessment_rules',
+        'fee', 'currency', 'sort_order', 'deposit_amount', 'instalment_rules', 'included_materials', 'required_equipment', 'assessment_rules',
         'attendance_rules', 'certificate_rules', 'image_path', 'video_url', 'is_featured', 'is_active', 'seo_title', 'seo_description',
     ];
 
@@ -28,6 +28,7 @@ class Course extends Model
             'certificate_rules' => 'array',
             'fee' => 'decimal:2',
             'deposit_amount' => 'decimal:2',
+            'sort_order' => 'integer',
             'is_featured' => 'boolean',
             'is_active' => 'boolean',
         ];
@@ -50,5 +51,12 @@ class Course extends Model
         }
 
         return str_starts_with($this->image_path, 'assets/') ? asset($this->image_path) : asset('storage/'.$this->image_path);
+    }
+
+    public function formattedFee(): string
+    {
+        $symbol = ($this->currency ?? 'GHS') === 'USD' ? 'US$' : 'GHS ';
+
+        return $symbol.number_format((float) $this->fee, 2);
     }
 }

@@ -39,19 +39,12 @@
             </a>
 
             <nav class="header-nav" aria-label="{{ __('web.primary_nav') }}">
-                @foreach ([
-                    'web.home' => __('web.nav.home'),
-                    'web.about' => __('web.nav.about'),
-                    'web.treatments.index' => __('web.nav.treatments'),
-                    'web.practitioners.index' => __('web.nav.practitioners'),
-                    'web.academy.index' => __('web.nav.academy'),
-                    'web.store.index' => __('web.nav.store'),
-                    'web.gallery' => __('web.nav.gallery'),
-                    'web.blog.index' => __('web.nav.blog'),
-                    'web.contact' => __('web.nav.contact'),
-                ] as $route => $label)
-                    <a class="nav-link" href="{{ route($route) }}" @if(request()->routeIs($route) || request()->routeIs(str_replace('.index', '.*', $route))) aria-current="page" @endif>{{ $label }}</a>
-                @endforeach
+                <a class="nav-link" href="{{ route('web.home') }}" @if(request()->routeIs('web.home')) aria-current="page" @endif>Home</a>
+                <a class="nav-link nav-link--pillar" href="{{ route('web.clinical.index') }}" @if(request()->routeIs('web.clinical.index') || request()->routeIs('web.treatments.*')) aria-current="page" @endif>Clinical Procedures</a>
+                <a class="nav-link nav-link--pillar" href="{{ route('web.academy.index') }}" @if(request()->routeIs('web.academy.*') || request()->routeIs('web.courses.*')) aria-current="page" @endif>Academy</a>
+                <a class="nav-link nav-link--pillar" href="{{ route('web.store.index') }}" @if(request()->routeIs('web.store.*') || request()->routeIs('web.cart.*') || request()->routeIs('web.checkout.*')) aria-current="page" @endif>Products</a>
+                <a class="nav-link" href="{{ route('web.about') }}" @if(request()->routeIs('web.about')) aria-current="page" @endif>About</a>
+                <a class="nav-link" href="{{ route('web.contact') }}" @if(request()->routeIs('web.contact')) aria-current="page" @endif>Contact</a>
             </nav>
 
             <div class="header-cta-group">

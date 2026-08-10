@@ -8,10 +8,10 @@ use App\Models\AssignmentSubmission;
 use App\Services\Student\StudentPortalService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AssignmentController extends Controller
 {
@@ -25,37 +25,38 @@ class AssignmentController extends Controller
             $request->user(),
             'student.assignments.index',
             __('student.nav.assignments'),
-            fn ($enrolment) => [
-                'assignments' => Assignment::query()
-                    ->where('course_id', $enrolment->course_id)
-                    ->where(fn ($query) => $query->whereNull('enrolment_id')->orWhere('enrolment_id', $enrolment->id))
-                    ->orderBy('due_at')
-                    ->get(),
+            fn ($enrolments) => [
+                'assignments' => $this->portal->assignmentsForUser($request->user()),
             ],
         );
     }
 
     public function show(Request $request, Assignment $assignment): View
     {
-        $enrolment = $this->portal->primaryEnrolment($request->user());
+        $portalEnrolments = $this->portal->portalEnrolments($request->user());
 
-        if (! $enrolment) {
+        if ($portalEnrolments->isEmpty()) {
             return view('student.shared.no-enrolment-page', [
                 'title' => __('student.nav.assignments'),
                 'heading' => __('student.nav.assignments'),
             ]);
         }
 
-        if (! $this->portal->hasLearningModuleAccess($enrolment)) {
+        $enrolment = $this->portal->learningEnrolmentForResource(
+            $request->user(),
+            (int) $assignment->course_id,
+            $assignment->enrolment_id ? (int) $assignment->enrolment_id : null,
+        );
+
+        if (! $enrolment && $this->portal->learningEnrolments($request->user())->isEmpty()) {
             return view('student.shared.section-restricted', [
                 'title' => __('student.nav.assignments'),
                 'heading' => __('student.nav.assignments'),
-                'enrolment' => $enrolment,
+                'enrolment' => $portalEnrolments->first(),
             ]);
         }
 
-        abort_unless((int) $assignment->course_id === (int) $enrolment->course_id, 403);
-        abort_unless($assignment->enrolment_id === null || (int) $assignment->enrolment_id === (int) $enrolment->id, 403);
+        abort_unless($enrolment, Response::HTTP_FORBIDDEN);
 
         $submission = AssignmentSubmission::query()
             ->where('assignment_id', $assignment->id)
@@ -67,14 +68,13 @@ class AssignmentController extends Controller
 
     public function submit(Request $request, Assignment $assignment): RedirectResponse
     {
-        $enrolment = $this->portal->primaryEnrolment($request->user());
+        $enrolment = $this->portal->learningEnrolmentForResource(
+            $request->user(),
+            (int) $assignment->course_id,
+            $assignment->enrolment_id ? (int) $assignment->enrolment_id : null,
+        );
 
-        if (! $this->portal->hasLearningModuleAccess($enrolment)) {
-            abort(Response::HTTP_FORBIDDEN);
-        }
-
-        abort_unless((int) $assignment->course_id === (int) $enrolment->course_id, 403);
-        abort_unless($assignment->enrolment_id === null || (int) $assignment->enrolment_id === (int) $enrolment->id, 403);
+        abort_unless($enrolment, Response::HTTP_FORBIDDEN);
 
         $data = $request->validate([
             'notes' => ['nullable', 'string', 'max:5000'],
@@ -89,9 +89,9 @@ class AssignmentController extends Controller
             return back()->withErrors(['file' => 'This assignment has already been submitted and resubmission is closed.']);
         }
 
-        $path = $request->file('file')?->store('assignments/submissions', 'public');
+        $path = $request->file('file')?->store('assignments/submissions', 'academy_private');
 
-        AssignmentSubmission::updateOrCreate(
+        $submission = AssignmentSubmission::updateOrCreate(
             ['assignment_id' => $assignment->id, 'enrolment_id' => $enrolment->id],
             [
                 'file_path' => $path ?: $existing?->file_path,
@@ -101,17 +101,25 @@ class AssignmentController extends Controller
             ]
         );
 
+        if ($path && $existing?->file_path && $existing->file_path !== $submission->file_path) {
+            Storage::disk('academy_private')->delete($existing->file_path);
+            Storage::disk('public')->delete($existing->file_path);
+        }
+
         return back()->with('status', __('student.assignments.submitted'));
     }
 
     public function download(Request $request, Assignment $assignment): StreamedResponse
     {
-        $enrolment = $this->portal->primaryEnrolment($request->user());
-        abort_unless($this->portal->hasLearningModuleAccess($enrolment), 403);
-        abort_unless((int) $assignment->course_id === (int) $enrolment->course_id, 403);
-        abort_unless($assignment->enrolment_id === null || (int) $assignment->enrolment_id === (int) $enrolment->id, 403);
+        $enrolment = $this->portal->learningEnrolmentForResource(
+            $request->user(),
+            (int) $assignment->course_id,
+            $assignment->enrolment_id ? (int) $assignment->enrolment_id : null,
+        );
+        abort_unless($enrolment, Response::HTTP_FORBIDDEN);
         abort_unless($assignment->attachment_path, 404);
+        abort_unless(Storage::disk('academy_private')->exists($assignment->attachment_path), 404);
 
-        return Storage::disk('public')->download($assignment->attachment_path, basename($assignment->attachment_path));
+        return Storage::disk('academy_private')->download($assignment->attachment_path, basename($assignment->attachment_path));
     }
 }

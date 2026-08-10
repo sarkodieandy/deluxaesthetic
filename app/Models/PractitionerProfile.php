@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
@@ -52,6 +53,11 @@ class PractitionerProfile extends Model
     public function schedules(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(PractitionerSchedule::class);
+    }
+
+    public function treatments(): BelongsToMany
+    {
+        return $this->belongsToMany(Treatment::class, 'treatment_practitioner');
     }
 
     public function blockedDates(): \Illuminate\Database\Eloquent\Relations\HasMany

@@ -14,7 +14,9 @@ use App\Models\StudentProfile;
 use App\Models\User;
 use App\Services\Academy\PhysicalEnrolmentService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use InvalidArgumentException;
 
 class PhysicalEnrolmentController extends Controller
 {
@@ -38,29 +40,84 @@ class PhysicalEnrolmentController extends Controller
 
     public function create(): View
     {
+        $selectedEnquiryId = request()->integer('enquiry');
+        $selectedEnquiry = $selectedEnquiryId
+            ? CourseEnquiry::query()->with('user.studentProfile')->find($selectedEnquiryId)
+            : null;
+        $selectedStudentId = request()->integer('student')
+            ?: $selectedEnquiry?->converted_student_profile_id
+            ?: $selectedEnquiry?->user?->studentProfile?->id;
+        $selectedCourseId = request()->integer('course') ?: $selectedEnquiry?->course_id;
+        $selectedScheduleId = request()->integer('schedule');
+
+        if (! $selectedScheduleId && $selectedCourseId) {
+            $selectedScheduleId = CourseSchedule::query()
+                ->where('course_id', $selectedCourseId)
+                ->where('is_active', true)
+                ->orderBy('starts_on')
+                ->value('id');
+        }
+
+        $students = StudentProfile::query()->with('user')->latest()->limit(100)->get();
+        $studentByUser = $students->keyBy('user_id');
+        $studentByEmail = $students->filter(fn ($student) => $student->user?->email)
+            ->keyBy(fn ($student) => mb_strtolower(trim((string) $student->user->email)));
+        $enquiries = CourseEnquiry::query()
+            ->with(['user.studentProfile', 'course'])
+            ->whereNull('converted_enrolment_id')
+            ->whereIn('status', ['submitted', 'reviewing', 'contacted', 'qualified'])
+            ->latest()->limit(50)->get();
+
+        $enquiries->each(function (CourseEnquiry $enquiry) use ($studentByUser, $studentByEmail): void {
+            $profile = $enquiry->converted_student_profile_id
+                ? StudentProfile::query()->find($enquiry->converted_student_profile_id)
+                : ($studentByUser->get($enquiry->user_id)
+                    ?: $studentByEmail->get(mb_strtolower(trim((string) $enquiry->email))));
+            $enquiry->setAttribute('matched_student_profile_id', $profile?->id);
+        });
+
         return view('admin.physical-enrolment.create', [
-            'students' => StudentProfile::query()->with('user')->latest()->limit(100)->get(),
-            'courses' => Course::query()->where('is_active', true)->orderBy('name')->get(),
-            'schedules' => CourseSchedule::query()->where('is_active', true)->orderBy('starts_on')->get(),
+            'students' => $students,
+            'courses' => Course::query()->where('is_active', true)->orderBy('sort_order')->orderBy('name')->get(),
+            'schedules' => CourseSchedule::query()->with('course')->where('is_active', true)->orderBy('starts_on')->get(),
             'branches' => Branch::query()->where('is_active', true)->get(),
-            'enquiries' => CourseEnquiry::query()->where('status', 'submitted')->latest()->limit(50)->get(),
-            'selectedStudentId' => request()->integer('student'),
-            'selectedEnquiryId' => request()->integer('enquiry'),
+            'enquiries' => $enquiries,
+            'selectedStudentId' => $selectedStudentId,
+            'selectedCourseId' => $selectedCourseId,
+            'selectedScheduleId' => $selectedScheduleId,
+            'selectedEnquiryId' => $selectedEnquiryId,
+            'canActivate' => (bool) (request()->user()?->can('enrolments.activate') || request()->user()?->can('enrolments.manage')),
         ]);
     }
 
     public function store(StorePhysicalEnrolmentRequest $request): RedirectResponse
     {
-        $student = StudentProfile::query()->findOrFail($request->integer('student_profile_id'));
-        $enrolment = $this->enrolments->createPhysicalEnrolment($student, $request->validated(), $request->user());
+        $data = $request->validated();
 
-        if ($request->boolean('activate_now')) {
-            $this->enrolments->activateEnrolment($enrolment, $request->user(), $request->boolean('send_invitation', true));
+        try {
+            $enrolment = DB::transaction(function () use ($request, $data) {
+                $student = StudentProfile::query()->findOrFail((int) $data['student_profile_id']);
+                $enrolment = $this->enrolments->createPhysicalEnrolment($student, $data, $request->user());
+
+                if ((bool) ($data['activate_now'] ?? false)) {
+                    $enrolment = $this->enrolments->activateEnrolment(
+                        $enrolment,
+                        $request->user(),
+                        (bool) ($data['send_invitation'] ?? false),
+                    );
+                }
+
+                return $enrolment;
+            });
+        } catch (InvalidArgumentException $exception) {
+            return back()->withInput()->withErrors(['course_enquiry_id' => $exception->getMessage()]);
         }
 
-        return redirect()
-            ->route('admin.enrolments.edit', $enrolment)
-            ->with('status', 'Physical enrolment recorded.');
+        $destination = $request->user()?->can('enrolments.manage')
+            ? route('admin.enrolments.edit', $enrolment)
+            : route('admin.physical-enrolment.create');
+
+        return redirect($destination)->with('status', 'Physical enrolment recorded.');
     }
 
     public function activate(Enrolment $enrolment): RedirectResponse

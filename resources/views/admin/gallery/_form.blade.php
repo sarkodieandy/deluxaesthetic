@@ -45,6 +45,16 @@
             <label class="admin-label" for="sort_order">Sort order</label>
             <input id="sort_order" name="sort_order" type="number" min="0" class="admin-input" value="{{ old('sort_order', $item?->sort_order ?? 10) }}">
         </div>
+        <div class="md:col-span-2">
+            <label class="admin-label" for="treatment_id">Related clinical procedure (optional)</label>
+            <select id="treatment_id" name="treatment_id" class="admin-input">
+                <option value="">General clinic work</option>
+                @foreach ($treatments as $treatment)
+                    <option value="{{ $treatment->id }}" @selected((string) old('treatment_id', $item?->treatment_id) === (string) $treatment->id)>{{ $treatment->name }}</option>
+                @endforeach
+            </select>
+            <p class="mt-2 text-xs text-[var(--admin-text-muted)]">Linking a before/after case displays it on that procedure's detail page.</p>
+        </div>
     </div>
 </div>
 

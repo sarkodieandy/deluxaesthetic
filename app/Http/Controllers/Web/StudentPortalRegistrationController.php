@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Academy\StoreStudentPortalRegistrationRequest;
 use App\Models\Course;
+use App\Models\AcademyShowcaseItem;
+use App\Models\PractitionerProfile;
 use App\Services\Academy\StudentPortalRegistrationService;
 use App\Services\Messaging\EmailNotificationService;
 use App\Services\Notifications\InAppNotificationService;
@@ -20,7 +22,29 @@ class StudentPortalRegistrationController extends Controller
             return redirect()->route('student.dashboard');
         }
 
-        return view('web.academy.index');
+        $showcase = AcademyShowcaseItem::query()
+            ->where('is_active', true)
+            ->orderByDesc('is_featured')
+            ->orderBy('sort_order')
+            ->get()
+            ->groupBy('type');
+
+        return view('web.academy.index', [
+            'courses' => Course::query()
+                ->with('category')
+                ->where('is_active', true)
+                ->whereHas('category', fn ($category) => $category->where('is_active', true))
+                ->orderByDesc('is_featured')
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get(),
+            'ceo' => PractitionerProfile::query()
+                ->with('user')
+                ->where('is_ceo', true)
+                ->where('is_active', true)
+                ->first(),
+            'showcase' => $showcase,
+        ]);
     }
 
     public function register(Request $request): View|RedirectResponse
@@ -31,7 +55,10 @@ class StudentPortalRegistrationController extends Controller
 
         return view('web.academy.student-portal-register', [
             'loggedInAsClient' => (bool) $request->user()?->hasRole('Client'),
-            'courses' => Course::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
+            'courses' => Course::query()
+                ->where('is_active', true)
+                ->whereHas('category', fn ($category) => $category->where('is_active', true))
+                ->orderBy('sort_order')->orderBy('name')->get(['id', 'name']),
             'selectedCourseId' => $request->integer('course') ?: old('course_id'),
         ]);
     }

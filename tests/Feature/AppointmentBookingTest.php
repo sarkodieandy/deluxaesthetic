@@ -7,6 +7,7 @@ use App\Enums\AppointmentStatus;
 use App\Models\Branch;
 use App\Models\ClientProfile;
 use App\Models\PractitionerProfile;
+use App\Models\PractitionerSchedule;
 use App\Models\Treatment;
 use App\Models\TreatmentCategory;
 use App\Models\User;
@@ -33,7 +34,7 @@ class AppointmentBookingTest extends TestCase
         $clientUser->assignRole('Client');
         $client = ClientProfile::create(['user_id' => $clientUser->id, 'referral_code' => 'REFTEST1']);
 
-        $practitionerUser = User::factory()->create();
+        $practitionerUser = User::factory()->create(['is_active' => true]);
         $practitionerUser->assignRole('Practitioner');
         $practitioner = PractitionerProfile::create([
             'user_id' => $practitionerUser->id,
@@ -57,8 +58,17 @@ class AppointmentBookingTest extends TestCase
             'price' => 250,
             'is_active' => true,
         ]);
+        $treatment->practitioners()->attach($practitioner);
 
         $startsAt = now()->addDays(2)->setTime(10, 0);
+        PractitionerSchedule::create([
+            'practitioner_profile_id' => $practitioner->id,
+            'branch_id' => $branch->id,
+            'day_of_week' => $startsAt->dayOfWeek,
+            'starts_at' => '09:00',
+            'ends_at' => '17:00',
+            'is_active' => true,
+        ]);
 
         $action = app(CreateAppointmentAction::class);
 

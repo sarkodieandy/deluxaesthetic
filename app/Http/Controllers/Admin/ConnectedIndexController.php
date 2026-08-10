@@ -43,7 +43,7 @@ class ConnectedIndexController extends Controller
         return $this->render('Courses', 'Academy / Courses', ['Name', 'Delivery', 'Fee', 'Status'], $rows->through(fn ($course) => [
             $course->name,
             ucfirst(str_replace('_', ' ', $course->delivery_mode ?? 'physical')),
-            'GHS '.number_format((float) $course->fee, 2),
+            (($course->currency ?? 'GHS') === 'USD' ? '$' : 'GHS ').number_format((float) $course->fee, 2),
             $course->is_active ? 'Active' : 'Hidden',
         ]));
     }
@@ -63,7 +63,7 @@ class ConnectedIndexController extends Controller
             $row->student_name,
             $row->course_name,
             ucfirst(str_replace('_', ' ', $row->status)),
-            'GHS '.number_format((float) $row->outstanding_balance, 2),
+            (($row->currency ?? 'GHS') === 'USD' ? '$' : 'GHS ').number_format((float) $row->outstanding_balance, 2),
         ]));
     }
 

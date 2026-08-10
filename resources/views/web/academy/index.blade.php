@@ -1,16 +1,18 @@
 @extends('web.layouts.app')
 @section('title', 'Aesthetics Training & Masterclasses — '.config('clinic.name'))
-@section('meta_description', 'Build practical skills through hands-on aesthetics training, Botox, fillers, skin treatments and certified masterclasses in Accra, Ghana.')
+@section('meta_description', 'Professional aesthetics education with clinic-led Botox, filler, skin and regenerative masterclasses delivered across West Africa.')
 @section('content')
+
+{{-- ===================== HERO ===================== --}}
 <section class="academy-v2-hero">
     <div class="container-site academy-v2-hero__grid">
         <div class="academy-v2-hero__copy reveal">
             <p class="text-label">{{ $cmsPage?->hero_eyebrow ?: 'De Luxe Aesthetic Clinic & Academy' }}</p>
             <h1>@if($cmsPage?->hero_title){!! nl2br(e($cmsPage->hero_title)) !!}@else Learn the science.<br><em>Master the technique.</em>@endif</h1>
-            <p class="academy-v2-hero__lead">{{ $cmsPage?->hero_body ?: 'Clinic-led aesthetics education built for confident, safe and commercially ready practitioners—from your first consultation to advanced injectable and skin procedures.' }}</p>
+            <p class="academy-v2-hero__lead">{{ $cmsPage?->hero_body ?: 'Clinic-led aesthetics education built for confident, safe and commercially ready practitioners — from your first consultation to advanced injectable and skin procedures.' }}</p>
             <div class="academy-v2-hero__actions">
                 <a href="{{ route('web.academy.student-portal.create') }}" class="btn btn-primary">Apply as a student</a>
-                <a href="#programmes" class="btn btn-secondary">Explore programmes</a>
+                <a href="#course-outlines" class="btn btn-secondary">View course outlines</a>
             </div>
             <dl class="academy-v2-proof">
                 <div><dt>Hands-on</dt><dd>Supervised clinical practice</dd></div>
@@ -28,210 +30,333 @@
     </div>
 </section>
 
-<section class="academy-v2-intro">
-    <div class="container-site academy-v2-intro__grid">
-        <div>
-            <p class="text-label">Training designed around practice</p>
-            <h2 class="text-section">More than a certificate.<br>A complete practitioner foundation.</h2>
-        </div>
-        <div>
-            <p>Every programme combines anatomy, patient assessment, product selection, injection or treatment technique, complication management and aftercare. You learn what to do, why it works and how to deliver it responsibly.</p>
-            <a href="#curriculum" class="academy-v2-text-link">View the complete curriculum <span aria-hidden="true">→</span></a>
-        </div>
-    </div>
-</section>
+@php
+    $trainingSteps = $showcase->get('training_step', collect());
+    $trainingCountries = $showcase->get('training_country', collect());
+    $stories = $showcase->get('student_story', collect());
+    $skillReviews = $showcase->get('skill_review', collect());
+    $videos = $showcase->get('student_video', collect());
+    $certifications = $showcase->get('certification', collect());
+    $experience = $showcase->get('experience', collect());
+    $careerBenefits = $showcase->get('career_benefit', collect());
+    $featuredCourses = $courses->where('is_featured', true)->values();
+    $additionalCourses = $courses->where('is_featured', false)->values();
+@endphp
 
-<section class="academy-v2-programmes" id="programmes">
+{{-- ===================== TRAINING FORMAT ===================== --}}
+@if($trainingSteps->isNotEmpty())
+<section class="section bg-white" id="training-format">
     <div class="container-site">
         <header class="academy-v2-section-head">
-            <div>
-                <p class="text-label">Choose your pathway</p>
-                <h2 class="text-section">Four pillars of modern aesthetics</h2>
-            </div>
-            <p>Build a broad foundation or focus your development on the procedures most relevant to your practice.</p>
+            <div><p class="text-label">How training works</p><h2 class="text-section">A practical, clinic-led training format.</h2></div>
+            <p>Each programme moves from essential theory into live demonstration, supervised practice and continued professional support.</p>
         </header>
-
-        <div class="academy-v2-programme-grid">
-            <article class="academy-v2-programme academy-v2-programme--wide reveal">
-                <div class="academy-v2-programme__image">
-                    <img src="{{ asset('assets/web/images/academy/academy-injectables.webp') }}" alt="Professional aesthetic facial procedure" loading="lazy" decoding="async">
-                    <span>01</span>
-                </div>
-                <div class="academy-v2-programme__body">
-                    <p class="academy-v2-programme__eyebrow">Core masterclass</p>
-                    <h3>Injectable foundations</h3>
-                    <p>Develop the clinical thinking that sits behind safe, considered injectable work.</p>
-                    <ul>
-                        <li>History of Botox and fillers</li>
-                        <li>Anatomy and physiology</li>
-                        <li>Injection techniques</li>
-                        <li>Patient and product selection</li>
-                        <li>Complication management</li>
-                    </ul>
-                </div>
-            </article>
-
-            <article class="academy-v2-programme reveal reveal-delay-1">
-                <div class="academy-v2-programme__image">
-                    <img src="{{ asset('assets/web/images/academy/academy-botox.webp') }}" alt="Professional administering a Botox injection to a client's forehead" loading="lazy" decoding="async">
-                    <span>02</span>
-                </div>
-                <div class="academy-v2-programme__body">
-                    <p class="academy-v2-programme__eyebrow">Botox</p>
-                    <h3>Precision & facial balancing</h3>
-                    <p>Technique-led training for expressive lines, facial refinement and advanced indications.</p>
-                    <ul>
-                        <li>Glabellar, forehead and crow’s feet</li>
-                        <li>Bunny lines and face slimming</li>
-                        <li>Botox for excessive sweating</li>
-                    </ul>
-                </div>
-            </article>
-
-            <article class="academy-v2-programme reveal reveal-delay-2">
-                <div class="academy-v2-programme__image">
-                    <img src="{{ asset('assets/web/images/hero/hero-body-care.webp') }}" alt="Professional body contouring treatment" loading="lazy" decoding="async">
-                    <span>03</span>
-                </div>
-                <div class="academy-v2-programme__body">
-                    <p class="academy-v2-programme__eyebrow">Fillers & contour</p>
-                    <h3>Shape, volume & rejuvenation</h3>
-                    <p>Explore facial and body contouring with a focus on proportion, assessment and natural-looking results.</p>
-                    <ul>
-                        <li>Lips, jawline, chin and hand rejuvenation</li>
-                        <li>Hip and butt filler techniques</li>
-                        <li>Cat eye, goddess eyes and baby smile</li>
-                    </ul>
-                </div>
-            </article>
-
-            <article class="academy-v2-programme academy-v2-programme--wide academy-v2-programme--reverse reveal">
-                <div class="academy-v2-programme__image">
-                    <img src="{{ asset('assets/web/images/academy/academy-skin.webp') }}" alt="Advanced professional skin treatment" loading="lazy" decoding="async">
-                    <span>04</span>
-                </div>
-                <div class="academy-v2-programme__body">
-                    <p class="academy-v2-programme__eyebrow">Advanced skin science</p>
-                    <h3>Corrective & regenerative treatments</h3>
-                    <p>Broaden your treatment menu with protocols designed around texture, pigmentation and skin renewal.</p>
-                    <ul>
-                        <li>Advanced microneedling and mesotherapy</li>
-                        <li>PRP, skin boosters and chemical peels</li>
-                        <li>Hyperpigmentation and stretch marks</li>
-                        <li>Lipolysis and cosmetic science</li>
-                    </ul>
-                </div>
-            </article>
+        <div class="grid gap-px bg-[var(--color-border)] border border-[var(--color-border)] md:grid-cols-4">
+            @foreach($trainingSteps as $i => $step)
+                <article class="bg-white p-7">
+                    <span class="text-label">{{ sprintf('%02d', $i + 1) }}</span>
+                    <h3 class="mt-8 font-display text-2xl">{{ $step->title }}</h3>
+                    @if($step->subtitle)<p class="mt-2 text-label">{{ $step->subtitle }}</p>@endif
+                    <p class="mt-3 text-sm text-[var(--color-soft-grey)]">{{ $step->body }}</p>
+                </article>
+            @endforeach
         </div>
     </div>
 </section>
+@endif
 
-<section class="academy-v2-botox">
-    <div class="container-site academy-v2-botox__grid">
-        <div class="academy-v2-botox__visual reveal">
-            <img src="{{ asset('assets/web/images/academy/academy-botox.webp') }}" alt="Professional administering a Botox injection to a client's forehead" loading="lazy" decoding="async">
-            <div class="academy-v2-botox__stamp">
-                <span>Focused pathway</span>
-                <strong>Botox<br>Training</strong>
-            </div>
-        </div>
-        <div class="academy-v2-botox__content reveal reveal-delay-2">
-            <p class="text-label">Botox masterclass</p>
-            <h2 class="text-section">Precision techniques for confident facial assessment.</h2>
-            <p class="academy-v2-botox__lead">Learn the anatomy, consultation approach, dosing principles and practical techniques behind safe, balanced Botox treatments. Training combines theory, demonstration and supervised hands-on practice.</p>
-            <div class="academy-v2-botox__topics">
-                <article>
-                    <span>01</span>
-                    <div><h3>Upper face</h3><p>Glabellar lines, forehead lines and crow’s feet.</p></div>
-                </article>
-                <article>
-                    <span>02</span>
-                    <div><h3>Facial refinement</h3><p>Bunny lines and face-slimming techniques.</p></div>
-                </article>
-                <article>
-                    <span>03</span>
-                    <div><h3>Advanced indication</h3><p>Botox protocols for excessive sweating.</p></div>
-                </article>
-                <article>
-                    <span>04</span>
-                    <div><h3>Clinical safety</h3><p>Patient selection, product handling, aftercare and complication management.</p></div>
-                </article>
-            </div>
-            <a href="{{ route('web.academy.student-portal.create') }}" class="btn btn-primary">Apply for Botox training</a>
-        </div>
-    </div>
-</section>
-
-<section class="academy-v2-curriculum" id="curriculum">
+{{-- ===================== COUNTRIES WE SERVE ===================== --}}
+@if($trainingCountries->isNotEmpty())
+<section class="section bg-[#171714] text-white" id="countries">
     <div class="container-site">
         <header class="academy-v2-section-head academy-v2-section-head--light">
             <div>
-                <p class="text-label">Complete curriculum</p>
-                <h2 class="text-section">Skills you can build at De Luxe</h2>
+                <p class="text-label">Where we train</p>
+                <h2 class="text-section">International training across West Africa.</h2>
             </div>
-            <p>Course content and procedure combinations are confirmed during admissions, based on your experience and chosen training pathway.</p>
+            <p>Our Academy has travelled across West Africa to deliver practical aesthetics education in {{ $trainingCountries->pluck('title')->join(', ', ' and ') }}.</p>
         </header>
-        <div class="academy-v2-curriculum__grid">
-            <article>
-                <span>Foundation</span>
-                <h3>Safety & consultation</h3>
-                <ul>
-                    <li>Anatomy and physiology</li>
-                    <li>Patient consultation and selection</li>
-                    <li>Product selection and recommendations</li>
-                    <li>Injection technique</li>
-                    <li>Complication management</li>
-                    <li>Professional aftercare</li>
-                </ul>
+        <div class="academy-countries-grid">
+            @foreach($trainingCountries as $i => $country)
+                @php
+                    $countrySlug = match (\Illuminate\Support\Str::slug($country->title)) {
+                        'cote-divoire', 'cote-d-ivoire' => 'cote-divoire',
+                        'benin-republic' => 'benin',
+                        default => \Illuminate\Support\Str::slug($country->title),
+                    };
+                    $knownFlag = in_array($countrySlug, ['ghana', 'cameroon', 'cote-divoire', 'senegal', 'benin'], true);
+                @endphp
+                <article class="academy-country-card reveal" style="--card-i: {{ $i }}">
+                    <div class="academy-country-card__top">
+                        <span>{{ sprintf('%02d', $i + 1) }}</span>
+                        @if($country->imageUrl())
+                            <img src="{{ $country->imageUrl() }}" alt="{{ $country->title }} training" width="900" height="600" loading="lazy">
+                        @elseif($knownFlag)
+                            <img src="{{ asset('assets/web/flags/'.$countrySlug.'.svg') }}" alt="" width="900" height="600" loading="lazy">
+                        @else
+                            <strong aria-hidden="true">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($country->title, 0, 2)) }}</strong>
+                        @endif
+                    </div>
+                    <div class="academy-country-card__body">
+                        <h3>{{ $country->title }}</h3>
+                        @if($country->subtitle)<p class="academy-country-card__city">{{ $country->subtitle }}</p>@endif
+                        <p>{{ $country->body }}</p>
+                    </div>
+                </article>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
+{{-- ===================== COURSE OUTLINES ===================== --}}
+@if($featuredCourses->isNotEmpty())
+<section class="academy-courses-section" id="course-outlines">
+    <div class="container-site">
+        <header class="academy-v2-section-head">
+            <div>
+                <p class="text-label">Course outlines & pricing</p>
+                <h2 class="text-section">Choose your training level.</h2>
+            </div>
+            <p>Each class combines theory, live demonstration and supervised hands-on practice. Contact admissions to confirm upcoming dates in your region.</p>
+        </header>
+
+
+        <div class="academy-course-collection">
+            @foreach($featuredCourses as $i => $course)
+            <article class="course-card-refined reveal" style="--course-delay: {{ $i * 0.12 }}s">
+                {{-- Compact Header --}}
+                <div class="course-card-refined__header">
+                    <div class="course-card-refined__thumb">
+                        <img src="{{ $course->imageUrl() ?: asset('assets/web/images/academy/academy-training.webp') }}" alt="{{ $course->name }} aesthetics training" loading="{{ $i === 0 ? 'eager' : 'lazy' }}">
+                        <span class="course-card-refined__num">{{ sprintf('%02d', $i + 1) }}</span>
+                    </div>
+                    <div class="course-card-refined__info">
+                        <div class="course-card-refined__meta">
+                            <span class="course-card-refined__tag">{{ $course->category?->name ?: 'Professional masterclass' }}</span>
+                            <span class="course-card-refined__price"><small>Course fee</small>{{ ($course->currency ?? 'GHS') === 'USD' ? 'US$'.number_format((float) $course->fee, 0) : 'GHS '.number_format((float) $course->fee, 0) }}</span>
+                        </div>
+                        <h3 class="course-card-refined__title"><a href="{{ route('web.courses.show', $course->slug) }}">{{ $course->name }}</a></h3>
+                        <p class="course-card-refined__desc">{{ $course->description }}</p>
+                        <span class="course-card-refined__count">{{ count($course->learning_outcomes ?? []) }} training modules included</span>
+                    </div>
+                    <div class="course-card-refined__action">
+                        <a href="{{ route('web.courses.show', $course->slug) }}" class="course-card-refined__btn">Course details</a>
+                        <a href="{{ route('web.academy.student-portal.create', ['course' => $course->id]) }}" class="course-card-refined__btn">
+                            Apply Now
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </a>
+                    </div>
+                </div>
+                {{-- Compact Modules Grid --}}
+                @if(!empty($course->learning_outcomes))
+                <div class="course-card-refined__grid">
+                    @foreach($course->learning_outcomes as $m => $module)
+                    <details class="module-mini">
+                        <summary class="module-mini__header">
+                            <span class="module-mini__badge">{{ sprintf('%02d', $m + 1) }}</span>
+                            <h4 class="module-mini__title">{{ $module['name'] ?? 'Training module' }}</h4>
+                            <span class="module-mini__toggle" aria-hidden="true">+</span>
+                        </summary>
+                        <ul class="module-mini__list">
+                            @foreach($module['topics'] ?? [] as $topic)
+                                <li>{{ $topic }}</li>
+                            @endforeach
+                        </ul>
+                    </details>
+                    @endforeach
+                </div>
+                @endif
             </article>
-            <article>
-                <span>Injectables</span>
-                <h3>Botox & dermal fillers</h3>
-                <ul>
-                    <li>Glabellar lines, crow’s feet and forehead</li>
-                    <li>Bunny lines, face slimming and sweating</li>
-                    <li>Italian lip, jawline and chin contour</li>
-                    <li>Hip and butt fillers</li>
-                    <li>Cat eye and hand rejuvenation</li>
-                    <li>PDO mono and monothread</li>
-                </ul>
-            </article>
-            <article>
-                <span>Skin & body</span>
-                <h3>Regeneration & contour</h3>
-                <ul>
-                    <li>Advanced microneedling</li>
-                    <li>Mesotherapy and PRP</li>
-                    <li>Skin boosters and chemical peel basics</li>
-                    <li>Hyperpigmentation protocols</li>
-                    <li>Stretch-mark treatments</li>
-                    <li>Fat dissolving and basic weight loss</li>
-                </ul>
-            </article>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
+{{-- ===================== DB COURSES (admin-managed) ===================== --}}
+@if($additionalCourses->isNotEmpty())
+<section class="section bg-white" id="course-fees">
+    <div class="container-site">
+        <header class="academy-v2-section-head">
+            <div><p class="text-label">Enrol now</p><h2 class="text-section">Available courses with confirmed fees.</h2></div>
+            <p>Physical training in Accra. Admissions confirms dates, requirements and availability before portal approval.</p>
+        </header>
+        <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            @foreach($additionalCourses as $course)
+                <article class="group flex flex-col border border-[var(--color-border)] bg-white p-7 transition hover:-translate-y-1 hover:shadow-xl">
+                    <p class="text-label">{{ $course->category?->name ?: 'Professional training' }}</p>
+                    <h3 class="mt-5 font-display text-3xl"><a href="{{ route('web.courses.show', $course->slug) }}">{{ $course->name }}</a></h3>
+                    <p class="mt-4 flex-1 text-[var(--color-soft-grey)]">{{ \Illuminate\Support\Str::limit($course->description, 150) }}</p>
+                    <div class="mt-7 border-t border-[var(--color-border)] pt-5">
+                        @if($course->duration_hours > 0)<p class="text-sm text-[var(--color-soft-grey)]">{{ $course->duration_hours }} hours · {{ ucfirst($course->delivery_mode) }}</p>@endif
+                        <p class="mt-2 font-display text-2xl">{{ $course->formattedFee() }}</p>
+                    </div>
+                    <div class="mt-6 flex flex-wrap gap-3"><a class="btn btn-secondary" href="{{ route('web.courses.show', $course->slug) }}">View outline</a><a class="btn btn-primary" href="{{ route('web.academy.student-portal.create', ['course' => $course->id]) }}">Apply for this course</a></div>
+                </article>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
+{{-- ===================== PAST STUDENTS ===================== --}}
+@if($stories->isNotEmpty())
+<section class="section bg-white" id="past-students">
+    <div class="container-site">
+        <header class="academy-v2-section-head">
+            <div><p class="text-label">Past students</p><h2 class="text-section">Practitioners shaped through real, supervised training.</h2></div>
+            <p>Verified student stories and Academy milestones published by the De Luxe admissions team.</p>
+        </header>
+        <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            @foreach($stories as $story)
+                <article class="border border-[var(--color-border)] bg-[var(--color-stone)] p-7">
+                    @if($story->imageUrl())<img src="{{ $story->imageUrl() }}" alt="{{ $story->title }}" class="mb-6 h-64 w-full object-cover" loading="lazy">@endif
+                    <p class="font-display text-2xl">{{ $story->body }}</p>
+                    <p class="mt-6 text-label">{{ $story->title }}@if($story->subtitle) · {{ $story->subtitle }}@endif</p>
+                </article>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
+{{-- ===================== SKILL REVIEWS ===================== --}}
+@if($skillReviews->isNotEmpty())
+<section class="section bg-[var(--color-stone)]" id="skill-reviews">
+    <div class="container-site">
+        <header class="academy-v2-section-head">
+            <div><p class="text-label">Skill reviews</p><h2 class="text-section">Confidence built one practical skill at a time.</h2></div>
+            <p>First-hand reflections from students about technique, supervision and professional growth.</p>
+        </header>
+        <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            @foreach($skillReviews as $review)
+                <blockquote class="border border-[var(--color-border)] bg-white p-7">
+                    <p class="font-display text-2xl">“{{ $review->body }}”</p>
+                    <footer class="mt-6 text-label">{{ $review->title }}@if($review->subtitle) · {{ $review->subtitle }}@endif</footer>
+                </blockquote>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
+{{-- ===================== STUDENT VIDEOS ===================== --}}
+@if($videos->isNotEmpty())
+<section class="section bg-white" id="student-videos">
+    <div class="container-site">
+        <header class="academy-v2-section-head">
+            <div><p class="text-label">Student videos</p><h2 class="text-section">See the Academy experience in motion.</h2></div>
+            <p>Training moments, student progress and practical reflections selected by the Academy team.</p>
+        </header>
+        <div class="grid gap-6 md:grid-cols-2">
+            @foreach($videos as $video)
+                @php($embedUrl = $video->videoEmbedUrl())
+                <article class="overflow-hidden border border-[var(--color-border)] bg-[#171714] text-white">
+                    @if($embedUrl)
+                        <div class="aspect-video bg-black"><iframe src="{{ $embedUrl }}" title="{{ $video->title }}" class="h-full w-full" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
+                    @else
+                        <a href="{{ $video->video_url }}" target="_blank" rel="noopener noreferrer" class="group relative block aspect-video overflow-hidden bg-black">
+                            @if($video->imageUrl())<img src="{{ $video->imageUrl() }}" alt="{{ $video->title }}" class="absolute inset-0 h-full w-full object-cover opacity-70 transition group-hover:scale-105" loading="lazy">@endif
+                            <span class="absolute inset-0 grid place-items-center"><span class="grid h-16 w-16 place-items-center rounded-full border border-white/70 bg-black/30 text-xl">▶</span></span>
+                        </a>
+                    @endif
+                    <div class="p-7"><h3 class="font-display text-3xl">{{ $video->title }}</h3>@if($video->subtitle)<p class="mt-2 text-white/70">{{ $video->subtitle }}</p>@endif @if($video->body)<p class="mt-4 text-sm leading-6 text-white/60">{{ $video->body }}</p>@endif</div>
+                </article>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+{{-- ===================== CERTIFICATIONS & EXPERIENCE ===================== --}}
+@if($certifications->isNotEmpty() || $experience->isNotEmpty())
+<section class="section bg-[#171714] text-white" id="academy-credentials">
+    <div class="container-site">
+        @if($certifications->isNotEmpty())
+            <header class="academy-v2-section-head academy-v2-section-head--light">
+                <div><p class="text-label">Certifications</p><h2 class="text-section">Professional achievement, clearly presented.</h2></div>
+                <p>Academy certifications and recognition published and maintained by the De Luxe team.</p>
+            </header>
+            <div class="grid gap-px border border-white/20 bg-white/20 md:grid-cols-3">
+                @foreach($certifications as $proof)
+                    <article class="bg-[#171714] p-7">
+                        @if($proof->imageUrl())<img src="{{ $proof->imageUrl() }}" alt="{{ $proof->title }}" class="mb-6 h-40 w-full object-cover" loading="lazy">@endif
+                        <p class="text-label text-white/60">Certification</p>
+                        <h3 class="mt-3 font-display text-3xl">{{ $proof->title }}</h3>
+                        @if($proof->subtitle)<p class="mt-3 font-medium text-white/85">{{ $proof->subtitle }}</p>@endif
+                        @if($proof->body)<p class="mt-3 text-white/70">{{ $proof->body }}</p>@endif
+                    </article>
+                @endforeach
+            </div>
+        @endif
+
+        @if($experience->isNotEmpty())
+            <header class="academy-v2-section-head academy-v2-section-head--light {{ $certifications->isNotEmpty() ? 'mt-20' : '' }}">
+                <div><p class="text-label">Industry experience</p><h2 class="text-section">Experience that supports every student.</h2></div>
+                <p>Verified training milestones and practical experience from the Academy team.</p>
+            </header>
+            <div class="grid gap-px border border-white/20 bg-white/20 md:grid-cols-3">
+                @foreach($experience as $proof)
+                    <article class="bg-[#171714] p-7">
+                        @if($proof->imageUrl())<img src="{{ $proof->imageUrl() }}" alt="{{ $proof->title }}" class="mb-6 h-40 w-full object-cover" loading="lazy">@endif
+                        <p class="text-label text-white/60">Training experience</p>
+                        <h3 class="mt-3 font-display text-3xl">{{ $proof->title }}</h3>
+                        @if($proof->subtitle)<p class="mt-3 font-medium text-white/85">{{ $proof->subtitle }}</p>@endif
+                        @if($proof->body)<p class="mt-3 text-white/70">{{ $proof->body }}</p>@endif
+                    </article>
+                @endforeach
+            </div>
+        @endif
+    </div>
+</section>
+@endif
+{{-- ===================== CEO / LEAD TRAINER ===================== --}}
+<section class="academy-v2-botox">
+    <div class="container-site academy-v2-botox__grid">
+        <div class="academy-v2-botox__visual reveal">
+            <img src="{{ $ceo?->photo_path ? $ceo->photoUrl() : asset('assets/web/images/team/ceo-academy-portrait.webp') }}" alt="{{ $ceo?->user?->name ?: config('clinic.ceo.name', 'Lead trainer at De Luxe Academy') }}" loading="lazy" decoding="async" style="object-position: 50% 18%;">
+            <div class="academy-v2-botox__stamp">
+                <span>Lead trainer</span>
+                <strong>De Luxe<br>Academy</strong>
+            </div>
+        </div>
+        <div class="academy-v2-botox__content reveal reveal-delay-2">
+            <p class="text-label">Led by experience</p>
+            <h2 class="text-section">Training you can trust, delivered by a practitioner you can follow.</h2>
+            <p class="academy-v2-botox__lead">{{ $ceo?->biography ?: 'Every masterclass is led by the founder of De Luxe, combining hands-on clinical experience with practical aesthetics education and continued student support.' }}</p>
+            <div class="academy-v2-botox__topics">
+                <article><span>01</span><div><h3>Injectable expertise</h3><p>Botox, dermal fillers, PDO threads and advanced body techniques.</p></div></article>
+                <article><span>02</span><div><h3>Skin & regeneration</h3><p>Microneedling, PRP, mesotherapy, chemical peels and hyperpigmentation.</p></div></article>
+                @if($trainingCountries->isNotEmpty())<article><span>03</span><div><h3>International delivery</h3><p>Training delivered across {{ $trainingCountries->pluck('title')->join(', ', ' and ') }}.</p></div></article>@endif
+                <article><span>04</span><div><h3>Lifetime support</h3><p>Mentorship, referral network and internationally recognised certifications.</p></div></article>
+            </div>
+            <a href="{{ route('web.academy.student-portal.create') }}" class="btn btn-primary">Apply to train with us</a>
         </div>
     </div>
 </section>
 
+{{-- ===================== CAREER / BEYOND TRAINING ===================== --}}
+@if($careerBenefits->isNotEmpty())
 <section class="academy-v2-career">
     <div class="container-site academy-v2-career__grid">
         <div class="academy-v2-career__image reveal">
-            <img src="{{ asset('assets/web/images/academy/academy-training.webp') }}" alt="Beauty professional receiving hands-on training" loading="lazy" decoding="async">
+            <img src="{{ $careerBenefits->first(fn ($benefit) => $benefit->imageUrl())?->imageUrl() ?: asset('assets/web/images/academy/academy-training.webp') }}" alt="Beauty professional receiving hands-on training" loading="lazy" decoding="async">
         </div>
         <div class="academy-v2-career__copy reveal reveal-delay-2">
             <p class="text-label">Beyond the treatment room</p>
             <h2 class="text-section">We help you prepare for the industry.</h2>
-            <p>Technical ability matters, but a sustainable practice also needs confidence, connections and professional presentation. Your academy experience can include:</p>
+            <p>Technical ability matters, but a sustainable practice needs confidence, connections and professional presentation. Your academy experience can include:</p>
             <div class="academy-v2-career__list">
-                <p><span>01</span> Customer service and client experience</p>
-                <p><span>02</span> Referral network and industry recognition</p>
-                <p><span>03</span> Lifetime mentorship and product seller contacts</p>
-                <p><span>04</span> Internationally recognised certificates</p>
-                <p><span>05</span> Graduation ceremony and professional photography</p>
+                @foreach($careerBenefits as $i => $benefit)
+                    <p><span>{{ sprintf('%02d', $i + 1) }}</span><span><strong class="block text-[var(--color-ink)]">{{ $benefit->title }}</strong><small class="mt-1 block leading-6 text-[var(--color-soft-grey)]">{{ $benefit->body }}</small></span></p>
+                @endforeach
             </div>
         </div>
     </div>
 </section>
+@endif
 
+{{-- ===================== FINAL CTA ===================== --}}
 <section class="academy-v2-final">
     <div class="container-site academy-v2-final__inner">
         <p class="text-label">Your next chapter</p>

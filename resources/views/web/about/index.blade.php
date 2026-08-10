@@ -47,7 +47,7 @@
             <h2>A place to receive care—and learn how to give it.</h2>
             <p>De Luxe brings three complementary experiences under one roof. Our clinic provides personalised aesthetic and restorative treatments. Our academy prepares practitioners through hands-on, safety-led education. Our store helps clients continue thoughtful care at home.</p>
             <div class="about-v2-story__pathways">
-                <a href="{{ route('web.treatments.index') }}"><span>01</span><div><strong>Clinic</strong><small>Personalised treatments and restorative care</small></div><i>→</i></a>
+                <a href="{{ route('web.clinical.index') }}"><span>01</span><div><strong>Clinic</strong><small>Personalised treatments and restorative care</small></div><i>→</i></a>
                 <a href="{{ route('web.academy.index') }}"><span>02</span><div><strong>Academy</strong><small>Practical training, certification and mentorship</small></div><i>→</i></a>
                 <a href="{{ route('web.store.index') }}"><span>03</span><div><strong>Store</strong><small>Clinic-selected skincare and beauty essentials</small></div><i>→</i></a>
             </div>

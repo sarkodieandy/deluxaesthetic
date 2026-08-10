@@ -24,8 +24,12 @@ class StoreCourseRequest extends FormRequest
             'max_students' => ['nullable', 'integer', 'min:1'],
             'waiting_list_capacity' => ['nullable', 'integer', 'min:0'],
             'fee' => ['required', 'numeric', 'min:0'],
+            'currency' => ['required', 'in:GHS,USD'],
+            'sort_order' => ['required', 'integer', 'min:0', 'max:10000'],
             'deposit_amount' => ['nullable', 'numeric', 'min:0'],
+            'curriculum_outline' => ['nullable', 'string', 'max:20000'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+            'remove_image' => ['sometimes', 'boolean'],
             'is_featured' => ['sometimes', 'boolean'],
             'is_active' => ['sometimes', 'boolean'],
         ];

@@ -16,6 +16,7 @@ class ProductionSeeder extends Seeder
             SettingsSeeder::class,
             EmailTemplateSeeder::class,
             BranchSeeder::class,
+            ClinicalCategorySeeder::class,
             ProductCategorySeeder::class,
         ]);
     }

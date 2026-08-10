@@ -19,6 +19,29 @@ enum EnrolmentStatus: string
     case CertificateIssued = 'certificate_issued';
 
     /**
+     * Statuses from which staff may grant or restore active portal access.
+     *
+     * Terminal academic outcomes are deliberately excluded so an accidental
+     * click cannot regress a completed or certified enrolment back to active.
+     *
+     * @return list<string>
+     */
+    public static function activationSourceStatuses(): array
+    {
+        return [
+            self::Enquiry->value,
+            self::ApplicationPending->value,
+            self::AwaitingPhysicalVerification->value,
+            self::AwaitingPayment->value,
+            self::PartiallyPaid->value,
+            self::Suspended->value,
+            self::OnHold->value,
+            self::Withdrawn->value,
+            self::Cancelled->value,
+        ];
+    }
+
+    /**
      * @return list<string>
      */
     public static function portalAccessStatuses(): array

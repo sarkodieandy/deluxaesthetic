@@ -20,6 +20,7 @@ class CourseMaterialManagementTest extends TestCase
 
     public function test_admin_can_publish_a_file_for_one_students_enrolment(): void
     {
+        Storage::fake('academy_private');
         Storage::fake('public');
         Permission::findOrCreate('materials.manage');
         $adminRole = Role::findOrCreate('Super Administrator');
@@ -44,12 +45,14 @@ class CourseMaterialManagementTest extends TestCase
         ])->assertRedirect();
 
         $material = CourseMaterial::query()->firstOrFail();
-        Storage::disk('public')->assertExists($material->file_path);
+        Storage::disk('academy_private')->assertExists($material->file_path);
+        Storage::disk('public')->assertMissing($material->file_path);
         $this->assertDatabaseHas('notifications', ['notifiable_id' => $wendy->id]);
 
         $this->actingAs($wendy)->get(route('student.materials.index'))
             ->assertOk()->assertSee('Private practical guide');
         $this->actingAs($wendy)->get(route('student.materials.download', $material))->assertOk();
+        $this->actingAs($admin)->get(route('admin.course-materials.download', $material))->assertOk();
 
         $this->actingAs($other)->get(route('student.materials.index'))
             ->assertOk()->assertDontSee('Private practical guide');

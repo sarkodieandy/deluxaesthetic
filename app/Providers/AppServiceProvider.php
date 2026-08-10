@@ -20,11 +20,15 @@ use App\Services\Payments\MockPaymentService;
 use App\Services\Payments\PaystackPaymentService;
 use App\Support\GoogleAuth;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -41,6 +45,26 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        RateLimiter::for('academy-submissions', function (Request $request) {
+            $email = Str::lower(trim((string) $request->input('email')));
+            $identity = $email !== '' ? $request->ip().'|'.$email : $request->ip();
+
+            return [
+                Limit::perMinute(4)->by('academy-minute:'.$request->ip()),
+                Limit::perHour(10)->by('academy-hour:'.$identity),
+            ];
+        });
+
+        RateLimiter::for('booking-submissions', function (Request $request) {
+            $email = Str::lower(trim((string) ($request->input('guest_email') ?: $request->user()?->email)));
+            $identity = $email !== '' ? $request->ip().'|'.$email : $request->ip();
+
+            return [
+                Limit::perMinute(6)->by('booking-minute:'.$request->ip()),
+                Limit::perHour(20)->by('booking-hour:'.$identity),
+            ];
+        });
+
         $this->app->resolved('mail.manager', function ($manager) {
             $manager->extend('bird', function ($config) {
                 return new BirdTransport(

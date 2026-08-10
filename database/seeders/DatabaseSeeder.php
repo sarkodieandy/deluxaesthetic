@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             EmailTemplateSeeder::class,
             BranchSeeder::class,
             DemoUserSeeder::class,
+            ClinicalCategorySeeder::class,
             ClinicDemoSeeder::class,
             ProductCategorySeeder::class,
             DemoCertificateSeeder::class,

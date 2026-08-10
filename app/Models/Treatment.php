@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class Treatment extends Model
 {
@@ -16,7 +17,7 @@ class Treatment extends Model
         'treatment_category_id', 'name', 'slug', 'short_description', 'description', 'benefits',
         'suitable_candidates', 'contraindications', 'preparation_instructions', 'aftercare_instructions',
         'duration_minutes', 'recovery_days', 'price', 'promotional_price', 'deposit_amount',
-        'recommended_sessions', 'buffer_before_minutes', 'buffer_after_minutes', 'is_featured',
+        'recommended_sessions', 'buffer_before_minutes', 'buffer_after_minutes', 'is_featured', 'sort_order',
         'is_active', 'seo_title', 'seo_description', 'image_path',
     ];
 
@@ -29,6 +30,7 @@ class Treatment extends Model
             'deposit_amount' => 'decimal:2',
             'is_featured' => 'boolean',
             'is_active' => 'boolean',
+            'sort_order' => 'integer',
         ];
     }
 
@@ -47,6 +49,16 @@ class Treatment extends Model
         return $this->hasMany(TreatmentTranslation::class);
     }
 
+    public function galleryItems(): HasMany
+    {
+        return $this->hasMany(GalleryItem::class);
+    }
+
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class);
+    }
+
     public function effectivePrice(): string
     {
         return (string) ($this->promotional_price ?? $this->price);
@@ -58,10 +70,16 @@ class Treatment extends Model
             return null;
         }
 
-        if (str_starts_with($this->image_path, 'assets/')) {
-            return asset($this->image_path);
+        if (\App\Support\GalleryMedia::isRemoteUrl($this->image_path)) {
+            return $this->image_path;
         }
 
-        return asset('storage/'.$this->image_path);
+        if (str_starts_with($this->image_path, 'assets/')) {
+            return is_file(public_path($this->image_path)) ? asset($this->image_path) : null;
+        }
+
+        return Storage::disk('public')->exists($this->image_path)
+            ? Storage::disk('public')->url($this->image_path)
+            : null;
     }
 }

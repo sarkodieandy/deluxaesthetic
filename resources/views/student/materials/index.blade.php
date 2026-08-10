@@ -6,6 +6,7 @@
     @forelse($materials as $material)
         <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-border)] pb-4 last:border-0 last:pb-0">
             <div class="min-w-0">
+                <p class="text-label mb-1">{{ $material->course?->name }}</p>
                 <p class="font-medium">{{ $material->title }}</p>
                 @if($material->description)
                     <p class="text-sm text-[var(--color-soft-grey)]">{{ $material->description }}</p>

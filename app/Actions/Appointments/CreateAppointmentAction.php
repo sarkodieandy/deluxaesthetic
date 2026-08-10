@@ -5,9 +5,11 @@ namespace App\Actions\Appointments;
 use App\Enums\AppointmentStatus;
 use App\Models\Appointment;
 use App\Models\AppointmentStatusHistory;
+use App\Models\Branch;
 use App\Models\ClientProfile;
 use App\Models\PractitionerProfile;
 use App\Models\Treatment;
+use App\Services\Appointments\AvailabilityService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -15,6 +17,10 @@ use InvalidArgumentException;
 
 class CreateAppointmentAction
 {
+    public function __construct(
+        private readonly AvailabilityService $availability,
+    ) {}
+
     /**
      * @param  array{
      *     client_profile_id:int,
@@ -31,15 +37,31 @@ class CreateAppointmentAction
     public function execute(array $data): Appointment
     {
         return DB::transaction(function () use ($data) {
-            $treatment = Treatment::query()->lockForUpdate()->findOrFail($data['treatment_id']);
-            $practitioner = PractitionerProfile::query()->lockForUpdate()->findOrFail($data['practitioner_profile_id']);
+            $treatment = Treatment::query()->with('category')->lockForUpdate()->findOrFail($data['treatment_id']);
+            $practitioner = PractitionerProfile::query()->with('user')->lockForUpdate()->findOrFail($data['practitioner_profile_id']);
+            $branch = Branch::query()->where('is_active', true)->lockForUpdate()->find($data['branch_id']);
             ClientProfile::query()->findOrFail($data['client_profile_id']);
 
-            if (! $treatment->is_active || ! $practitioner->is_active) {
+            if (! $treatment->is_active || ! $treatment->category?->is_active || ! $practitioner->is_active || ! $practitioner->user?->is_active || ! $branch) {
                 throw new InvalidArgumentException('Treatment or practitioner is unavailable.');
             }
 
-            $startsAt = CarbonImmutable::parse($data['starts_at'])->utc();
+            if (! $practitioner->treatments()->whereKey($treatment->id)->exists()) {
+                throw new InvalidArgumentException('The selected practitioner is not assigned to this treatment.');
+            }
+
+            $timezone = config('clinic.timezone', 'Africa/Accra');
+            $requestedStart = CarbonImmutable::parse($data['starts_at'], $timezone);
+            $isOfferedSlot = $this->availability
+                ->slotsForDate($practitioner->id, $treatment->id, $branch->id, $requestedStart)
+                ->contains(fn (array $slot) => CarbonImmutable::parse($slot['starts_at'])
+                    ->equalTo($requestedStart));
+
+            if (! $isOfferedSlot) {
+                throw new InvalidArgumentException('Selected time is outside current practitioner availability.');
+            }
+
+            $startsAt = $requestedStart->utc();
             $endsAt = $startsAt->addMinutes(
                 $treatment->duration_minutes + $treatment->buffer_after_minutes
             );

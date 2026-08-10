@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\Academy\UpdateCourseRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -15,7 +16,12 @@ class CourseController extends Controller
 {
     public function index(): View
     {
-        $courses = DB::table('courses')->whereNull('deleted_at')->latest('created_at')->paginate(15);
+        $courses = DB::table('courses')
+            ->whereNull('deleted_at')
+            ->orderByDesc('is_featured')
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->paginate(15);
 
         return view('admin.courses.index', compact('courses'));
     }
@@ -43,10 +49,13 @@ class CourseController extends Controller
             'max_students' => (int) ($data['max_students'] ?? 20),
             'waiting_list_capacity' => (int) ($data['waiting_list_capacity'] ?? 5),
             'fee' => $data['fee'],
+            'currency' => $data['currency'],
+            'sort_order' => (int) $data['sort_order'],
             'deposit_amount' => $data['deposit_amount'] ?? null,
-            'image_path' => $request->file('image')?->store('courses', 'public'),
+            'learning_outcomes' => $this->parseCurriculum($data['curriculum_outline'] ?? null),
+            'image_path' => $request->hasFile('image') ? $this->storeManagedImage($request->file('image')) : null,
             'is_featured' => $request->boolean('is_featured'),
-            'is_active' => $request->boolean('is_active', true),
+            'is_active' => $request->boolean('is_active'),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -82,24 +91,58 @@ class CourseController extends Controller
             'max_students' => (int) ($data['max_students'] ?? 20),
             'waiting_list_capacity' => (int) ($data['waiting_list_capacity'] ?? 5),
             'fee' => $data['fee'],
+            'currency' => $data['currency'],
+            'sort_order' => (int) $data['sort_order'],
             'deposit_amount' => $data['deposit_amount'] ?? null,
+            'learning_outcomes' => $this->parseCurriculum($data['curriculum_outline'] ?? null),
             'is_featured' => $request->boolean('is_featured'),
-            'is_active' => $request->boolean('is_active', true),
+            'is_active' => $request->boolean('is_active'),
             'updated_at' => now(),
         ];
 
+        $previousImage = $record->image_path;
         if ($request->hasFile('image')) {
-            $payload['image_path'] = $request->file('image')->store('courses', 'public');
+            $payload['image_path'] = $this->storeManagedImage($request->file('image'));
+        } elseif ($request->boolean('remove_image')) {
+            $payload['image_path'] = null;
         }
 
-        DB::table('courses')->where('id', $record->id)->update($payload);
+        DB::transaction(function () use ($record, $payload, $previousImage): void {
+            DB::table('courses')->where('id', $record->id)->update($payload);
+
+            $nextImage = array_key_exists('image_path', $payload) ? $payload['image_path'] : $previousImage;
+            if ($nextImage !== $previousImage) {
+                DB::afterCommit(fn () => $this->deleteManagedImage($previousImage));
+            }
+        });
 
         return redirect()->route('admin.courses.index')->with('status', 'Course updated successfully.');
     }
 
     public function destroy(int $course): RedirectResponse
     {
-        DB::table('courses')->where('id', $course)->update(['deleted_at' => now()]);
+        $record = DB::table('courses')->where('id', $course)->whereNull('deleted_at')->firstOrFail();
+
+        $hasDependentRecords = DB::table('enrolments')->where('course_id', $record->id)->exists()
+            || DB::table('course_schedules')->where('course_id', $record->id)->exists()
+            || DB::table('course_materials')->where('course_id', $record->id)->exists()
+            || DB::table('assignments')->where('course_id', $record->id)->exists();
+
+        if ($hasDependentRecords) {
+            return back()->withErrors([
+                'course' => 'This course is already used by students or training records. Unpublish it instead so historical records remain available.',
+            ]);
+        }
+
+        DB::transaction(function () use ($record): void {
+            DB::table('courses')->where('id', $record->id)->update([
+                'is_active' => false,
+                'deleted_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            DB::afterCommit(fn () => $this->deleteManagedImage($record->image_path));
+        });
 
         return redirect()->route('admin.courses.index')->with('status', 'Course removed.');
     }
@@ -131,7 +174,16 @@ class CourseController extends Controller
     {
         $slug = Str::slug($name) ?: 'courses';
         $existing = DB::table('course_categories')->where('slug', $slug)->first();
-        if ($existing) return $existing->id;
+        if ($existing) {
+            DB::table('course_categories')->where('id', $existing->id)->update([
+                'name' => $name,
+                'is_active' => true,
+                'deleted_at' => null,
+                'updated_at' => now(),
+            ]);
+
+            return $existing->id;
+        }
 
         return DB::table('course_categories')->insertGetId([
             'name' => $name,
@@ -152,5 +204,39 @@ class CourseController extends Controller
             $i++;
         }
         return $slug;
+    }
+
+    private function parseCurriculum(?string $outline): ?string
+    {
+        if (! $outline) return null;
+
+        $modules = collect(preg_split('/\r\n|\r|\n/', $outline))
+            ->map(fn (string $line) => array_values(array_filter(array_map('trim', explode('|', $line)))))
+            ->filter(fn (array $parts) => count($parts) > 1)
+            ->map(fn (array $parts) => ['name' => array_shift($parts), 'topics' => $parts])
+            ->values()
+            ->all();
+
+        return $modules ? json_encode($modules, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : null;
+    }
+
+    private function deleteManagedImage(?string $path): void
+    {
+        if (! $path || str_starts_with($path, 'assets/') || filter_var($path, FILTER_VALIDATE_URL)) {
+            return;
+        }
+
+        Storage::disk('public')->delete($path);
+    }
+
+    private function storeManagedImage(\Illuminate\Http\UploadedFile $image): string
+    {
+        $path = $image->store('courses', 'public');
+
+        if (! is_string($path) || $path === '') {
+            throw new \RuntimeException('The course image could not be stored.');
+        }
+
+        return $path;
     }
 }

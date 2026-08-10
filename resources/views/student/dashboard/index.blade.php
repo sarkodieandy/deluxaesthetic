@@ -8,7 +8,7 @@
     <div class="student-metric"><p class="student-metric__label">Course</p><p class="student-metric__value" style="font-size:1.1rem;">{{ $enrolment->course?->name }}</p></div>
     <div class="student-metric"><p class="student-metric__label">Status</p><p class="student-metric__value" style="font-size:1.1rem;">{{ ucfirst(str_replace('_',' ', $enrolment->status)) }}</p></div>
     <div class="student-metric"><p class="student-metric__label">Attendance</p><p class="student-metric__value">{{ $metrics['attendance_percentage'] !== null ? $metrics['attendance_percentage'].'%' : '—' }}</p></div>
-    <div class="student-metric"><p class="student-metric__label">Outstanding</p><p class="student-metric__value">GHS {{ number_format($metrics['outstanding_balance'], 2) }}</p></div>
+    <div class="student-metric"><p class="student-metric__label">Outstanding</p><p class="student-metric__value">{{ ($enrolment->currency ?? 'GHS') === 'USD' ? 'US$' : 'GHS ' }}{{ number_format($metrics['outstanding_balance'], 2) }}</p></div>
 </div>
 <div class="student-metric-grid mb-8" style="grid-template-columns: repeat(3, 1fr);">
     <div class="student-metric"><p class="student-metric__label">Pending assignments</p><p class="student-metric__value">{{ $metrics['pending_assignments'] }}</p></div>

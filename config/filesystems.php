@@ -38,6 +38,30 @@ return [
             'report' => false,
         ],
 
+        /*
+         * Academy documents contain student-specific and education records.
+         * Keep them outside the public storage symlink and serve them only
+         * through authenticated, ownership-checked download controllers.
+         */
+        'academy_private' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/academy'),
+            'visibility' => 'private',
+            'directory_visibility' => 'private',
+            'permissions' => [
+                'file' => [
+                    'public' => 0660,
+                    'private' => 0660,
+                ],
+                'dir' => [
+                    'public' => 0770,
+                    'private' => 0770,
+                ],
+            ],
+            'throw' => true,
+            'report' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

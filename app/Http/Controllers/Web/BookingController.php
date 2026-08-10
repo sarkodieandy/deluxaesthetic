@@ -15,6 +15,7 @@ use App\Services\Notifications\InAppNotificationService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use InvalidArgumentException;
 
@@ -25,9 +26,23 @@ class BookingController extends Controller
         $user = $request->user();
 
         return view('web.consultation.book', [
-            'treatments' => Treatment::query()->with('category')->where('is_active', true)->orderBy('name')->get(),
+            'treatments' => Treatment::query()
+                ->with('category')
+                ->where('is_active', true)
+                ->whereHas('category', fn ($category) => $category->where('is_active', true))
+                ->orderBy('name')
+                ->get(),
             'branches' => Branch::query()->where('is_active', true)->orderBy('name')->get(),
-            'practitioners' => PractitionerProfile::query()->with('user')->where('is_active', true)->orderBy('sort_order')->get(),
+            'practitioners' => PractitionerProfile::query()
+                ->with(['user', 'treatments' => fn ($treatments) => $treatments
+                    ->where('is_active', true)
+                    ->whereHas('category', fn ($category) => $category->where('is_active', true))])
+                ->where('is_active', true)
+                ->whereHas('treatments', fn ($treatments) => $treatments
+                    ->where('is_active', true)
+                    ->whereHas('category', fn ($category) => $category->where('is_active', true)))
+                ->orderBy('sort_order')
+                ->get(),
             'selectedTreatment' => $request->integer('treatment_id') ?: null,
             'isAuthenticatedClient' => $user?->hasRole('Client') === true,
             'guestDefaults' => [
@@ -41,11 +56,26 @@ class BookingController extends Controller
     public function slots(Request $request, AvailabilityService $availability)
     {
         $data = $request->validate([
-            'practitioner_profile_id' => ['required', 'exists:practitioner_profiles,id'],
-            'treatment_id' => ['required', 'exists:treatments,id'],
+            'practitioner_profile_id' => ['required', 'integer'],
+            'treatment_id' => ['required', 'integer'],
             'branch_id' => ['required', 'exists:branches,id'],
             'date' => ['required', 'date', 'after_or_equal:today'],
         ]);
+
+        $isAssigned = PractitionerProfile::query()
+            ->whereKey($data['practitioner_profile_id'])
+            ->where('is_active', true)
+            ->whereHas('treatments', fn ($treatments) => $treatments
+                ->whereKey($data['treatment_id'])
+                ->where('is_active', true)
+                ->whereHas('category', fn ($category) => $category->where('is_active', true)))
+            ->exists();
+
+        if (! $isAssigned) {
+            throw ValidationException::withMessages([
+                'practitioner_profile_id' => 'The selected practitioner is not available for this procedure.',
+            ]);
+        }
 
         $slots = $availability->slotsForDate(
             (int) $data['practitioner_profile_id'],

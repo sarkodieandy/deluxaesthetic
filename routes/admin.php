@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AccountController;
+use App\Http\Controllers\Admin\AcademyShowcaseController;
 use App\Http\Controllers\Admin\AppointmentController;
 use App\Http\Controllers\Admin\AssignmentController;
 use App\Http\Controllers\Admin\AuditLogController;
@@ -35,6 +36,7 @@ use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\StudentSupportController;
 use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\TreatmentController;
+use App\Http\Controllers\Admin\TreatmentCategoryController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\WebPageController;
 use Illuminate\Support\Facades\Route;
@@ -95,8 +97,11 @@ Route::middleware(['auth', 'active.account', 'admin.access'])
         Route::middleware('permission:enrolments.create')->group(function () {
             Route::get('/physical-enrolment/create', [PhysicalEnrolmentController::class, 'create'])->name('physical-enrolment.create');
             Route::post('/physical-enrolment', [PhysicalEnrolmentController::class, 'store'])->name('physical-enrolment.store');
-            Route::post('/physical-enrolment/{enrolment}/activate', [PhysicalEnrolmentController::class, 'activate'])->middleware('permission:enrolments.activate')->name('physical-enrolment.activate');
         });
+
+        Route::post('/physical-enrolment/{enrolment}/activate', [PhysicalEnrolmentController::class, 'activate'])
+            ->middleware('permission:enrolments.activate|enrolments.manage')
+            ->name('physical-enrolment.activate');
 
         Route::middleware('permission:enrolments.manage')->group(function () {
             Route::get('/enrolments', [EnrolmentController::class, 'index'])->name('enrolments.index');
@@ -105,10 +110,12 @@ Route::middleware(['auth', 'active.account', 'admin.access'])
         });
 
         Route::middleware('permission:materials.manage')->group(function () {
+            Route::get('/course-materials/{courseMaterial}/download', [CourseMaterialController::class, 'download'])->name('course-materials.download');
             Route::resource('course-materials', CourseMaterialController::class)->except(['show']);
         });
 
         Route::middleware('permission:assessments.manage')->group(function () {
+            Route::get('/assignments/{assignment}/download', [AssignmentController::class, 'download'])->name('assignments.download');
             Route::resource('assignments', AssignmentController::class)->except(['show']);
             Route::put('/assignment-submissions/{submission}', [AssignmentController::class, 'review'])->name('assignment-submissions.review');
             Route::get('/assignment-submissions/{submission}/download', [AssignmentController::class, 'downloadSubmission'])->name('assignment-submissions.download');
@@ -147,6 +154,26 @@ Route::middleware(['auth', 'active.account', 'admin.access'])
         Route::middleware('permission:inventory.view')->get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
         Route::middleware('permission:inventory.adjust')->post('/inventory/{product}/adjust', [InventoryController::class, 'adjust'])->name('inventory.adjust');
         Route::middleware('permission:reports.view')->get('/reports', [ReportController::class, 'index'])->name('reports.index');
+
+        Route::get('/academy-showcase', [AcademyShowcaseController::class, 'index'])
+            ->middleware('permission:courses.view')
+            ->name('academy-showcase.index');
+
+        Route::get('/academy-showcase/create', [AcademyShowcaseController::class, 'create'])
+            ->middleware('permission:courses.create')
+            ->name('academy-showcase.create');
+        Route::post('/academy-showcase', [AcademyShowcaseController::class, 'store'])
+            ->middleware('permission:courses.create')
+            ->name('academy-showcase.store');
+        Route::get('/academy-showcase/{academyShowcase}/edit', [AcademyShowcaseController::class, 'edit'])
+            ->middleware('permission:courses.update')
+            ->name('academy-showcase.edit');
+        Route::put('/academy-showcase/{academyShowcase}', [AcademyShowcaseController::class, 'update'])
+            ->middleware('permission:courses.update')
+            ->name('academy-showcase.update');
+        Route::delete('/academy-showcase/{academyShowcase}', [AcademyShowcaseController::class, 'destroy'])
+            ->middleware('permission:courses.delete')
+            ->name('academy-showcase.destroy');
 
         Route::middleware('permission:courses.view')->group(function () {
             Route::get('/courses', [CourseController::class, 'index'])->name('courses.index');
@@ -219,9 +246,31 @@ Route::middleware(['auth', 'active.account', 'admin.access'])
             Route::post('/email-logs/{emailLog}/retry', [EmailLogController::class, 'retry'])->name('email-logs.retry');
         });
 
-        Route::middleware('role:Super Administrator|Clinic Administrator')->group(function () {
-            Route::resource('treatments', TreatmentController::class)->except(['show']);
-        });
+        Route::get('/treatments', [TreatmentController::class, 'index'])
+            ->middleware('permission:treatments.view')->name('treatments.index');
+        Route::get('/treatments/create', [TreatmentController::class, 'create'])
+            ->middleware('permission:treatments.create')->name('treatments.create');
+        Route::post('/treatments', [TreatmentController::class, 'store'])
+            ->middleware('permission:treatments.create')->name('treatments.store');
+        Route::get('/treatments/{treatment}/edit', [TreatmentController::class, 'edit'])
+            ->middleware('permission:treatments.update')->name('treatments.edit');
+        Route::put('/treatments/{treatment}', [TreatmentController::class, 'update'])
+            ->middleware('permission:treatments.update')->name('treatments.update');
+        Route::delete('/treatments/{treatment}', [TreatmentController::class, 'destroy'])
+            ->middleware('permission:treatments.delete')->name('treatments.destroy');
+
+        Route::get('/treatment-categories', [TreatmentCategoryController::class, 'index'])
+            ->middleware('permission:treatments.view')->name('treatment-categories.index');
+        Route::get('/treatment-categories/create', [TreatmentCategoryController::class, 'create'])
+            ->middleware('permission:treatments.create')->name('treatment-categories.create');
+        Route::post('/treatment-categories', [TreatmentCategoryController::class, 'store'])
+            ->middleware('permission:treatments.create')->name('treatment-categories.store');
+        Route::get('/treatment-categories/{treatmentCategory}/edit', [TreatmentCategoryController::class, 'edit'])
+            ->middleware('permission:treatments.update')->name('treatment-categories.edit');
+        Route::put('/treatment-categories/{treatmentCategory}', [TreatmentCategoryController::class, 'update'])
+            ->middleware('permission:treatments.update')->name('treatment-categories.update');
+        Route::delete('/treatment-categories/{treatmentCategory}', [TreatmentCategoryController::class, 'destroy'])
+            ->middleware('permission:treatments.delete')->name('treatment-categories.destroy');
 
         $placeholders = [
             ['path' => 'attendance', 'name' => 'attendance.index', 'title' => 'Attendance'],

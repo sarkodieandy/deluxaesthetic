@@ -15,7 +15,8 @@ class CourseController extends Controller
 
     public function show(Request $request): View
     {
-        $enrolment = $this->portal->primaryEnrolment($request->user());
+        $enrolments = $this->portal->portalEnrolments($request->user());
+        $enrolment = $enrolments->first();
 
         if (! $enrolment) {
             return view('student.shared.no-enrolment-page', [
@@ -24,8 +25,6 @@ class CourseController extends Controller
             ]);
         }
 
-        $enrolment->load(['course.category', 'course.trainer.user']);
-
-        return view('student.courses.show', compact('enrolment'));
+        return view('student.courses.show', compact('enrolment', 'enrolments'));
     }
 }

@@ -2,9 +2,11 @@
 
 namespace App\Http\Requests\Academy;
 
+use App\Models\Course;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 use Illuminate\Validation\Rules;
 
 class StoreStudentPortalRegistrationRequest extends FormRequest
@@ -43,6 +45,28 @@ class StoreStudentPortalRegistrationRequest extends FormRequest
             'privacy_consent.accepted' => __('web.student_portal.privacy_required'),
             'email.unique' => 'An account already exists with this email. Please sign in instead.',
             'password.min' => 'Your password must contain at least 8 characters.',
+        ];
+    }
+
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                $courseId = $this->integer('course_id');
+                if (! $courseId || $validator->errors()->has('course_id')) {
+                    return;
+                }
+
+                $isPublished = Course::query()
+                    ->whereKey($courseId)
+                    ->where('is_active', true)
+                    ->whereHas('category', fn ($query) => $query->where('is_active', true))
+                    ->exists();
+
+                if (! $isPublished) {
+                    $validator->errors()->add('course_id', 'The selected course is not currently open for applications.');
+                }
+            },
         ];
     }
 }

@@ -3,7 +3,7 @@
 <body style="font-family: sans-serif; padding: 2rem;">
 <h1>Payment receipt</h1>
 <p>Reference: {{ $payment->reference }}</p>
-<p>Amount: GHS {{ number_format((float) $payment->amount, 2) }}</p>
+<p>Amount: {{ ($payment->currency ?? $enrolment->currency ?? 'GHS') === 'USD' ? 'US$' : 'GHS ' }}{{ number_format((float) $payment->amount, 2) }}</p>
 <p>Status: {{ ucfirst($payment->status) }}</p>
 <p>Course: {{ $enrolment->course?->name }}</p>
 </body></html>

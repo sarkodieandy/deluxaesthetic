@@ -5,6 +5,7 @@ namespace App\Services\Academy;
 use App\Models\Certificate;
 use App\Models\Enrolment;
 use App\Models\User;
+use App\Services\Notifications\InAppNotificationService;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Illuminate\Support\Facades\DB;
@@ -104,7 +105,8 @@ class CertificateIssuanceService
         $dompdf->render();
 
         $path = 'certificates/'.$certificate->number.'.pdf';
-        Storage::disk('public')->put($path, $dompdf->output());
+        Storage::disk('academy_private')->put($path, $dompdf->output());
+        Storage::disk('public')->delete($path);
 
         $certificate->update(['pdf_path' => $path]);
 
@@ -172,7 +174,7 @@ class CertificateIssuanceService
             return;
         }
 
-        app(\App\Services\Notifications\InAppNotificationService::class)->notifyUser($student, [
+        app(InAppNotificationService::class)->notifyUser($student, [
             'title' => 'Certificate issued',
             'message' => 'Your certificate for '.($certificate->course_name ?: $enrolment?->course?->name ?? 'your course').' is ready to download.',
             'action_url' => route('student.certificates.index', absolute: false),

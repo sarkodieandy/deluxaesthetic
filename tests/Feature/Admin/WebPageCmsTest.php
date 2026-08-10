@@ -73,4 +73,27 @@ class WebPageCmsTest extends TestCase
 
         $this->actingAs($staff)->get(route('admin.pages.index'))->assertForbidden();
     }
+
+    public function test_clinical_procedures_page_is_editable_through_the_page_manager(): void
+    {
+        $admin = User::factory()->create(['is_active' => true, 'email_verified_at' => now()]);
+        $admin->assignRole('Content Manager');
+        $page = WebPage::where('route_name', 'web.clinical.index')->firstOrFail();
+
+        $this->actingAs($admin)->put(route('admin.pages.update', $page), [
+            'name' => 'Clinical Procedures',
+            'seo_title' => 'Clinical Aesthetic Procedures in Accra',
+            'meta_description' => 'Explore clinic-managed procedure categories, prices and treatment results.',
+            'hero_eyebrow' => 'Clinic-led care',
+            'hero_title' => 'Procedures selected around you.',
+            'hero_body' => 'Every plan begins with consultation and clinical suitability.',
+            'hero_image_url' => '',
+            'is_published' => '1',
+        ])->assertSessionHas('status', 'page-updated');
+
+        $this->get(route('web.clinical.index'))
+            ->assertOk()
+            ->assertSee('Procedures selected around you.')
+            ->assertSee('<title>Clinical Aesthetic Procedures in Accra</title>', false);
+    }
 }

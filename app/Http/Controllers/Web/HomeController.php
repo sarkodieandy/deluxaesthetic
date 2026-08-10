@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\AcademyShowcaseItem;
+use App\Models\Course;
 use App\Models\GalleryItem;
 use App\Models\PractitionerProfile;
-use App\Models\Product;
 use App\Models\Setting;
 use App\Models\Treatment;
 use Illuminate\View\View;
@@ -23,69 +24,22 @@ class HomeController extends Controller
         $featuredTreatments = Treatment::query()
             ->with('category')
             ->where('is_active', true)
+            ->whereHas('category', fn ($category) => $category->where('is_active', true))
             ->where('is_featured', true)
-            ->latest()
-            ->take(3)
-            ->get();
-
-        $practitioners = PractitionerProfile::query()
-            ->with('user')
-            ->where('is_active', true)
-            ->orderByDesc('is_ceo')
-            ->take(3)
-            ->get();
-
-        $serviceIndex = [
-            [
-                'title' => __('web.home.service_facial'),
-                'copy' => __('web.home.service_facial_copy'),
-                'href' => route('web.treatments.index', ['category' => 'facial-treatments']),
-            ],
-            [
-                'title' => __('web.home.service_skin'),
-                'copy' => __('web.home.service_skin_copy'),
-                'href' => route('web.treatments.index'),
-            ],
-            [
-                'title' => __('web.home.service_body'),
-                'copy' => __('web.home.service_body_copy'),
-                'href' => route('web.treatments.index', ['category' => 'body-treatments']),
-            ],
-            [
-                'title' => __('web.home.service_injectables'),
-                'copy' => __('web.home.service_injectables_copy'),
-                'href' => route('web.booking.create'),
-            ],
-            [
-                'title' => __('web.home.service_wellness'),
-                'copy' => __('web.home.service_wellness_copy'),
-                'href' => route('web.treatments.index'),
-            ],
-            [
-                'title' => __('web.home.service_training'),
-                'copy' => __('web.home.service_training_copy'),
-                'href' => route('web.academy.index'),
-            ],
-        ];
-
-        $featuredProducts = Product::query()
-            ->with(['category', 'images'])
-            ->where('is_active', true)
-            ->orderByDesc('is_featured')
+            ->orderBy('sort_order')
             ->orderBy('name')
-            ->take(2)
+            ->take(3)
             ->get();
 
         $featuredBeforeAfter = GalleryItem::query()
             ->where('is_active', true)
             ->where('type', 'before_after')
-            ->orderByDesc('is_featured')
-            ->orderBy('sort_order')
-            ->first();
-
-        $featuredGalleryImage = GalleryItem::query()
-            ->where('is_active', true)
-            ->where('type', 'gallery')
+            ->where(function ($gallery) {
+                $gallery->whereNull('treatment_id')
+                    ->orWhereHas('treatment', fn ($treatment) => $treatment
+                        ->where('is_active', true)
+                        ->whereHas('category', fn ($category) => $category->where('is_active', true)));
+            })
             ->orderByDesc('is_featured')
             ->orderBy('sort_order')
             ->first();
@@ -98,45 +52,39 @@ class HomeController extends Controller
             ->take(3)
             ->get();
 
+        $trainingCountries = AcademyShowcaseItem::query()
+            ->where('type', 'training_country')
+            ->where('is_active', true)
+            ->orderByDesc('is_featured')
+            ->orderBy('sort_order')
+            ->get();
+
         return view('web.home.index', [
             'ceo' => $ceo,
             'featuredTreatments' => $featuredTreatments,
-            'practitioners' => $practitioners,
-            'serviceIndex' => $serviceIndex,
-            'featuredProducts' => $featuredProducts,
             'featuredBeforeAfter' => $featuredBeforeAfter,
-            'featuredGalleryImage' => $featuredGalleryImage,
             'ourWorkGallery' => $ourWorkGallery,
+            'trainingCountries' => $trainingCountries,
+            'academyPathwayCount' => Course::query()
+                ->where('is_active', true)
+                ->where('is_featured', true)
+                ->whereHas('category', fn ($category) => $category->where('is_active', true))
+                ->count(),
             'heroSlides' => [
                 [
-                    'src' => 'assets/web/images/hero/spa-treatment-room.webp',
-                    'alt' => 'Calm spa treatment room at '.config('clinic.name'),
-                    'label' => 'Spa & clinic',
-                ],
-                [
                     'src' => 'assets/web/images/hero/hero-botox.webp',
-                    'alt' => 'Professional Botox and injectable aesthetic treatment',
-                    'label' => 'Botox',
-                ],
-                [
-                    'src' => 'assets/web/images/hero/hero-nail-tech.webp',
-                    'alt' => 'Professional nail technician manicure and gel finishing',
-                    'label' => 'Nail tech',
-                ],
-                [
-                    'src' => 'assets/web/images/hero/hero-facial-tech.webp',
-                    'alt' => 'Advanced facial and skin treatment technology',
-                    'label' => 'Skin tech',
-                ],
-                [
-                    'src' => 'assets/web/images/hero/hero-spa-massage.webp',
-                    'alt' => 'Restorative spa and body massage therapy',
-                    'label' => 'Massage',
+                    'alt' => 'Expert injectable treatment — Botox and dermal fillers at '.config('clinic.name'),
+                    'label' => 'Injectables',
                 ],
                 [
                     'src' => 'assets/web/images/hero/hero-beauty-academy.webp',
-                    'alt' => 'Professional aesthetic training at '.__('web.pages.academy_title'),
+                    'alt' => 'Professional aesthetics academy training at '.config('clinic.name'),
                     'label' => 'Academy',
+                ],
+                [
+                    'src' => 'assets/web/images/treatments/skincare-ritual.webp',
+                    'alt' => 'Curated premium skincare and professional beauty products at '.config('clinic.name'),
+                    'label' => 'Products',
                 ],
             ],
             'announcement' => Setting::getValue(

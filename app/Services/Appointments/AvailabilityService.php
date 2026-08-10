@@ -4,8 +4,10 @@ namespace App\Services\Appointments;
 
 use App\Enums\AppointmentStatus;
 use App\Models\Appointment;
+use App\Models\Branch;
 use App\Models\PractitionerBlockedDate;
 use App\Models\PractitionerSchedule;
+use App\Models\PractitionerProfile;
 use App\Models\Treatment;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -20,7 +22,25 @@ class AvailabilityService
     ): Collection {
         $timezone = config('clinic.timezone', 'Africa/Accra');
         $date = $date->timezone($timezone)->startOfDay();
-        $treatment = Treatment::query()->findOrFail($treatmentId);
+        $treatment = Treatment::query()
+            ->where('is_active', true)
+            ->whereHas('category', fn ($category) => $category->where('is_active', true))
+            ->findOrFail($treatmentId);
+
+        if (! Branch::query()->whereKey($branchId)->where('is_active', true)->exists()) {
+            return collect();
+        }
+
+        $isAssigned = PractitionerProfile::query()
+            ->whereKey($practitionerProfileId)
+            ->where('is_active', true)
+            ->whereHas('user', fn ($user) => $user->where('is_active', true))
+            ->whereHas('treatments', fn ($treatments) => $treatments->whereKey($treatment->id))
+            ->exists();
+
+        if (! $isAssigned) {
+            return collect();
+        }
 
         if ($this->isBlocked($practitionerProfileId, $date)) {
             return collect();
