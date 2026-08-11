@@ -79,7 +79,7 @@ return new class extends Migration
                 'slug' => 'advance-aesthetics-class',
                 'description' => 'Precision injectable techniques for complex facial zones, advanced fillers, therapeutic Botox and contouring.',
                 'fee' => 2000,
-                'image_path' => 'assets/web/images/academy/academy-injectables.webp',
+                'image_path' => 'assets/web/images/academy/academy-advance-fillers.webp',
                 'sort_order' => 30,
                 'outcomes' => [
                     ['name' => 'Migraine Botox', 'topics' => ['Patient Assessment and Head & Neck Anatomy', 'Injection Protocols and Treatment Techniques', 'Post-Treatment Care and Complication Management']],
@@ -94,7 +94,7 @@ return new class extends Migration
                 'slug' => 'master-class-one',
                 'description' => 'Expert-level body contouring with butt and hand fillers, fat dissolving and hyaluronidase management.',
                 'fee' => 3500,
-                'image_path' => 'assets/web/images/hero/hero-body-care.webp',
+                'image_path' => 'assets/web/images/academy/academy-body-contouring.webp',
                 'sort_order' => 40,
                 'outcomes' => [
                     ['name' => 'Butt Fillers', 'topics' => ['Patient Assessment and Gluteal Anatomy', 'Injection Techniques and Treatment Protocols', 'Complication Prevention and Post-Treatment Care']],
@@ -109,7 +109,7 @@ return new class extends Migration
                 'slug' => 'master-class-two',
                 'description' => 'A complete facial filler and thread-lifting programme covering PDO, lip, nose and mono thread techniques.',
                 'fee' => 3500,
-                'image_path' => 'assets/web/images/academy/academy-training.webp',
+                'image_path' => 'assets/web/images/academy/academy-master-face.webp',
                 'sort_order' => 50,
                 'outcomes' => [
                     ['name' => 'PDO Face Lift', 'topics' => ['Facial Anatomy and Patient Assessment', 'PDO Thread Lifting Techniques', 'Complication Prevention and Post-Treatment Care']],

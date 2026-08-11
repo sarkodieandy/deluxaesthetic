@@ -11,7 +11,7 @@ class AcademyShowcaseItem extends Model
         'training_step' => 'Training format step',
         'student_story' => 'Past student story',
         'skill_review' => 'Student skill review',
-        'training_country' => 'Training country',
+        'training_country' => 'Training country (Home page)',
         'student_video' => 'Student video',
         'certification' => 'Certification',
         'experience' => 'Training experience',

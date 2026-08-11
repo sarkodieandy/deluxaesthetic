@@ -1,5 +1,5 @@
 @extends('web.layouts.app')
-@section('title', $course->name.' — '.config('clinic.name'))
+@section('title', ($course->seo_title ?: $course->name).' — '.config('clinic.name'))
 @section('meta_description', $course->seo_description ?: \Illuminate\Support\Str::limit(strip_tags($course->description), 155, ''))
 @section('meta_image', $course->imageUrl() ?: asset(config('seo.default_image')))
 @section('meta_image_alt', $course->name)
@@ -16,6 +16,13 @@
     ],
     'url' => route('web.courses.show', $course->slug),
     'image' => $course->imageUrl(),
+    'offers' => [
+        '@type' => 'Offer',
+        'price' => (float) $course->fee,
+        'priceCurrency' => $course->currency ?? 'GHS',
+        'availability' => 'https://schema.org/InStock',
+        'url' => route('web.academy.student-portal.create', ['course' => $course->id]),
+    ],
     'inLanguage' => str_replace('_', '-', app()->getLocale()),
 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 @endpush
@@ -36,6 +43,11 @@
         </div>
         <div class="grid gap-8 lg:grid-cols-[1.1fr,0.9fr]">
             <div class="space-y-6">
+                @if($course->imageUrl())
+                    <figure class="overflow-hidden border border-[var(--color-border)] bg-[var(--color-stone)]">
+                        <img src="{{ $course->imageUrl() }}" alt="{{ $course->name }} practical aesthetics training" class="aspect-[16/10] w-full object-cover" width="1200" height="750" fetchpriority="high" decoding="async">
+                    </figure>
+                @endif
                 <p class="text-[var(--color-soft-grey)]">{{ $course->description }}</p>
                 @if($course->entry_requirements)
                     <div>
@@ -61,6 +73,7 @@
                     <li>Delivery: {{ ucfirst($course->delivery_mode) }}</li>
                     @if($course->venue)<li>Location: {{ $course->venue }}</li>@endif
                     <li>Fee: {{ $course->formattedFee() }}</li>
+                    @if((float) $course->deposit_amount > 0)<li>Deposit: {{ ($course->currency ?? 'GHS') === 'USD' ? 'US$' : 'GHS ' }}{{ number_format((float) $course->deposit_amount, 2) }}</li>@endif
                 </ul>
             </div>
             <aside class="panel p-6 space-y-4">

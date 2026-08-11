@@ -32,7 +32,6 @@
 
 @php
     $trainingSteps = $showcase->get('training_step', collect());
-    $trainingCountries = $showcase->get('training_country', collect());
     $stories = $showcase->get('student_story', collect());
     $skillReviews = $showcase->get('skill_review', collect());
     $videos = $showcase->get('student_video', collect());
@@ -65,50 +64,6 @@
 </section>
 @endif
 
-{{-- ===================== COUNTRIES WE SERVE ===================== --}}
-@if($trainingCountries->isNotEmpty())
-<section class="section bg-[#171714] text-white" id="countries">
-    <div class="container-site">
-        <header class="academy-v2-section-head academy-v2-section-head--light">
-            <div>
-                <p class="text-label">Where we train</p>
-                <h2 class="text-section">International training across West Africa.</h2>
-            </div>
-            <p>Our Academy has travelled across West Africa to deliver practical aesthetics education in {{ $trainingCountries->pluck('title')->join(', ', ' and ') }}.</p>
-        </header>
-        <div class="academy-countries-grid">
-            @foreach($trainingCountries as $i => $country)
-                @php
-                    $countrySlug = match (\Illuminate\Support\Str::slug($country->title)) {
-                        'cote-divoire', 'cote-d-ivoire' => 'cote-divoire',
-                        'benin-republic' => 'benin',
-                        default => \Illuminate\Support\Str::slug($country->title),
-                    };
-                    $knownFlag = in_array($countrySlug, ['ghana', 'cameroon', 'cote-divoire', 'senegal', 'benin'], true);
-                @endphp
-                <article class="academy-country-card reveal" style="--card-i: {{ $i }}">
-                    <div class="academy-country-card__top">
-                        <span>{{ sprintf('%02d', $i + 1) }}</span>
-                        @if($country->imageUrl())
-                            <img src="{{ $country->imageUrl() }}" alt="{{ $country->title }} training" width="900" height="600" loading="lazy">
-                        @elseif($knownFlag)
-                            <img src="{{ asset('assets/web/flags/'.$countrySlug.'.svg') }}" alt="" width="900" height="600" loading="lazy">
-                        @else
-                            <strong aria-hidden="true">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($country->title, 0, 2)) }}</strong>
-                        @endif
-                    </div>
-                    <div class="academy-country-card__body">
-                        <h3>{{ $country->title }}</h3>
-                        @if($country->subtitle)<p class="academy-country-card__city">{{ $country->subtitle }}</p>@endif
-                        <p>{{ $country->body }}</p>
-                    </div>
-                </article>
-            @endforeach
-        </div>
-    </div>
-</section>
-@endif
-
 {{-- ===================== COURSE OUTLINES ===================== --}}
 @if($featuredCourses->isNotEmpty())
 <section class="academy-courses-section" id="course-outlines">
@@ -122,51 +77,70 @@
         </header>
 
 
-        <div class="academy-course-collection">
+        <div class="academy-course-collection" aria-label="Featured Academy courses">
             @foreach($featuredCourses as $i => $course)
-            <article class="course-card-refined reveal" style="--course-delay: {{ $i * 0.12 }}s">
-                {{-- Compact Header --}}
-                <div class="course-card-refined__header">
-                    <div class="course-card-refined__thumb">
-                        <img src="{{ $course->imageUrl() ?: asset('assets/web/images/academy/academy-training.webp') }}" alt="{{ $course->name }} aesthetics training" loading="{{ $i === 0 ? 'eager' : 'lazy' }}">
-                        <span class="course-card-refined__num">{{ sprintf('%02d', $i + 1) }}</span>
-                    </div>
-                    <div class="course-card-refined__info">
-                        <div class="course-card-refined__meta">
-                            <span class="course-card-refined__tag">{{ $course->category?->name ?: 'Professional masterclass' }}</span>
-                            <span class="course-card-refined__price"><small>Course fee</small>{{ ($course->currency ?? 'GHS') === 'USD' ? 'US$'.number_format((float) $course->fee, 0) : 'GHS '.number_format((float) $course->fee, 0) }}</span>
+            <article class="academy-course-premium reveal">
+                <a class="academy-course-premium__media" href="{{ route('web.courses.show', $course->slug) }}" aria-label="View {{ $course->name }} course details">
+                    <img
+                        src="{{ $course->imageUrl() ?: asset('assets/web/images/academy/academy-training.webp') }}"
+                        alt="Practical training for {{ $course->name }}"
+                        width="1600"
+                        height="1067"
+                        loading="lazy"
+                        decoding="async"
+                    >
+                    <span class="academy-course-premium__number" aria-hidden="true">{{ sprintf('%02d', $i + 1) }}</span>
+                    <span class="academy-course-premium__level">{{ $course->category?->name ?: 'Professional masterclass' }}</span>
+                </a>
+
+                <div class="academy-course-premium__content">
+                    <header class="academy-course-premium__header">
+                        <div>
+                            <p class="text-label">Physical, clinic-led training</p>
+                            <h3 id="course-title-{{ $course->id }}"><a href="{{ route('web.courses.show', $course->slug) }}">{{ $course->name }}</a></h3>
                         </div>
-                        <h3 class="course-card-refined__title"><a href="{{ route('web.courses.show', $course->slug) }}">{{ $course->name }}</a></h3>
-                        <p class="course-card-refined__desc">{{ $course->description }}</p>
-                        <span class="course-card-refined__count">{{ count($course->learning_outcomes ?? []) }} training modules included</span>
-                    </div>
-                    <div class="course-card-refined__action">
-                        <a href="{{ route('web.courses.show', $course->slug) }}" class="course-card-refined__btn">Course details</a>
-                        <a href="{{ route('web.academy.student-portal.create', ['course' => $course->id]) }}" class="course-card-refined__btn">
-                            Apply Now
-                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        </a>
-                    </div>
-                </div>
-                {{-- Compact Modules Grid --}}
-                @if(!empty($course->learning_outcomes))
-                <div class="course-card-refined__grid">
-                    @foreach($course->learning_outcomes as $m => $module)
-                    <details class="module-mini">
-                        <summary class="module-mini__header">
-                            <span class="module-mini__badge">{{ sprintf('%02d', $m + 1) }}</span>
-                            <h4 class="module-mini__title">{{ $module['name'] ?? 'Training module' }}</h4>
-                            <span class="module-mini__toggle" aria-hidden="true">+</span>
-                        </summary>
-                        <ul class="module-mini__list">
-                            @foreach($module['topics'] ?? [] as $topic)
-                                <li>{{ $topic }}</li>
+                        <p class="academy-course-premium__price"><span>Course fee</span>{{ $course->formattedFee() }}</p>
+                    </header>
+
+                    <p class="academy-course-premium__description">{{ $course->description }}</p>
+
+                    <dl class="academy-course-premium__facts">
+                        <div><dt>Format</dt><dd>{{ ucfirst($course->delivery_mode ?: 'physical') }}</dd></div>
+                        @if($course->duration_hours > 0)<div><dt>Duration</dt><dd>{{ $course->duration_hours }} hours</dd></div>@endif
+                        <div><dt>Curriculum</dt><dd>{{ count($course->learning_outcomes ?? []) }} modules</dd></div>
+                    </dl>
+
+                    @if(!empty($course->learning_outcomes))
+                    <section class="academy-course-premium__curriculum" aria-labelledby="course-outline-title-{{ $course->id }}">
+                        <div class="academy-course-premium__curriculum-head">
+                            <p class="text-label" id="course-outline-title-{{ $course->id }}">What you will learn</p>
+                            <span>{{ count($course->learning_outcomes) }} focused modules</span>
+                        </div>
+                        <ol class="academy-course-premium__modules">
+                            @foreach($course->learning_outcomes as $m => $module)
+                            <li class="academy-course-module">
+                                <span class="academy-course-module__number" aria-hidden="true">{{ sprintf('%02d', $m + 1) }}</span>
+                                <div>
+                                    <h4>{{ $module['name'] ?? 'Training module' }}</h4>
+                                    @if(!empty($module['topics']))
+                                    <ul>
+                                        @foreach($module['topics'] as $topic)
+                                            <li>{{ $topic }}</li>
+                                        @endforeach
+                                    </ul>
+                                    @endif
+                                </div>
+                            </li>
                             @endforeach
-                        </ul>
-                    </details>
-                    @endforeach
+                        </ol>
+                    </section>
+                    @endif
+
+                    <footer class="academy-course-premium__actions">
+                        <a href="{{ route('web.courses.show', $course->slug) }}" class="btn btn-secondary">Explore course details</a>
+                        <a href="{{ route('web.academy.student-portal.create', ['course' => $course->id]) }}" class="btn btn-primary">Apply for {{ $course->name }}</a>
+                    </footer>
                 </div>
-                @endif
             </article>
             @endforeach
         </div>
@@ -327,7 +301,7 @@
             <div class="academy-v2-botox__topics">
                 <article><span>01</span><div><h3>Injectable expertise</h3><p>Botox, dermal fillers, PDO threads and advanced body techniques.</p></div></article>
                 <article><span>02</span><div><h3>Skin & regeneration</h3><p>Microneedling, PRP, mesotherapy, chemical peels and hyperpigmentation.</p></div></article>
-                @if($trainingCountries->isNotEmpty())<article><span>03</span><div><h3>International delivery</h3><p>Training delivered across {{ $trainingCountries->pluck('title')->join(', ', ' and ') }}.</p></div></article>@endif
+                <article><span>03</span><div><h3>Safety-led practice</h3><p>Assessment, anatomy, complication prevention and aftercare built into every pathway.</p></div></article>
                 <article><span>04</span><div><h3>Lifetime support</h3><p>Mentorship, referral network and internationally recognised certifications.</p></div></article>
             </div>
             <a href="{{ route('web.academy.student-portal.create') }}" class="btn btn-primary">Apply to train with us</a>

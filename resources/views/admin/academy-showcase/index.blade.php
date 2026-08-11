@@ -11,7 +11,7 @@
     <div class="admin-panel__head">
         <div>
             <h2 class="admin-panel__title">Academy proof, format &amp; stories</h2>
-            <p class="mt-1 text-sm text-[var(--admin-text-muted)]">Manage training steps, past students, skill reviews, countries, videos, certifications, experience and career support shown publicly.</p>
+            <p class="mt-1 text-sm text-[var(--admin-text-muted)]">Manage training steps, past students, skill reviews, videos, certifications, experience and career support on the Academy page. Training countries are managed here and displayed on the Home page.</p>
         </div>
         @can('courses.create')<a href="{{ route('admin.academy-showcase.create') }}" class="btn btn-primary">Add showcase item</a>@endcan
     </div>

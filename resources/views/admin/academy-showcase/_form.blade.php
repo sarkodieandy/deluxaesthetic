@@ -12,7 +12,7 @@
 
 <div class="admin-panel mb-6">
     <div class="admin-panel__head">
-        <div><h2 class="admin-panel__title">Showcase content</h2><p class="mt-1 text-sm text-[var(--admin-text-muted)]">Published items appear in their designed Academy section. Use Website order to control their sequence.</p></div>
+        <div><h2 class="admin-panel__title">Showcase content</h2><p class="mt-1 text-sm text-[var(--admin-text-muted)]">Published items appear in their designed public section. Training countries appear on the Home page; all other types appear on the Academy page. Use Website order to control their sequence.</p></div>
     </div>
     <div class="admin-panel__body grid gap-5 md:grid-cols-2">
         <div>
@@ -61,7 +61,7 @@
 <div class="admin-panel">
     <div class="admin-panel__head"><h2 class="admin-panel__title">Visibility</h2></div>
     <div class="admin-panel__body flex flex-wrap gap-6">
-        <label class="admin-check"><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $item?->is_active ?? true))> Published on Academy page</label>
+        <label class="admin-check"><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $item?->is_active ?? true))> Published on website</label>
         <label class="admin-check"><input type="checkbox" name="is_featured" value="1" @checked(old('is_featured', $item?->is_featured ?? false))> Featured first</label>
     </div>
 </div>

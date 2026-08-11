@@ -13,7 +13,7 @@ class AcademyCeoExperienceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_confirmed_academy_content_is_database_managed_and_respects_visibility(): void
+    public function test_academy_content_is_database_managed_while_countries_remain_home_only(): void
     {
         $this->assertSame(5, AcademyShowcaseItem::query()->where('type', 'training_country')->count());
         $this->assertSame(4, AcademyShowcaseItem::query()->where('type', 'training_step')->count());
@@ -27,7 +27,8 @@ class AcademyCeoExperienceTest extends TestCase
 
         $this->get(route('web.academy.index'))
             ->assertOk()
-            ->assertSee('A managed Ghana Academy description.')
+            ->assertDontSee('A managed Ghana Academy description.')
+            ->assertDontSee('id="countries"', false)
             ->assertSee('Clinical theory')
             ->assertSee('Customer service');
 
@@ -55,6 +56,9 @@ class AcademyCeoExperienceTest extends TestCase
         $response->assertSee('Secondary Skin Programme');
         $response->assertSee('View outline');
         $response->assertSee(route('web.courses.show', $secondary->slug), false);
+        $response->assertSee('class="academy-course-premium', false);
+        $response->assertSee('What you will learn');
+        $response->assertSee('loading="lazy"', false);
     }
 
     public function test_student_proof_video_certification_and_experience_render_in_distinct_sections(): void

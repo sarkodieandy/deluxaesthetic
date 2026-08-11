@@ -23,6 +23,10 @@ class StudentPortalRegistrationController extends Controller
         }
 
         $showcase = AcademyShowcaseItem::query()
+            // Training countries have a dedicated footprint section on the
+            // Home page. Keep the Academy payload focused on its training,
+            // student proof and certification sections.
+            ->where('type', '!=', 'training_country')
             ->where('is_active', true)
             ->orderByDesc('is_featured')
             ->orderBy('sort_order')

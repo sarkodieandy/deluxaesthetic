@@ -95,7 +95,7 @@
         <h2 class="admin-panel__title">Before &amp; after images</h2>
     </div>
     <div class="admin-panel__body grid gap-6 md:grid-cols-2">
-        <p class="md:col-span-2 text-sm text-[var(--admin-text-muted)] max-w-3xl">For each side, upload from your device <strong>or</strong> paste an image URL. Both before and after are required. Mark <strong>Featured on homepage</strong> for the main slider.</p>
+        <p class="md:col-span-2 text-sm text-[var(--admin-text-muted)] max-w-3xl">For each side, upload a JPG, PNG, or WebP image up to 8 MB <strong>or</strong> paste a direct image URL. Both before and after are required. Mark <strong>Featured on homepage</strong> for the main slider.</p>
 
         <div class="before-after-upload">
             <label class="admin-label before-after-upload__heading" for="before_image">Before</label>

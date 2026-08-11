@@ -68,11 +68,11 @@ class StoreGalleryItemRequest extends FormRequest
                     || GalleryMedia::normalizeUrl($this->input('after_image_url'))
                     || ($existing instanceof GalleryItem && $existing->after_image_path);
 
-                if (! $hasBefore) {
+                if (! $hasBefore && ! $validator->errors()->has('before_image')) {
                     $validator->errors()->add('before_image', 'Provide a before image (upload or URL).');
                 }
 
-                if (! $hasAfter) {
+                if (! $hasAfter && ! $validator->errors()->has('after_image')) {
                     $validator->errors()->add('after_image', 'Provide an after image (upload or URL).');
                 }
             }
