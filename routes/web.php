@@ -22,6 +22,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('web.home');
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('seo.sitemap');
 Route::get('/about', [AboutController::class, 'index'])->name('web.about');
+Route::view('/privacy-policy', 'web.legal.privacy')->name('web.privacy');
+Route::view('/terms-of-service', 'web.legal.terms')->name('web.terms');
+Route::redirect('/privacy', '/privacy-policy', 301);
+Route::redirect('/terms', '/terms-of-service', 301);
 Route::get('/locale/{locale}', [LocaleController::class, 'switch'])->name('locale.switch');
 
 Route::get('/clinical-procedures', [TreatmentController::class, 'index'])->name('web.clinical.index');

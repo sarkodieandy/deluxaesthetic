@@ -25,6 +25,8 @@ class SeoController extends Controller
             ['loc' => route('web.blog.index'), 'changefreq' => 'monthly', 'priority' => '0.6'],
             ['loc' => route('web.contact'), 'changefreq' => 'monthly', 'priority' => '0.7'],
             ['loc' => route('web.booking.create'), 'changefreq' => 'monthly', 'priority' => '0.8'],
+            ['loc' => route('web.privacy'), 'changefreq' => 'yearly', 'priority' => '0.3'],
+            ['loc' => route('web.terms'), 'changefreq' => 'yearly', 'priority' => '0.3'],
         ]);
 
         Treatment::query()

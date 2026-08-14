@@ -168,7 +168,7 @@
 
                 <label class="enrol-consent">
                     <input type="checkbox" name="consent" value="1" required @checked(old('consent'))>
-                    <span>I agree that {{ __('web.pages.academy_title') }} may contact me about this training enquiry and physical enrolment. <strong>*</strong></span>
+                    <span>I agree that {{ __('web.pages.academy_title') }} may process my enquiry and contact me about physical enrolment under the <a href="{{ route('web.privacy') }}" target="_blank" rel="noopener">Privacy Policy</a>, and I accept the <a href="{{ route('web.terms') }}" target="_blank" rel="noopener">Academy Terms of Service</a>. <strong>*</strong></span>
                 </label>
                 @error('consent')<small class="enrol-form__error">{{ $message }}</small>@enderror
 

@@ -100,7 +100,7 @@
                         <label class="student-apply__field"><span>Confirm password *</span><input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password" placeholder="Repeat your password"></label>
                     </div><p class="student-apply__field-note">Keep this password safe. It works only after the academy approves your application.</p></fieldset>
 
-                    <label class="student-apply__consent"><input type="checkbox" name="privacy_consent" value="1" @checked(old('privacy_consent')) required><span>I agree that {{ config('clinic.name') }} may contact me about academy training and my student application.</span></label>
+                    <label class="student-apply__consent"><input type="checkbox" name="privacy_consent" value="1" @checked(old('privacy_consent')) required><span>I agree that {{ config('clinic.name') }} may process my application and contact me about Academy training as described in the <a href="{{ route('web.privacy') }}" target="_blank" rel="noopener">Privacy Policy</a>.</span></label>
                     <button type="submit" class="btn btn-primary student-apply__submit"><span>Submit application</span><span aria-hidden="true">→</span></button>
                     <p class="student-apply__privacy">Submitting does not guarantee admission or immediately activate portal access.</p>
                 </form>

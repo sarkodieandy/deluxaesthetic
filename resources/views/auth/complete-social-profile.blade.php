@@ -10,11 +10,11 @@
         </div>
         <label class="auth-check">
             <input type="checkbox" name="terms_accepted" value="1" required>
-            <span>{{ __('I accept the terms and conditions') }}</span>
+            <span>I accept the <a href="{{ route('web.terms') }}" target="_blank" rel="noopener">Terms of Service</a></span>
         </label>
         <label class="auth-check mt-3">
             <input type="checkbox" name="privacy_accepted" value="1" required>
-            <span>{{ __('I accept the privacy policy') }}</span>
+            <span>I have read the <a href="{{ route('web.privacy') }}" target="_blank" rel="noopener">Privacy Policy</a></span>
         </label>
         <label class="auth-check mt-3">
             <input type="checkbox" name="marketing_email_opt_in" value="1">

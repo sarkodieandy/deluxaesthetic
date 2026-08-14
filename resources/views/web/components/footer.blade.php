@@ -61,6 +61,10 @@
 
     <div class="container-site site-footer__bottom">
         <p>&copy; {{ date('Y') }} {{ config('clinic.name') }}. {{ __('web.footer.rights') }}</p>
-        <p class="site-footer__legal">{{ __('web.footer.privacy') }} · {{ __('web.footer.terms') }}</p>
+        <nav class="site-footer__legal" aria-label="Legal information">
+            <a href="{{ route('web.privacy') }}">Privacy Policy</a>
+            <span aria-hidden="true">·</span>
+            <a href="{{ route('web.terms') }}">Terms of Service</a>
+        </nav>
     </div>
 </footer>

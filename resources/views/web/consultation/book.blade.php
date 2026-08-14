@@ -107,7 +107,7 @@
             </div>
             <label class="flex items-start gap-3 text-sm">
                 <input type="checkbox" name="consent" value="1" required @checked(old('consent'))>
-                <span>I accept the consultation and cancellation terms. This form does not provide a medical diagnosis.</span>
+                <span>I accept the consultation and cancellation provisions in the <a href="{{ route('web.terms') }}" target="_blank" rel="noopener" class="underline">Terms of Service</a> and acknowledge the <a href="{{ route('web.privacy') }}" target="_blank" rel="noopener" class="underline">Privacy Policy</a>. This form does not provide a medical diagnosis.</span>
             </label>
             <button type="submit" class="btn btn-primary" :disabled="!startsAt">Confirm booking request</button>
         </form>

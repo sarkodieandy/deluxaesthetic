@@ -53,7 +53,7 @@
 
                 <label class="inline-flex items-start gap-3 text-sm">
                     <input type="checkbox" name="terms" value="1" required>
-                    <span>I confirm these details and accept the clinic purchase terms.</span>
+                    <span>I confirm these details and accept the <a href="{{ route('web.terms') }}" target="_blank" rel="noopener">purchase Terms of Service</a> and <a href="{{ route('web.privacy') }}" target="_blank" rel="noopener">Privacy Policy</a>.</span>
                 </label>
             </div>
 
