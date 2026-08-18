@@ -19,7 +19,9 @@ class PaymentController extends Controller
     public function index(Request $request): View
     {
         $user = $request->user();
-        $enrolment = $this->portal->primaryEnrolment($user);
+        $enrolments = $this->portal->portalEnrolments($user);
+        $enrolment = $this->portal->portalEnrolment($user, $request->input('enrolment'));
+        abort_if($request->filled('enrolment') && ! $enrolment, 403);
 
         if (! $enrolment) {
             return $this->portal->viewOrNoEnrolment($user, 'student.payments.index', [
@@ -30,6 +32,7 @@ class PaymentController extends Controller
 
         return view('student.payments.index', [
             'enrolment' => $enrolment,
+            'enrolments' => $enrolments,
             'instalments' => $this->portal->instalmentPlans($enrolment),
             'payments' => $this->portal->paymentsForEnrolment($enrolment),
             'onlinePaymentEnabled' => config('academy.online_balance_payment_enabled'),
@@ -38,8 +41,10 @@ class PaymentController extends Controller
 
     public function receipt(Request $request, int $payment): Response
     {
-        $enrolment = $this->portal->primaryEnrolment($request->user());
         $record = DB::table('payments')->where('id', $payment)->first();
+        $enrolment = $record && $record->payable_type === Enrolment::class
+            ? $this->portal->portalEnrolment($request->user(), (int) $record->payable_id)
+            : null;
 
         abort_unless(
             $enrolment

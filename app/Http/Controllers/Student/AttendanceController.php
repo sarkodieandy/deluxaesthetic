@@ -16,7 +16,9 @@ class AttendanceController extends Controller
     public function index(Request $request): View
     {
         $user = $request->user();
-        $enrolment = $this->portal->primaryEnrolment($user);
+        $enrolments = $this->portal->portalEnrolments($user);
+        $enrolment = $this->portal->portalEnrolment($user, $request->input('enrolment'));
+        abort_if($request->filled('enrolment') && ! $enrolment, 403);
 
         if (! $enrolment) {
             return $this->portal->viewOrNoEnrolment($user, 'student.attendance.index', [
@@ -27,6 +29,7 @@ class AttendanceController extends Controller
 
         return view('student.attendance.index', [
             'enrolment' => $enrolment,
+            'enrolments' => $enrolments,
             'summary' => $this->portal->attendanceSummary($enrolment),
             'records' => \App\Models\AttendanceRecord::query()
                 ->where('enrolment_id', $enrolment->id)

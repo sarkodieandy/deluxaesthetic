@@ -431,6 +431,12 @@ body.student-mobile-nav-open .student-nav__backdrop {
   color: var(--color-white);
 }
 
+.student-action--active {
+  border-color: var(--color-gold);
+  background: var(--color-charcoal);
+  color: var(--color-white);
+}
+
 .student-panel {
   border: var(--border-width) solid var(--color-border);
   background: var(--color-white);

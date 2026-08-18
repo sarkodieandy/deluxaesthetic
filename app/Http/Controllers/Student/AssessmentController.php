@@ -15,17 +15,22 @@ class AssessmentController extends Controller
 
     public function index(Request $request): View
     {
-        return $this->portal->viewOrNoEnrolment($request->user(), 'student.assessments.index', [
-            'title' => __('student.nav.assessments'),
-            'heading' => __('student.nav.assessments'),
-            'results' => $this->resultsFor($request),
+        $user = $request->user();
+        $enrolments = $this->portal->portalEnrolments($user);
+        $enrolment = $this->portal->portalEnrolment($user, $request->input('enrolment'));
+        abort_if($request->filled('enrolment') && ! $enrolment, 403);
+
+        if (! $enrolment) {
+            return $this->portal->viewOrNoEnrolment($user, 'student.assessments.index', [
+                'title' => __('student.nav.assessments'),
+                'heading' => __('student.nav.assessments'),
+            ]);
+        }
+
+        return view('student.assessments.index', [
+            'enrolment' => $enrolment,
+            'enrolments' => $enrolments,
+            'results' => $this->portal->assessmentResults($enrolment),
         ]);
-    }
-
-    private function resultsFor(Request $request)
-    {
-        $enrolment = $this->portal->primaryEnrolment($request->user());
-
-        return $enrolment ? $this->portal->assessmentResults($enrolment) : collect();
     }
 }

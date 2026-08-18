@@ -3,6 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\Assignment;
+use App\Models\Assessment;
+use App\Models\AssessmentResult;
+use App\Models\AttendanceRecord;
 use App\Models\Course;
 use App\Models\CourseCategory;
 use App\Models\CourseMaterial;
@@ -16,6 +19,7 @@ use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -219,6 +223,67 @@ class PhysicalStudentLearningWorkflowTest extends TestCase
             ->assertSee('Botox practical session')
             ->assertSee('Fillers practical session')
             ->assertDontSee('Other Student Private Session');
+
+        AttendanceRecord::query()->create([
+            'enrolment_id' => $secondEnrolment->id,
+            'course_schedule_id' => $secondSchedule->id,
+            'session_date' => now()->toDateString(),
+            'status' => 'present',
+        ]);
+        $assessment = Assessment::query()->create([
+            'course_id' => $secondCourse->id,
+            'title' => 'Advanced fillers practical',
+            'max_score' => 100,
+            'passing_score' => 60,
+        ]);
+        AssessmentResult::query()->create([
+            'assessment_id' => $assessment->id,
+            'enrolment_id' => $secondEnrolment->id,
+            'score' => 88,
+            'status' => 'passed',
+        ]);
+        $paymentId = DB::table('payments')->insertGetId([
+            'reference' => 'PAY-FLOW-SECOND',
+            'user_id' => $student->id,
+            'payable_type' => Enrolment::class,
+            'payable_id' => $secondEnrolment->id,
+            'amount' => 2400,
+            'currency' => 'GHS',
+            'gateway' => 'manual',
+            'status' => 'paid',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($student)->get(route('student.attendance.index', ['enrolment' => $secondEnrolment->id]))
+            ->assertOk()->assertSee($secondCourse->name)->assertSee('1/1');
+        $this->actingAs($student)->get(route('student.assessments.index', ['enrolment' => $secondEnrolment->id]))
+            ->assertOk()->assertSee('Advanced fillers practical')->assertSee('88.00/100.00');
+        $this->actingAs($student)->get(route('student.payments.index', ['enrolment' => $secondEnrolment->id]))
+            ->assertOk()->assertSee('PAY-FLOW-SECOND')->assertSee($secondCourse->name);
+        $this->actingAs($student)->get(route('student.payments.receipt', $paymentId))->assertOk();
+        $this->actingAs($student)->get(route('student.attendance.index', ['enrolment' => $otherEnrolment->id]))->assertForbidden();
+        $this->actingAs($student)->get(route('student.assessments.index', ['enrolment' => $otherEnrolment->id]))->assertForbidden();
+        $this->actingAs($student)->get(route('student.payments.index', ['enrolment' => $otherEnrolment->id]))->assertForbidden();
+
+        $this->actingAs($student)->post(route('student.support.store'), [
+            'enrolment_id' => $secondEnrolment->id,
+            'category' => 'course_question',
+            'subject' => 'Second course question',
+            'message' => 'Please confirm the next practical session.',
+        ])->assertRedirect();
+        $this->assertDatabaseHas('student_support_requests', [
+            'student_profile_id' => $profile->id,
+            'enrolment_id' => $secondEnrolment->id,
+            'subject' => 'Second course question',
+        ]);
+
+        $this->actingAs($student)->post(route('student.support.store'), [
+            'enrolment_id' => $otherEnrolment->id,
+            'category' => 'course_question',
+            'subject' => 'Forbidden course question',
+            'message' => 'This should not be accepted.',
+        ])->assertSessionHasErrors('enrolment_id');
 
         $this->assertNotSame($firstAssignment->id, $secondAssignment->id);
     }

@@ -59,12 +59,24 @@ class StudentPortalService
         return $this->portalEnrolments($user)->first();
     }
 
+    public function portalEnrolment(User $user, int|string|null $enrolmentId = null): ?Enrolment
+    {
+        $enrolments = $this->portalEnrolments($user);
+
+        if ($enrolmentId !== null && $enrolmentId !== '') {
+            return $enrolments->firstWhere('id', (int) $enrolmentId);
+        }
+
+        return $enrolments->first();
+    }
+
     /**
      * @return array<string, mixed>
      */
     public function dashboardMetrics(User $user): array
     {
-        $enrolment = $this->primaryEnrolment($user);
+        $enrolments = $this->portalEnrolments($user);
+        $enrolment = $enrolments->first();
         $profileId = $user->studentProfile?->id;
 
         if (! $enrolment || ! $profileId) {
@@ -80,8 +92,13 @@ class StudentPortalService
             ];
         }
 
-        $attendance = $this->attendanceSummary($enrolment);
-        $nextSession = $this->nextSession($enrolment);
+        $attendanceRows = AttendanceRecord::query()
+            ->whereIn('enrolment_id', $enrolments->pluck('id'))
+            ->get();
+        $attendanceTotal = $attendanceRows->count();
+        $attendancePresent = $attendanceRows->whereIn('status', ['present', 'late', 'excused'])->count();
+        $nextSession = $this->calendarSessions($user)
+            ->first(fn (CourseSession $session) => $session->session_date?->isToday() || $session->session_date?->isFuture());
 
         return [
             'enrolment' => $enrolment,
@@ -89,13 +106,19 @@ class StudentPortalService
                 ->where('student_profile_id', $profileId)
                 ->whereIn('status', [EnrolmentStatus::Active->value, EnrolmentStatus::PartiallyPaid->value])
                 ->count(),
-            'attendance_percentage' => $attendance['percentage'],
+            'attendance_percentage' => $attendanceTotal > 0 ? round(($attendancePresent / $attendanceTotal) * 100, 1) : null,
             'outstanding_balance' => (float) $enrolment->outstanding_balance,
             'upcoming_session' => $nextSession,
-            'pending_assignments' => Assignment::query()
-                ->where('course_id', $enrolment->course_id)
-                ->where(fn ($query) => $query->whereNull('enrolment_id')->orWhere('enrolment_id', $enrolment->id))
-                ->whereDoesntHave('submissions', fn ($q) => $q->where('enrolment_id', $enrolment->id))
+            'pending_assignments' => $this->assignmentsForUser($user)
+                ->filter(function (Assignment $assignment) use ($enrolments): bool {
+                    $eligible = $enrolments
+                        ->where('course_id', $assignment->course_id)
+                        ->when($assignment->enrolment_id, fn (Collection $rows) => $rows->where('id', $assignment->enrolment_id));
+
+                    return $eligible->contains(fn (Enrolment $record) => ! $assignment->submissions()
+                        ->where('enrolment_id', $record->id)
+                        ->exists());
+                })
                 ->count(),
             'certificates' => Certificate::query()
                 ->where('student_profile_id', $profileId)

@@ -24,7 +24,9 @@ class SupportController extends Controller
         abort_unless($profileId, 403);
 
         return view('student.support.index', [
+            'enrolments' => $this->portal->portalEnrolments($request->user()),
             'requests' => StudentSupportRequest::query()
+                ->with('enrolment.course')
                 ->where('student_profile_id', $profileId)
                 ->latest()
                 ->paginate(15),
@@ -40,9 +42,14 @@ class SupportController extends Controller
             'category' => ['required', 'string', 'max:80'],
             'subject' => ['required', 'string', 'max:190'],
             'message' => ['required', 'string', 'max:5000'],
+            'enrolment_id' => ['nullable', 'integer'],
         ]);
 
-        $enrolment = $this->portal->primaryEnrolment($request->user());
+        $enrolment = $this->portal->portalEnrolment($request->user(), $data['enrolment_id'] ?? null);
+        if (! empty($data['enrolment_id']) && ! $enrolment) {
+            return back()->withErrors(['enrolment_id' => 'Select one of your approved courses.'])->withInput();
+        }
+        unset($data['enrolment_id']);
 
         $support = StudentSupportRequest::create([
             'reference' => 'SUP-'.Str::upper(Str::random(8)),
