@@ -27,4 +27,27 @@ return [
         'portrait_a' => 'assets/web/images/team/ceo-mac-tonto-portrait-a.png',
         'portrait_b' => 'assets/web/images/team/ceo-mac-tonto-portrait-b.png',
     ],
+
+    'leadership' => [
+        [
+            'name' => env('CEO_NAME', 'Dr Evelyn Ejaife'),
+            'role' => 'Chief Executive Officer',
+            'image' => 'assets/web/images/leadership/dr-evelyn-ejaife.webp',
+        ],
+        [
+            'name' => 'Egedge Gift Collins',
+            'role' => 'Manager',
+            'image' => 'assets/web/images/leadership/egedge-gift-collins.webp',
+        ],
+        [
+            'name' => 'Emmanuel Better Amos',
+            'role' => 'Assistant Manager',
+            'image' => 'assets/web/images/leadership/emmanuel-better-amos.webp',
+        ],
+        [
+            'name' => 'Barinua Nainesi',
+            'role' => 'Human Resources Manager',
+            'image' => 'assets/web/images/leadership/barinua-nainesi.webp',
+        ],
+    ],
 ];

@@ -4170,6 +4170,194 @@
   line-height: 1.7;
 }
 
+.about-v2-leadership {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(5rem, 10vw, 9rem) 0;
+  background:
+    radial-gradient(circle at 90% 5%, rgba(202, 163, 92, .16), transparent 30rem),
+    #171714;
+  color: #fff;
+}
+
+.about-v2-leadership::before {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(255, 255, 255, .025) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .025) 1px, transparent 1px);
+  background-size: 4rem 4rem;
+  content: '';
+  pointer-events: none;
+}
+
+.about-v2-leadership .container-site {
+  position: relative;
+}
+
+.about-v2-leadership__header {
+  display: grid;
+  gap: 1.5rem;
+  align-items: end;
+  margin-bottom: clamp(2.5rem, 5vw, 4.5rem);
+}
+
+@media (min-width: 900px) {
+  .about-v2-leadership__header {
+    grid-template-columns: 1.25fr .75fr;
+  }
+}
+
+.about-v2-leadership__header .text-label {
+  color: #d8b878;
+}
+
+.about-v2-leadership__header h2 {
+  max-width: 12ch;
+  margin-top: .75rem;
+  font-family: var(--font-display);
+  font-size: clamp(3.2rem, 6.8vw, 7rem);
+  font-weight: 400;
+  letter-spacing: -.045em;
+  line-height: .86;
+}
+
+.about-v2-leadership__header > p {
+  max-width: 34rem;
+  color: rgba(255, 255, 255, .62);
+  line-height: 1.75;
+}
+
+.about-v2-leadership__grid {
+  display: grid;
+  gap: 2.5rem 1.25rem;
+}
+
+@media (min-width: 620px) {
+  .about-v2-leadership__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1100px) {
+  .about-v2-leadership__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.about-v2-leader {
+  animation-delay: var(--leader-delay);
+  text-align: center;
+}
+
+.about-v2-leader__media {
+  position: relative;
+  width: min(100%, 13.5rem);
+  aspect-ratio: 3 / 4;
+  margin-inline: auto;
+  overflow: hidden;
+  border: 1px solid rgba(216, 184, 120, .62);
+  border-radius: 50%;
+  background: #e9e6df;
+  box-shadow: 0 1.5rem 3.5rem rgba(0, 0, 0, .3);
+}
+
+.about-v2-leader__media::after {
+  position: absolute;
+  inset: auto 0 0;
+  height: 40%;
+  background: linear-gradient(transparent, rgba(0, 0, 0, .32));
+  content: '';
+  pointer-events: none;
+}
+
+.about-v2-leader__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  filter: saturate(.92) contrast(1.02);
+  transition: transform .8s cubic-bezier(.2, .75, .25, 1), filter .5s ease;
+}
+
+.about-v2-leader:hover .about-v2-leader__media img {
+  transform: scale(1.035);
+  filter: saturate(1) contrast(1.03);
+}
+
+.about-v2-leader__media span {
+  position: absolute;
+  z-index: 1;
+  right: 1rem;
+  bottom: .85rem;
+  color: rgba(255, 255, 255, .72);
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .16em;
+}
+
+.about-v2-leader__details {
+  position: relative;
+  max-width: 18rem;
+  margin-inline: auto;
+  padding: 1.35rem .15rem 1rem;
+}
+
+.about-v2-leader__details::after {
+  display: block;
+  width: 2.5rem;
+  height: 1px;
+  margin: 1rem auto 0;
+  background: rgba(216, 184, 120, .55);
+  content: '';
+}
+
+.about-v2-leader__details p {
+  color: #d8b878;
+  font-size: .64rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.about-v2-leader__details h3 {
+  margin-top: .55rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.65rem, 2.3vw, 2.35rem);
+  font-weight: 400;
+  letter-spacing: -.025em;
+  line-height: 1;
+}
+
+.about-v2-leadership__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, .16);
+}
+
+.about-v2-leadership__footer p {
+  max-width: 44rem;
+  color: rgba(255, 255, 255, .58);
+  line-height: 1.7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-v2-leader {
+    animation-delay: 0ms;
+  }
+
+  .about-v2-leader__media img {
+    transition: none;
+  }
+
+  .about-v2-leader:hover .about-v2-leader__media img {
+    transform: none;
+  }
+}
+
 .home-v3-cta {
   position: relative;
   min-height: clamp(42rem, 75vw, 60rem);

@@ -107,6 +107,43 @@
     </div>
 </section>
 
+<section class="about-v2-leadership" aria-labelledby="leadership-heading">
+    <div class="container-site">
+        <header class="about-v2-leadership__header reveal">
+            <div>
+                <p class="text-label">The people behind De Luxe</p>
+                <h2 id="leadership-heading">Meet our leadership team.</h2>
+            </div>
+            <p>Experienced leadership, thoughtful service and one shared commitment to every client, student and partner.</p>
+        </header>
+        <div class="about-v2-leadership__grid">
+            @foreach(config('clinic.leadership', []) as $index => $member)
+                <article class="about-v2-leader reveal" style="--leader-delay: {{ $index * 90 }}ms">
+                    <div class="about-v2-leader__media">
+                        <img
+                            src="{{ asset($member['image']) }}"
+                            alt="{{ $member['name'] }}, {{ $member['role'] }} at {{ config('clinic.name') }}"
+                            width="814"
+                            height="1086"
+                            loading="lazy"
+                            decoding="async"
+                        >
+                        <span aria-hidden="true">{{ str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT) }}</span>
+                    </div>
+                    <div class="about-v2-leader__details">
+                        <p>{{ $member['role'] }}</p>
+                        <h3>{{ $member['name'] }}</h3>
+                    </div>
+                </article>
+            @endforeach
+        </div>
+        <div class="about-v2-leadership__footer reveal">
+            <p>Clinical care, professional education and premium service—guided by a team that values excellence at every level.</p>
+            <a href="{{ route('web.contact') }}" class="btn btn-light">Contact our team</a>
+        </div>
+    </div>
+</section>
+
 <section class="about-v2-cta">
     <div class="container-site about-v2-cta__inner reveal">
         <p class="text-label">Begin your De Luxe journey</p>
