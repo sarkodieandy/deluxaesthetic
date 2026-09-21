@@ -6,6 +6,7 @@
     $locationDescriptions = \App\Models\GalleryItem::LOCATION_GROUP_DESCRIPTIONS;
     $locationGroup = old('location_group', $item?->location_group ?? ($defaultLocationGroup ?? \App\Models\GalleryItem::DEFAULT_LOCATION_GROUP));
     $isEdit = (bool) $item;
+    $maximumUploadMegabytes = (int) ceil(max(1024, (int) config('media.max_upload_kb', 102400)) / 1024);
 @endphp
 
 @if ($errors->any())
@@ -93,7 +94,7 @@
             id="image"
             name="image"
             type="file"
-            accept="image/jpeg,image/png,image/webp,image/jpg"
+            accept="image/jpeg,image/png,image/webp,image/avif,image/jpg"
             class="admin-input mb-4"
         >
         @error('image')<p class="mt-1 text-sm text-[var(--color-error)]">{{ $message }}</p>@enderror
@@ -107,7 +108,7 @@
             value="{{ old('image_url', GalleryMedia::urlFieldValue($item?->image_path)) }}"
         >
         @error('image_url')<p class="mt-1 text-sm text-[var(--color-error)]">{{ $message }}</p>@enderror
-        <p class="mt-2 text-xs text-[var(--admin-text-muted)]">Device upload takes priority if both are provided. JPG, PNG, or WebP · max 8 MB.</p>
+        <p class="mt-2 text-xs text-[var(--admin-text-muted)]">Device upload takes priority if both are provided. High-resolution JPG, PNG, WebP or AVIF · max {{ $maximumUploadMegabytes }} MB.</p>
     </div>
 </div>
 
@@ -116,7 +117,7 @@
         <h2 class="admin-panel__title">Before &amp; after images</h2>
     </div>
     <div class="admin-panel__body grid gap-6 md:grid-cols-2">
-        <p class="md:col-span-2 text-sm text-[var(--admin-text-muted)] max-w-3xl">For each side, upload a JPG, PNG, or WebP image up to 8 MB <strong>or</strong> paste a direct image URL. Both before and after are required. Mark <strong>Featured on homepage</strong> for the main slider.</p>
+        <p class="md:col-span-2 text-sm text-[var(--admin-text-muted)] max-w-3xl">For each side, upload a high-resolution JPG, PNG, WebP or AVIF image up to {{ $maximumUploadMegabytes }} MB <strong>or</strong> paste a direct image URL. Both before and after are required. Mark <strong>Featured on homepage</strong> for the main slider.</p>
 
         <div class="before-after-upload">
             <label class="admin-label before-after-upload__heading" for="before_image">Before</label>
@@ -128,7 +129,7 @@
                 id="before_image"
                 name="before_image"
                 type="file"
-                accept="image/jpeg,image/png,image/webp,image/jpg"
+                accept="image/jpeg,image/png,image/webp,image/avif,image/jpg"
                 class="admin-input mb-3"
             >
             <label class="admin-label" for="before_image_url">Or image URL</label>
@@ -154,7 +155,7 @@
                 id="after_image"
                 name="after_image"
                 type="file"
-                accept="image/jpeg,image/png,image/webp,image/jpg"
+                accept="image/jpeg,image/png,image/webp,image/avif,image/jpg"
                 class="admin-input mb-3"
             >
             <label class="admin-label" for="after_image_url">Or image URL</label>

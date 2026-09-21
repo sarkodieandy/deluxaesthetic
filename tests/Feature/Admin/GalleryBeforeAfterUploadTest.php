@@ -57,6 +57,30 @@ class GalleryBeforeAfterUploadTest extends TestCase
         $this->assertStringStartsWith('/storage/', $item->beforeImageUrl());
     }
 
+    public function test_admin_can_upload_a_large_high_resolution_gallery_image(): void
+    {
+        $admin = User::factory()->create(['is_active' => true, 'email_verified_at' => now()]);
+        $admin->assignRole('Clinic Administrator');
+
+        $largeImage = UploadedFile::fake()
+            ->image('ceo-studio-portrait.jpg', 4000, 3000)
+            ->size(50 * 1024);
+
+        $response = $this->actingAs($admin)->post(route('admin.gallery.store'), [
+            'title' => 'CEO studio portrait',
+            'type' => 'gallery',
+            'location_group' => 'global',
+            'image' => $largeImage,
+            'is_active' => '1',
+        ]);
+
+        $response->assertRedirect(route('admin.gallery.index'));
+
+        $item = GalleryItem::query()->where('slug', 'ceo-studio-portrait')->firstOrFail();
+        $this->assertNotNull($item->image_path);
+        Storage::disk('public')->assertExists($item->image_path);
+    }
+
     public function test_before_and_after_requires_both_images_on_create(): void
     {
         $admin = User::factory()->create(['is_active' => true, 'email_verified_at' => now()]);

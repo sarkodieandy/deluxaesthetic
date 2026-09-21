@@ -12,6 +12,8 @@ use Illuminate\View\View;
 
 class StoreController extends Controller
 {
+    private const MAX_PRICE_FILTER = 1_000_000;
+
     public function __construct(private readonly CartService $carts) {}
 
     public function index(Request $request): View
@@ -35,6 +37,27 @@ class StoreController extends Controller
         if ($request->boolean('in_stock')) {
             $query->where('stock_quantity', '>', 0);
         }
+
+        $availablePriceRange = (clone $query)
+            ->selectRaw('MIN(COALESCE(sale_price, price)) as minimum, MAX(COALESCE(sale_price, price)) as maximum')
+            ->first();
+
+        $minimumPrice = $this->priceFilterValue($request->query('min_price'));
+        $maximumPrice = $this->priceFilterValue($request->query('max_price'));
+
+        if ($minimumPrice !== null && $maximumPrice !== null && $minimumPrice > $maximumPrice) {
+            [$minimumPrice, $maximumPrice] = [$maximumPrice, $minimumPrice];
+        }
+
+        $query
+            ->when($minimumPrice !== null, fn ($query) => $query->whereRaw(
+                'CAST(COALESCE(sale_price, price) AS DECIMAL(12, 2)) >= CAST(? AS DECIMAL(12, 2))',
+                [$minimumPrice]
+            ))
+            ->when($maximumPrice !== null, fn ($query) => $query->whereRaw(
+                'CAST(COALESCE(sale_price, price) AS DECIMAL(12, 2)) <= CAST(? AS DECIMAL(12, 2))',
+                [$maximumPrice]
+            ));
 
         $sort = $request->string('sort')->toString() ?: 'featured';
         match ($sort) {
@@ -65,6 +88,18 @@ class StoreController extends Controller
                 'category' => $categoryId ?: null,
                 'sort' => $sort,
                 'in_stock' => $request->boolean('in_stock'),
+                'min_price' => $minimumPrice,
+                'max_price' => $maximumPrice,
+            ],
+            'availablePriceRange' => [
+                'minimum' => $availablePriceRange?->minimum !== null ? (float) $availablePriceRange->minimum : null,
+                'maximum' => $availablePriceRange?->maximum !== null ? (float) $availablePriceRange->maximum : null,
+            ],
+            'pricePresets' => [
+                ['label' => 'Under GHS 200', 'minimum' => null, 'maximum' => 200],
+                ['label' => 'GHS 200–500', 'minimum' => 200, 'maximum' => 500],
+                ['label' => 'GHS 500–1,000', 'minimum' => 500, 'maximum' => 1000],
+                ['label' => 'GHS 1,000+', 'minimum' => 1000, 'maximum' => null],
             ],
         ]);
     }
@@ -95,5 +130,20 @@ class StoreController extends Controller
             'inCart' => $inCart,
             'whatsAppOrderUrl' => WhatsAppOrder::productUrl($product),
         ]);
+    }
+
+    private function priceFilterValue(mixed $value): ?float
+    {
+        if (! is_scalar($value) || $value === '' || ! is_numeric($value)) {
+            return null;
+        }
+
+        $price = (float) $value;
+
+        if (! is_finite($price) || $price < 0 || $price > self::MAX_PRICE_FILTER) {
+            return null;
+        }
+
+        return round($price, 2);
     }
 }

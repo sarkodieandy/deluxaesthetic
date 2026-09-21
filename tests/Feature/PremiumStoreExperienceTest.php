@@ -61,4 +61,82 @@ class PremiumStoreExperienceTest extends TestCase
             ->assertSee('Related products')
             ->assertSee('Daily Renewal Serum');
     }
+
+    public function test_store_filters_products_by_effective_sale_price(): void
+    {
+        $category = ProductCategory::create([
+            'name' => 'Price Filter Collection',
+            'slug' => 'price-filter-collection',
+            'is_active' => true,
+        ]);
+
+        Product::create([
+            'product_category_id' => $category->id,
+            'name' => 'Entry Cleanser',
+            'slug' => 'entry-cleanser',
+            'sku' => 'PRICE-100',
+            'price' => 100,
+            'stock_quantity' => 2,
+            'is_active' => true,
+        ]);
+
+        Product::create([
+            'product_category_id' => $category->id,
+            'name' => 'Sale Treatment Serum',
+            'slug' => 'sale-treatment-serum',
+            'sku' => 'PRICE-250',
+            'price' => 450,
+            'sale_price' => 250,
+            'stock_quantity' => 2,
+            'is_active' => true,
+        ]);
+
+        Product::create([
+            'product_category_id' => $category->id,
+            'name' => 'Luxury Recovery Set',
+            'slug' => 'luxury-recovery-set',
+            'sku' => 'PRICE-900',
+            'price' => 900,
+            'stock_quantity' => 2,
+            'is_active' => true,
+        ]);
+
+        $this->get(route('web.store.index', ['min_price' => 200, 'max_price' => 500]))
+            ->assertOk()
+            ->assertSee('Filter by price')
+            ->assertSee('Sale Treatment Serum')
+            ->assertDontSee('Entry Cleanser')
+            ->assertDontSee('Luxury Recovery Set')
+            ->assertSee('value="200"', false)
+            ->assertSee('value="500"', false);
+
+        $this->get(route('web.store.index', ['min_price' => 500, 'max_price' => 200]))
+            ->assertOk()
+            ->assertSee('Sale Treatment Serum')
+            ->assertDontSee('Entry Cleanser')
+            ->assertDontSee('Luxury Recovery Set');
+    }
+
+    public function test_store_ignores_invalid_price_filters(): void
+    {
+        $category = ProductCategory::create([
+            'name' => 'Visible Collection',
+            'slug' => 'visible-collection',
+            'is_active' => true,
+        ]);
+
+        Product::create([
+            'product_category_id' => $category->id,
+            'name' => 'Visible Product',
+            'slug' => 'visible-product',
+            'sku' => 'VISIBLE-001',
+            'price' => 300,
+            'stock_quantity' => 2,
+            'is_active' => true,
+        ]);
+
+        $this->get(route('web.store.index', ['min_price' => 'invalid', 'max_price' => -50]))
+            ->assertOk()
+            ->assertSee('Visible Product');
+    }
 }

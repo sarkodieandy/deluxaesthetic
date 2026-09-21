@@ -33,7 +33,7 @@ class PublicSeoTest extends TestCase
 
     public function test_filtered_store_pages_are_not_indexed_and_use_the_clean_canonical(): void
     {
-        $response = $this->get('/store?q=cream&sort=price_asc');
+        $response = $this->get('/store?q=cream&sort=price_asc&min_price=100&max_price=500');
 
         $response
             ->assertOk()

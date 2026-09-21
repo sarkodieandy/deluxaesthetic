@@ -12,11 +12,12 @@
             160,
             ''
         );
+        $filterQueryKeys = ['q', 'sort', 'category', 'in_stock', 'min_price', 'max_price'];
         $canonical = trim($__env->yieldContent('canonical'))
-            ?: request()->fullUrlWithoutQuery(['q', 'sort', 'category', 'in_stock']);
+            ?: request()->fullUrlWithoutQuery($filterQueryKeys);
         $seoImage = trim($__env->yieldContent('meta_image'))
             ?: asset(config('seo.default_image'));
-        $hasFilterQuery = request()->hasAny(['q', 'sort', 'category', 'in_stock']);
+        $hasFilterQuery = request()->hasAny($filterQueryKeys);
         $privatePublicPage = request()->routeIs(
             'web.cart.*',
             'web.checkout.*',

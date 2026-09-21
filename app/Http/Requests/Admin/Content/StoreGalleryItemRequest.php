@@ -20,6 +20,12 @@ class StoreGalleryItemRequest extends FormRequest
     public function rules(): array
     {
         $imageUrlRule = ['nullable', 'url', 'max:2000', 'regex:/^https?:\/\//i'];
+        $imageUploadRule = [
+            'nullable',
+            'image',
+            'mimes:jpg,jpeg,png,webp,avif',
+            'max:'.$this->maxUploadKilobytes(),
+        ];
 
         return [
             'title' => ['required', 'string', 'max:190'],
@@ -31,11 +37,11 @@ class StoreGalleryItemRequest extends FormRequest
             ],
             'description' => ['nullable', 'string'],
             'alt_text' => ['nullable', 'string', 'max:255'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:8192'],
+            'image' => $imageUploadRule,
             'image_url' => $imageUrlRule,
-            'before_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:8192'],
+            'before_image' => $imageUploadRule,
             'before_image_url' => $imageUrlRule,
-            'after_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:8192'],
+            'after_image' => $imageUploadRule,
             'after_image_url' => $imageUrlRule,
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:999'],
             'is_featured' => ['sometimes', 'boolean'],
@@ -51,7 +57,7 @@ class StoreGalleryItemRequest extends FormRequest
             $type = $this->input('type');
 
             if ($type === 'gallery') {
-                $hasImage = $this->hasFile('image')
+                $hasImage = $this->file('image') !== null
                     || GalleryMedia::normalizeUrl($this->input('image_url'))
                     || ($existing instanceof GalleryItem && $existing->image_path);
 
@@ -61,11 +67,11 @@ class StoreGalleryItemRequest extends FormRequest
             }
 
             if ($type === 'before_after') {
-                $hasBefore = $this->hasFile('before_image')
+                $hasBefore = $this->file('before_image') !== null
                     || GalleryMedia::normalizeUrl($this->input('before_image_url'))
                     || ($existing instanceof GalleryItem && $existing->before_image_path);
 
-                $hasAfter = $this->hasFile('after_image')
+                $hasAfter = $this->file('after_image') !== null
                     || GalleryMedia::normalizeUrl($this->input('after_image_url'))
                     || ($existing instanceof GalleryItem && $existing->after_image_path);
 
@@ -78,5 +84,24 @@ class StoreGalleryItemRequest extends FormRequest
                 }
             }
         });
+    }
+
+    public function messages(): array
+    {
+        $maximumMegabytes = (int) ceil($this->maxUploadKilobytes() / 1024);
+
+        return [
+            'image.max' => "The gallery image must not be larger than {$maximumMegabytes} MB.",
+            'before_image.max' => "The before image must not be larger than {$maximumMegabytes} MB.",
+            'after_image.max' => "The after image must not be larger than {$maximumMegabytes} MB.",
+            'image.uploaded' => 'The gallery image could not be uploaded. Please try the image again.',
+            'before_image.uploaded' => 'The before image could not be uploaded. Please try the image again.',
+            'after_image.uploaded' => 'The after image could not be uploaded. Please try the image again.',
+        ];
+    }
+
+    private function maxUploadKilobytes(): int
+    {
+        return max(1024, (int) config('media.max_upload_kb', 102400));
     }
 }

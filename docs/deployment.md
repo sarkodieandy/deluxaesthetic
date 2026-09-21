@@ -53,6 +53,16 @@ Confirm Google redirect with `php artisan google:redirect-uri` and add that exac
 10. Set document root to `/public`
 11. Permissions: `storage/` and `bootstrap/cache/` writable
 
+## Large gallery uploads on the VPS
+
+After the first VPS deployment, or whenever the PHP/Nginx configuration is rebuilt, apply the production upload envelope once:
+
+```bash
+sudo /var/www/deluxaesthetic/current/deploy/configure-upload-limits.sh
+```
+
+This permits individual gallery images up to 100 MB and before/after requests up to 256 MB. The application still validates that each file is a supported image.
+
 ## Cron
 
 ```

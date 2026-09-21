@@ -59,31 +59,81 @@
             <div>
                 <p class="text-label">Shop De Luxe</p>
                 <h2 class="text-section">{{ $filters['category'] ? ($categories->firstWhere('id', $filters['category'])?->name ?? 'Products') : 'The complete collection' }}</h2>
-                <p>{{ $products->total() }} {{ \Illuminate\Support\Str::plural('product', $products->total()) }}</p>
+                <p>
+                    {{ $products->total() }} {{ \Illuminate\Support\Str::plural('product', $products->total()) }}
+                    @if($filters['min_price'] !== null || $filters['max_price'] !== null)
+                        <span class="store-v2-price-summary">
+                            ·
+                            @if($filters['min_price'] !== null && $filters['max_price'] !== null)
+                                GHS {{ number_format($filters['min_price'], 0) }}–{{ number_format($filters['max_price'], 0) }}
+                            @elseif($filters['min_price'] !== null)
+                                From GHS {{ number_format($filters['min_price'], 0) }}
+                            @else
+                                Up to GHS {{ number_format($filters['max_price'], 0) }}
+                            @endif
+                        </span>
+                    @endif
+                </p>
             </div>
             <form method="GET" action="{{ route('web.store.index') }}" class="store-v2-filters">
                 @if($filters['category'])<input type="hidden" name="category" value="{{ $filters['category'] }}">@endif
-                <label class="store-v2-search">
-                    <span class="sr-only">Search products</span>
-                    <input type="search" name="q" value="{{ $filters['q'] }}" placeholder="Search the collection">
-                    <button type="submit" aria-label="Search">→</button>
-                </label>
-                <label>
-                    <span class="sr-only">Sort products</span>
-                    <select name="sort" onchange="this.form.submit()">
-                        <option value="featured" @selected($filters['sort'] === 'featured')>Featured first</option>
-                        <option value="newest" @selected($filters['sort'] === 'newest')>Newest</option>
-                        <option value="price_asc" @selected($filters['sort'] === 'price_asc')>Price: low to high</option>
-                        <option value="price_desc" @selected($filters['sort'] === 'price_desc')>Price: high to low</option>
-                        <option value="name" @selected($filters['sort'] === 'name')>Name: A–Z</option>
-                    </select>
-                </label>
-                <label class="store-v2-stock-filter">
-                    <input type="checkbox" name="in_stock" value="1" @checked($filters['in_stock']) onchange="this.form.submit()">
-                    <span>In stock only</span>
-                </label>
-                @if($filters['q'] || $filters['in_stock'])
-                    <a href="{{ route('web.store.index', array_filter(['category' => $filters['category'], 'sort' => $filters['sort']])) }}">Clear</a>
+                <div class="store-v2-filters__primary">
+                    <label class="store-v2-search">
+                        <span class="sr-only">Search products</span>
+                        <input type="search" name="q" value="{{ $filters['q'] }}" placeholder="Search the collection">
+                        <button type="submit" aria-label="Search">→</button>
+                    </label>
+                    <label>
+                        <span class="sr-only">Sort products</span>
+                        <select name="sort" onchange="this.form.submit()">
+                            <option value="featured" @selected($filters['sort'] === 'featured')>Featured first</option>
+                            <option value="newest" @selected($filters['sort'] === 'newest')>Newest</option>
+                            <option value="price_asc" @selected($filters['sort'] === 'price_asc')>Price: low to high</option>
+                            <option value="price_desc" @selected($filters['sort'] === 'price_desc')>Price: high to low</option>
+                            <option value="name" @selected($filters['sort'] === 'name')>Name: A–Z</option>
+                        </select>
+                    </label>
+                    <label class="store-v2-stock-filter">
+                        <input type="checkbox" name="in_stock" value="1" @checked($filters['in_stock']) onchange="this.form.submit()">
+                        <span>In stock only</span>
+                    </label>
+                </div>
+
+                <fieldset class="store-v2-price-filter">
+                    <legend>Filter by price</legend>
+                    <div class="store-v2-price-filter__fields">
+                        <label>
+                            <span>Minimum</span>
+                            <span class="store-v2-price-filter__input"><b>GHS</b><input type="number" name="min_price" min="0" max="1000000" step="1" inputmode="decimal" value="{{ $filters['min_price'] }}" placeholder="{{ $availablePriceRange['minimum'] !== null ? number_format($availablePriceRange['minimum'], 0, '.', '') : '0' }}"></span>
+                        </label>
+                        <span aria-hidden="true">—</span>
+                        <label>
+                            <span>Maximum</span>
+                            <span class="store-v2-price-filter__input"><b>GHS</b><input type="number" name="max_price" min="0" max="1000000" step="1" inputmode="decimal" value="{{ $filters['max_price'] }}" placeholder="{{ $availablePriceRange['maximum'] !== null ? number_format($availablePriceRange['maximum'], 0, '.', '') : 'Any' }}"></span>
+                        </label>
+                        <button type="submit" class="store-v2-price-filter__apply">Apply price</button>
+                    </div>
+                    <div class="store-v2-price-presets" aria-label="Quick price ranges">
+                        @foreach($pricePresets as $preset)
+                            @php
+                                $presetQuery = array_filter([
+                                    'q' => $filters['q'],
+                                    'category' => $filters['category'],
+                                    'sort' => $filters['sort'] !== 'featured' ? $filters['sort'] : null,
+                                    'in_stock' => $filters['in_stock'] ? 1 : null,
+                                    'min_price' => $preset['minimum'],
+                                    'max_price' => $preset['maximum'],
+                                ], fn ($value) => $value !== null && $value !== '');
+                                $presetActive = (string) ($filters['min_price'] ?? '') === (string) ($preset['minimum'] ?? '')
+                                    && (string) ($filters['max_price'] ?? '') === (string) ($preset['maximum'] ?? '');
+                            @endphp
+                            <a href="{{ route('web.store.index', $presetQuery) }}#shop" @class(['is-active' => $presetActive])>{{ $preset['label'] }}</a>
+                        @endforeach
+                    </div>
+                </fieldset>
+
+                @if($filters['q'] || $filters['in_stock'] || $filters['min_price'] !== null || $filters['max_price'] !== null)
+                    <a class="store-v2-filters__clear" href="{{ route('web.store.index', array_filter(['category' => $filters['category'], 'sort' => $filters['sort'] !== 'featured' ? $filters['sort'] : null])) }}#shop">Clear filters</a>
                 @endif
             </form>
         </header>
