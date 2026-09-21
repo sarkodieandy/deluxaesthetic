@@ -37,18 +37,19 @@
 
 .reveal.is-visible {
   animation: fade-up var(--duration-slow) var(--ease-out) forwards;
+  animation-delay: var(--reveal-delay, 0ms);
 }
 
 .reveal-delay-1 {
-  animation-delay: 80ms;
+  --reveal-delay: 80ms;
 }
 
 .reveal-delay-2 {
-  animation-delay: 160ms;
+  --reveal-delay: 160ms;
 }
 
 .reveal-delay-3 {
-  animation-delay: 240ms;
+  --reveal-delay: 240ms;
 }
 
 .line-reveal {

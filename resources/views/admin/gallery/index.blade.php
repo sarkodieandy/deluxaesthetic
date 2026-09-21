@@ -7,6 +7,37 @@
     <p class="mb-4 border border-[var(--color-success)] bg-white px-4 py-3 text-[var(--color-success)]">{{ session('status') }}</p>
 @endif
 
+<section class="admin-gallery-collections" aria-labelledby="gallery-collections-heading">
+    <div class="admin-gallery-collections__heading">
+        <div>
+            <p class="admin-gallery-collections__eyebrow">Destination library</p>
+            <h2 id="gallery-collections-heading">Country collections</h2>
+        </div>
+        <p>Organise every photograph by where the training, event or clinical experience happened. The website uses these same collections automatically.</p>
+    </div>
+    <div class="admin-gallery-collections__grid">
+        @foreach($collectionStats as $collection)
+            <article class="admin-gallery-collection {{ $collectionFilter === $collection['key'] ? 'is-active' : '' }}">
+                <div class="admin-gallery-collection__top">
+                    <span>{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
+                    <strong>{{ $collection['total'] }}</strong>
+                </div>
+                <h3>{{ $collection['label'] }}</h3>
+                <p>{{ $collection['description'] }}</p>
+                <dl>
+                    <div><dt>Photos</dt><dd>{{ $collection['photos'] }}</dd></div>
+                    <div><dt>Results</dt><dd>{{ $collection['results'] }}</dd></div>
+                    <div><dt>Live</dt><dd>{{ $collection['active'] }}</dd></div>
+                </dl>
+                <div class="admin-gallery-collection__actions">
+                    <a href="{{ route('admin.gallery.index', ['collection' => $collection['key']]) }}">View collection</a>
+                    <a href="{{ route('admin.gallery.create', ['type' => 'gallery', 'collection' => $collection['key']]) }}">Add photo <span aria-hidden="true">＋</span></a>
+                </div>
+            </article>
+        @endforeach
+    </div>
+</section>
+
 <div class="admin-panel mb-6">
     <div class="admin-panel__head">
         <h2 class="admin-panel__title">Gallery items</h2>
@@ -15,6 +46,33 @@
             <a href="{{ route('admin.gallery.create', ['type' => 'gallery']) }}" class="btn btn-primary">Add gallery photo</a>
         </div>
     </div>
+    <div class="admin-panel__body border-b border-[var(--admin-border)]">
+        <form method="GET" action="{{ route('admin.gallery.index') }}" class="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] md:items-end">
+            <div>
+                <label class="admin-label" for="collection-filter">Collection</label>
+                <select id="collection-filter" name="collection" class="admin-input">
+                    <option value="">All collections</option>
+                    @foreach($locationGroups as $key => $label)
+                        <option value="{{ $key }}" @selected($collectionFilter === $key)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label class="admin-label" for="type-filter">Content type</label>
+                <select id="type-filter" name="type" class="admin-input">
+                    <option value="">All content types</option>
+                    <option value="gallery" @selected($typeFilter === 'gallery')>Gallery photos</option>
+                    <option value="before_after" @selected($typeFilter === 'before_after')>Before / after</option>
+                </select>
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="btn btn-primary">Filter</button>
+                @if($collectionFilter || $typeFilter)
+                    <a href="{{ route('admin.gallery.index') }}" class="btn btn-secondary">Clear</a>
+                @endif
+            </div>
+        </form>
+    </div>
     <div class="admin-panel__body" style="padding:0;">
         <table class="admin-table">
             <thead>
@@ -22,6 +80,7 @@
                     <th>Preview</th>
                     <th>Title</th>
                     <th>Type</th>
+                    <th>Collection</th>
                     <th>Procedure</th>
                     <th>Status</th>
                     <th>Order</th>
@@ -53,6 +112,7 @@
                         </td>
                         <td><strong>{{ $item->title }}</strong></td>
                         <td>{{ $item->type === 'before_after' ? 'Before / after' : 'Gallery image' }}</td>
+                        <td><span class="admin-status">{{ $item->locationGroupLabel() }}</span></td>
                         <td>{{ $item->treatment?->name ?? 'General clinic work' }}</td>
                         <td>
                             @if($item->is_active)
@@ -76,10 +136,10 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7">
+                        <td colspan="8">
                             <div class="admin-empty">
                                 <p class="admin-empty__title">No gallery items yet</p>
-                                <p class="admin-empty__copy">Use <strong>Add before / after</strong> for the homepage slider, or <strong>Add gallery photo</strong> for the three-tile row.</p>
+                                <p class="admin-empty__copy">Add a photo to one of the destination collections above, or create a before-and-after treatment result.</p>
                             </div>
                         </td>
                     </tr>

@@ -85,10 +85,54 @@ export async function initHeroMotion() {
 }
 
 export function initAnimations() {
+    initEditorialMotion();
     initScrollReveals();
     initHeroMotion();
     initSectionReveals();
     initHomeExperience();
+}
+
+function initEditorialMotion() {
+    const staggerGroups = document.querySelectorAll(
+        '.gallery-grid, .gallery-results__list, .store-v2-grid, .product-v3-related__grid',
+    );
+
+    staggerGroups.forEach((group) => {
+        [...group.children].forEach((child, index) => {
+            if (!child.style.getPropertyValue('--reveal-delay')) {
+                child.style.setProperty('--reveal-delay', `${(index % 4) * 90}ms`);
+            }
+        });
+    });
+
+    const parallaxItems = [...document.querySelectorAll('[data-editorial-parallax]')];
+    if (!parallaxItems.length || prefersReducedMotion()) return;
+
+    let ticking = false;
+    const update = () => {
+        const viewportHeight = window.innerHeight;
+
+        parallaxItems.forEach((item) => {
+            const rect = item.getBoundingClientRect();
+            if (rect.bottom < 0 || rect.top > viewportHeight) return;
+
+            const progress = (rect.top + rect.height / 2 - viewportHeight / 2) / viewportHeight;
+            const shift = Math.max(-18, Math.min(18, progress * -22));
+            item.style.setProperty('--editorial-shift', `${shift}px`);
+        });
+
+        ticking = false;
+    };
+
+    const requestUpdate = () => {
+        if (ticking) return;
+        ticking = true;
+        window.requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener('scroll', requestUpdate, { passive: true });
+    window.addEventListener('resize', requestUpdate, { passive: true });
 }
 
 function initHomeExperience() {

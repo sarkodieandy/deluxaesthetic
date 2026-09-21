@@ -25,7 +25,15 @@
         </div>
         <div class="home-v3-hero__main">
             <p class="text-label" data-hero-brand>{{ $cmsPage?->hero_eyebrow ?: 'INJECTABLE TREATMENTS · ACADEMY · PREMIUM PRODUCTS' }}</p>
-            <h1 data-hero-headline>{{ $cmsPage?->hero_title ?: 'Expert Injectable Care. Professional Training. Premium Products.' }}</h1>
+            @if(filled($cmsPage?->hero_title))
+                <h1 data-hero-headline>{{ $cmsPage->hero_title }}</h1>
+            @else
+                <h1 class="home-v3-hero__statement" data-hero-headline aria-label="Expert Injectable Care. Professional Training. Premium Products.">
+                    <span aria-hidden="true">Expert injectable care.</span>
+                    <span aria-hidden="true">Professional training.</span>
+                    <span class="home-v3-hero__statement-accent" aria-hidden="true">Premium products.</span>
+                </h1>
+            @endif
             <p data-hero-support>{{ $cmsPage?->hero_body ?: 'An expert-led aesthetic clinic in Accra specialising in Botox, dermal fillers and advanced skin procedures — alongside internationally delivered academy training and curated professional products.' }}</p>
             <div class="home-v3-hero__actions" data-hero-actions>
                 <a href="{{ route('web.clinical.index') }}" class="btn btn-primary">Explore Clinical Procedures</a>

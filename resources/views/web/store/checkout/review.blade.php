@@ -1,6 +1,15 @@
 @extends('web.layouts.app')
 @section('title', 'Checkout — '.config('clinic.name'))
 @section('content')
+@php
+    $paymentLabel = config('payments.store_driver', 'expresspay') === 'expresspay' ? 'expressPay' : 'Paystack';
+    $demoPayment = (bool) config('payments.store_mock', true) || config('payments.store_driver') === 'mock';
+    $deliveryThreshold = config('ecommerce.free_delivery_threshold');
+    $deliveryFee = ! config('ecommerce.delivery_enabled') || ($deliveryThreshold !== null && $quote['subtotal'] - $quote['discount'] >= (float) $deliveryThreshold)
+        ? 0.0
+        : (float) config('ecommerce.delivery_fee', 0);
+    $totalBeforeDelivery = round($quote['grand_total'] - $quote['delivery_fee'], 2);
+@endphp
 <section class="section">
     <div class="container-site max-w-5xl">
         <h1 class="text-page-title mb-8">Checkout</h1>
@@ -9,7 +18,7 @@
                 <ul class="list-disc pl-5">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
             </div>
         @endif
-        <form method="POST" action="{{ route('web.checkout.pay') }}" class="grid gap-10 lg:grid-cols-[1.2fr,0.8fr]" x-data="{ fulfillment: @js($fulfillmentType) }">
+        <form method="POST" action="{{ route('web.checkout.pay') }}" class="grid gap-10 lg:grid-cols-[1.2fr,0.8fr]" x-data="{ fulfillment: @js($fulfillmentType), deliveryFee: @js($deliveryFee), totalBeforeDelivery: @js($totalBeforeDelivery), money(amount) { return Number(amount).toLocaleString('en-GH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); } }">
             @csrf
             <div class="space-y-6">
                 <div class="border border-[var(--color-border)] bg-white p-6 space-y-4">
@@ -70,15 +79,23 @@
                 <div class="space-y-2 text-sm border-t border-[var(--color-border)] pt-4 mb-6">
                     <div class="flex justify-between"><span>Subtotal</span><span>GHS {{ number_format($quote['subtotal'], 2) }}</span></div>
                     @if($quote['discount'] > 0)<div class="flex justify-between"><span>Discount</span><span>- GHS {{ number_format($quote['discount'], 2) }}</span></div>@endif
-                    <div class="flex justify-between"><span>Delivery</span><span>GHS {{ number_format($quote['delivery_fee'], 2) }}</span></div>
+                    <div class="flex justify-between"><span>Delivery</span><span>{{ $quote['currency'] }} <span x-text="money(fulfillment === 'delivery' ? deliveryFee : 0)">{{ number_format($quote['delivery_fee'], 2) }}</span></span></div>
                     @if($quote['tax'] > 0)<div class="flex justify-between"><span>Tax</span><span>GHS {{ number_format($quote['tax'], 2) }}</span></div>@endif
-                    <div class="flex justify-between font-medium text-base"><span>Total</span><span>GHS {{ number_format($quote['grand_total'], 2) }}</span></div>
+                    <div class="flex justify-between font-medium text-base"><span>Total</span><span>{{ $quote['currency'] }} <span x-text="money(totalBeforeDelivery + (fulfillment === 'delivery' ? deliveryFee : 0))">{{ number_format($quote['grand_total'], 2) }}</span></span></div>
                 </div>
-                <button type="submit" class="btn btn-whatsapp w-full">
-                    @include('web.components.whatsapp-icon', ['class' => 'btn-whatsapp__icon'])
-                    Continue on WhatsApp
-                </button>
-                <p class="mt-3 text-center text-xs text-[var(--color-soft-grey)]">You’ll chat directly with our team to confirm availability, delivery and payment.</p>
+                @if(\App\Support\WhatsAppOrder::enabled())
+                    <button type="submit" class="btn btn-whatsapp w-full">
+                        @include('web.components.whatsapp-icon', ['class' => 'btn-whatsapp__icon'])
+                        Continue on WhatsApp
+                    </button>
+                    <p class="mt-3 text-center text-xs text-[var(--color-soft-grey)]">You’ll chat directly with our team to confirm availability, delivery and payment.</p>
+                @elseif($demoPayment)
+                    <button type="submit" class="btn btn-primary w-full">Continue to demo payment</button>
+                    <p class="mt-3 text-center text-xs text-[var(--color-soft-grey)]">Demo checkout only. No money will be charged.</p>
+                @else
+                    <button type="submit" class="btn btn-primary w-full">Pay with {{ $paymentLabel }}</button>
+                    <p class="mt-3 text-center text-xs text-[var(--color-soft-grey)]">You’ll continue to {{ $paymentLabel }} to complete your payment securely.</p>
+                @endif
             </aside>
         </form>
     </div>

@@ -24,6 +24,7 @@ class StoreGalleryItemRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:190'],
             'type' => ['required', 'in:gallery,before_after'],
+            'location_group' => ['nullable', Rule::in(array_keys(GalleryItem::LOCATION_GROUPS))],
             'treatment_id' => [
                 'nullable',
                 Rule::exists('treatments', 'id')->whereNull('deleted_at'),

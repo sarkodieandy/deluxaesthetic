@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'whatsapp_checkout' => (bool) env('STORE_WHATSAPP_CHECKOUT', true),
+    'whatsapp_checkout' => (bool) env('STORE_WHATSAPP_CHECKOUT', false),
     'whatsapp_number' => env('STORE_WHATSAPP_NUMBER', env('BUSINESS_WHATSAPP')),
 
     'currency' => env('DEFAULT_CURRENCY', 'GHS'),

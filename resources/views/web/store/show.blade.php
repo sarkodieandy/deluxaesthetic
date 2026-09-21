@@ -26,92 +26,195 @@
 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 @endpush
 @section('content')
-<section class="section">
+@php
+    $productMedia = $product->images
+        ->filter(fn ($image) => $image->imageUrl())
+        ->values();
+@endphp
+
+<section class="product-v3">
     <div class="container-site">
-        <p class="text-sm text-[var(--color-soft-grey)] mb-6">
-            <a href="{{ route('web.store.index') }}">Store</a> /
-            {{ $product->category?->name }} /
-            {{ $product->name }}
-        </p>
-        <div class="grid gap-10 lg:grid-cols-2">
-            <div class="border border-[var(--color-border)] bg-[var(--color-stone)] overflow-hidden">
-                @if ($product->imageUrl())
-                    <img src="{{ $product->imageUrl() }}" alt="{{ $product->name }}" class="w-full object-cover min-h-[22rem]">
-                @else
-                    <div class="flex min-h-[22rem] items-center justify-center text-[var(--color-soft-grey)]">Photo coming soon</div>
+        <nav class="product-v3__breadcrumbs reveal" aria-label="Breadcrumb">
+            <a href="{{ route('web.store.index') }}">Store</a>
+            <span aria-hidden="true">/</span>
+            @if($product->category)
+                <a href="{{ route('web.store.index', ['category' => $product->category->id]) }}">{{ $product->category->name }}</a>
+                <span aria-hidden="true">/</span>
+            @endif
+            <span>{{ $product->name }}</span>
+        </nav>
+
+        <div class="product-v3__layout">
+            <div class="product-v3__gallery reveal" x-data="{ active: 0 }">
+                <div class="product-v3__media-stage">
+                    @if($productMedia->isNotEmpty())
+                        @foreach($productMedia as $image)
+                            <figure
+                                class="product-v3__media"
+                                x-show="active === {{ $loop->index }}"
+                                @if(! $loop->first) x-cloak @endif
+                                x-transition.opacity.duration.500ms
+                            >
+                                <img
+                                    src="{{ $image->imageUrl() }}"
+                                    alt="{{ $image->alt_text ?: $product->name }}"
+                                    width="1200"
+                                    height="1500"
+                                    @if($loop->first) fetchpriority="high" @else loading="lazy" @endif
+                                >
+                            </figure>
+                        @endforeach
+                    @else
+                        <div class="product-v3__placeholder">
+                            <span>De Luxe essentials</span>
+                            <strong>{{ $product->name }}</strong>
+                            <small>Product photography coming soon</small>
+                        </div>
+                    @endif
+
+                    <div class="product-v3__media-badges">
+                        @if($product->sale_price)<span>Sale edit</span>@endif
+                        @if($product->is_featured)<span>Clinic selected</span>@endif
+                    </div>
+                    <span class="product-v3__media-number">{{ str_pad((string) max(1, $productMedia->count()), 2, '0', STR_PAD_LEFT) }}</span>
+                </div>
+
+                @if($productMedia->count() > 1)
+                    <div class="product-v3__thumbnails" aria-label="Product photographs">
+                        @foreach($productMedia as $image)
+                            <button type="button" @click="active = {{ $loop->index }}" :class="{ 'is-active': active === {{ $loop->index }} }" aria-label="View product image {{ $loop->iteration }}">
+                                <img src="{{ $image->imageUrl() }}" alt="" loading="lazy">
+                            </button>
+                        @endforeach
+                    </div>
                 @endif
             </div>
-            <div>
-                <p class="text-label mb-2">{{ $product->category?->name }}</p>
-                <h1 class="text-page-title mb-4">{{ $product->name }}</h1>
-                @if(! empty($inCart))
-                    <p class="mb-4 inline-flex rounded-full bg-red-600 px-3 py-1 text-sm font-semibold text-white">Already in cart</p>
+
+            <article class="product-v3__details reveal reveal-delay-2">
+                <div class="product-v3__heading">
+                    <p class="text-label">{{ $product->category?->name ?? 'De Luxe collection' }}</p>
+                    <h1>{{ $product->name }}</h1>
+                    <div class="product-v3__price">
+                        <strong>GHS {{ number_format((float) $product->effectivePrice(), 2) }}</strong>
+                        @if($product->sale_price)
+                            <del>GHS {{ number_format((float) $product->price, 2) }}</del>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="product-v3__availability">
+                    <span @class(['is-unavailable' => ! $product->isPurchasable()])></span>
+                    <p>{{ $product->isPurchasable() ? 'In stock and ready to order' : 'Currently unavailable' }}</p>
+                    @if(! empty($inCart))<strong>Already in cart</strong>@endif
+                </div>
+
+                @if($product->description)
+                    <p class="product-v3__description">{{ $product->description }}</p>
                 @endif
-                <p class="mb-4 text-xl">
-                    @if($product->sale_price)
-                        <span class="line-through text-[var(--color-soft-grey)] mr-2">GHS {{ number_format((float) $product->price, 2) }}</span>
-                    @endif
-                    GHS {{ number_format((float) $product->effectivePrice(), 2) }}
-                </p>
-                <p class="mb-6 text-[var(--color-soft-grey)]">{{ $product->stock_quantity > 0 ? 'In stock ('.$product->stock_quantity.')' : 'Out of stock' }}</p>
-                <p class="mb-8">{{ $product->description }}</p>
 
                 @if ($errors->any())
-                    <div class="mb-4 border border-[var(--color-error)] p-4 text-[var(--color-error)]">{{ $errors->first() }}</div>
+                    <div class="product-v3__error" role="alert">{{ $errors->first() }}</div>
                 @endif
 
                 @if($product->isPurchasable())
-                    <form method="POST" action="{{ route('web.cart.store') }}" class="flex flex-wrap items-end gap-3">
+                    <form method="POST" action="{{ route('web.cart.store') }}" class="product-v3__purchase" x-data="{ quantity: 1, maximum: {{ (int) $product->stock_quantity }} }">
                         @csrf
                         <input type="hidden" name="product_id" value="{{ $product->id }}">
-                        <div>
-                            <label class="text-label mb-2 block" for="quantity">Quantity</label>
-                            <input class="field w-24" id="quantity" type="number" name="quantity" value="1" min="1" max="{{ $product->stock_quantity }}">
+                        <div class="product-v3__quantity">
+                            <label for="quantity">Quantity</label>
+                            <div>
+                                <button type="button" @click="quantity = Math.max(1, quantity - 1)" aria-label="Decrease quantity">−</button>
+                                <input id="quantity" type="number" name="quantity" x-model.number="quantity" min="1" max="{{ $product->stock_quantity }}" inputmode="numeric">
+                                <button type="button" @click="quantity = Math.min(maximum, quantity + 1)" aria-label="Increase quantity">+</button>
+                            </div>
                         </div>
-                        <button type="submit" class="btn btn-primary">Add to cart</button>
-                        <button type="submit" name="buy_now" value="1" class="btn btn-whatsapp">
-                            @include('web.components.whatsapp-icon', ['class' => 'btn-whatsapp__icon'])
-                            Order on WhatsApp
-                        </button>
-                        <a href="{{ route('web.cart.index') }}" class="btn btn-secondary">View cart</a>
+                        <button type="submit" class="product-v3__add">Add to cart <span aria-hidden="true">+</span></button>
+                        @if(\App\Support\WhatsAppOrder::enabled())
+                            <button type="submit" name="buy_now" value="1" class="product-v3__buy product-v3__buy--whatsapp">
+                                @include('web.components.whatsapp-icon', ['class' => 'product-v3__whatsapp-icon'])
+                                <span>Order on WhatsApp</span>
+                                <b aria-hidden="true">→</b>
+                            </button>
+                        @else
+                            <button type="submit" name="buy_now" value="1" class="product-v3__buy">
+                                <span>Buy now</span>
+                                <b aria-hidden="true">→</b>
+                            </button>
+                        @endif
+                        <a href="{{ route('web.cart.index') }}" class="product-v3__cart-link">View cart <span aria-hidden="true">→</span></a>
                     </form>
-                @else
-                    <p class="text-[var(--color-error)]">Currently unavailable.</p>
                 @endif
 
-                <p class="mt-4 text-sm text-[var(--color-soft-grey)]">You’ll chat directly with {{ config('clinic.ceo.name') }} to confirm availability, delivery and payment.</p>
-
-                @if($product->usage_instructions)
-                    <div class="mt-10">
-                        <h2 class="font-display text-2xl mb-3">Usage</h2>
-                        <p class="whitespace-pre-line text-[var(--color-soft-grey)]">{{ $product->usage_instructions }}</p>
-                    </div>
-                @endif
-                @if($product->ingredients)
-                    <div class="mt-8">
-                        <h2 class="font-display text-2xl mb-3">Ingredients</h2>
-                        <p class="whitespace-pre-line text-[var(--color-soft-grey)]">{{ $product->ingredients }}</p>
-                    </div>
-                @endif
-            </div>
-        </div>
-
-        @if($related->isNotEmpty())
-            <div class="mt-16">
-                <h2 class="text-section mb-6">Related products</h2>
-                <div class="grid gap-6 md:grid-cols-4">
-                    @foreach($related as $item)
-                        <a href="{{ route('web.store.show', $item->slug) }}" class="border border-[var(--color-border)] p-4">
-                            @if($item->imageUrl())
-                                <img src="{{ $item->imageUrl() }}" alt="" class="mb-3 h-40 w-full object-cover">
-                            @endif
-                            <p class="font-display text-xl">{{ $item->name }}</p>
-                            <p class="text-sm">GHS {{ number_format((float) $item->effectivePrice(), 2) }}</p>
-                        </a>
-                    @endforeach
+                <div class="product-v3__assurance">
+                    @if($product->delivery_eligible)
+                        <div><span aria-hidden="true">01</span><p><strong>Delivery available</strong><small>Confirm your location during checkout.</small></p></div>
+                    @endif
+                    @if($product->pickup_eligible)
+                        <div><span aria-hidden="true">02</span><p><strong>Clinic pickup</strong><small>Collect directly from our Accra clinic.</small></p></div>
+                    @endif
+                    <div><span aria-hidden="true">03</span><p><strong>Expert selected</strong><small>Chosen to complement professional care.</small></p></div>
                 </div>
-            </div>
-        @endif
+
+                @if(\App\Support\WhatsAppOrder::enabled())
+                    <p class="product-v3__checkout-note">You’ll chat directly with {{ config('clinic.ceo.name') }} to confirm availability, delivery and payment.</p>
+                @else
+                    <p class="product-v3__checkout-note">Choose delivery or clinic pickup and pay securely at checkout.</p>
+                @endif
+
+                @if($product->usage_instructions || $product->ingredients)
+                    <div class="product-v3__information" x-data="{ open: 'usage' }">
+                        @if($product->usage_instructions)
+                            <section>
+                                <button type="button" @click="open = open === 'usage' ? '' : 'usage'" :aria-expanded="open === 'usage'">
+                                    <span>How to use</span><i x-text="open === 'usage' ? '−' : '+'">−</i>
+                                </button>
+                                <div x-show="open === 'usage'" x-transition.opacity.duration.250ms>
+                                    <p>{{ $product->usage_instructions }}</p>
+                                </div>
+                            </section>
+                        @endif
+                        @if($product->ingredients)
+                            <section>
+                                <button type="button" @click="open = open === 'ingredients' ? '' : 'ingredients'" :aria-expanded="open === 'ingredients'">
+                                    <span>Ingredients</span><i x-text="open === 'ingredients' ? '−' : '+'">+</i>
+                                </button>
+                                <div x-show="open === 'ingredients'" x-transition.opacity.duration.250ms x-cloak>
+                                    <p>{{ $product->ingredients }}</p>
+                                </div>
+                            </section>
+                        @endif
+                    </div>
+                @endif
+            </article>
+        </div>
     </div>
 </section>
+
+@if($related->isNotEmpty())
+    <section class="product-v3-related">
+        <div class="container-site">
+            <header class="product-v3-related__header reveal">
+                <div><p class="text-label">Continue your ritual</p><h2>Related products</h2></div>
+                <a href="{{ route('web.store.index') }}">View all products <span aria-hidden="true">→</span></a>
+            </header>
+            <div class="product-v3-related__grid">
+                @foreach($related as $item)
+                    <a href="{{ route('web.store.show', $item->slug) }}" class="product-v3-related__card reveal" style="--reveal-delay: {{ $loop->index * 80 }}ms">
+                        <div>
+                            @if($item->imageUrl())
+                                <img src="{{ $item->imageUrl() }}" alt="{{ $item->name }}" loading="lazy">
+                            @else
+                                <span>{{ $item->category?->name ?? 'De Luxe' }}</span>
+                            @endif
+                            <i aria-hidden="true">↗</i>
+                        </div>
+                        <p>{{ $item->category?->name }}</p>
+                        <h3>{{ $item->name }}</h3>
+                        <strong>GHS {{ number_format((float) $item->effectivePrice(), 2) }}</strong>
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    </section>
+@endif
 @endsection

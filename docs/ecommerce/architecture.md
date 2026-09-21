@@ -1,12 +1,12 @@
 # E-commerce architecture
 
 ## Scope
-Complete product purchasing for De Luxe Aesthetic Clinic: catalogue → cart → checkout → Paystack/mock payment → inventory → client tracking → admin fulfilment.
+Complete product purchasing for De Luxe Aesthetic Clinic: catalogue → cart → checkout → expressPay/mock payment → inventory → client tracking → admin fulfilment.
 
 ## Existing foundation
 - Tables already exist (`carts`, `orders`, `payments`, `coupons`, `deliveries`, `inventory_movements`, `product_variants`, …).
 - Admin product CRUD + public store listing work.
-- `PaystackPaymentService` / `MockPaymentService` are bound via `PaymentGatewayInterface`.
+- `StorePaymentGateway` resolves `ExpressPayPaymentService` for product orders and keeps mock payments restricted to local/testing environments.
 - Admin order edit updates status via query builder (being upgraded to Eloquent).
 
 ## Chosen payment strategy

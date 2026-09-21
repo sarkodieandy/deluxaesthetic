@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\Content\UpdateGalleryItemRequest;
 use App\Models\GalleryItem;
 use App\Models\Treatment;
 use App\Support\GalleryMedia;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -18,11 +19,58 @@ use Illuminate\View\View;
 
 class GalleryController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $items = GalleryItem::query()->with('treatment:id,name')->orderBy('type')->orderByDesc('is_featured')->orderBy('sort_order')->paginate(16);
+        $collectionFilter = $request->string('collection')->toString();
+        if (! array_key_exists($collectionFilter, GalleryItem::LOCATION_GROUPS)) {
+            $collectionFilter = '';
+        }
 
-        return view('admin.gallery.index', compact('items'));
+        $typeFilter = $request->string('type')->toString();
+        if (! in_array($typeFilter, ['gallery', 'before_after'], true)) {
+            $typeFilter = '';
+        }
+
+        $items = GalleryItem::query()
+            ->with('treatment:id,name')
+            ->when($collectionFilter, fn ($query) => $query->where('location_group', $collectionFilter))
+            ->when($typeFilter, fn ($query) => $query->where('type', $typeFilter))
+            ->orderBy('location_group')
+            ->orderBy('type')
+            ->orderByDesc('is_featured')
+            ->orderBy('sort_order')
+            ->paginate(16)
+            ->withQueryString();
+
+        $rawCollectionStats = GalleryItem::query()
+            ->selectRaw("location_group, COUNT(*) as total, SUM(CASE WHEN type = 'gallery' THEN 1 ELSE 0 END) as photos, SUM(CASE WHEN type = 'before_after' THEN 1 ELSE 0 END) as results, SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active")
+            ->groupBy('location_group')
+            ->get()
+            ->keyBy(fn (GalleryItem $item) => $item->location_group ?: GalleryItem::DEFAULT_LOCATION_GROUP);
+
+        $collectionStats = collect(GalleryItem::LOCATION_GROUPS)
+            ->map(function (string $label, string $key) use ($rawCollectionStats): array {
+                $stats = $rawCollectionStats->get($key);
+
+                return [
+                    'key' => $key,
+                    'label' => $label,
+                    'description' => GalleryItem::LOCATION_GROUP_DESCRIPTIONS[$key],
+                    'total' => (int) ($stats?->total ?? 0),
+                    'photos' => (int) ($stats?->photos ?? 0),
+                    'results' => (int) ($stats?->results ?? 0),
+                    'active' => (int) ($stats?->active ?? 0),
+                ];
+            })
+            ->values();
+
+        return view('admin.gallery.index', [
+            'items' => $items,
+            'locationGroups' => GalleryItem::LOCATION_GROUPS,
+            'collectionStats' => $collectionStats,
+            'collectionFilter' => $collectionFilter,
+            'typeFilter' => $typeFilter,
+        ]);
     }
 
     public function create(Request $request): View
@@ -32,8 +80,14 @@ class GalleryController extends Controller
             $type = null;
         }
 
+        $locationGroup = $request->string('collection')->toString();
+        if (! array_key_exists($locationGroup, GalleryItem::LOCATION_GROUPS)) {
+            $locationGroup = GalleryItem::DEFAULT_LOCATION_GROUP;
+        }
+
         return view('admin.gallery.create', [
             'defaultType' => $type,
+            'defaultLocationGroup' => $locationGroup,
             'treatments' => $this->treatments(),
         ]);
     }
@@ -48,6 +102,7 @@ class GalleryController extends Controller
             'title' => $data['title'],
             'slug' => $this->uniqueSlug($data['title']),
             'type' => $type,
+            'location_group' => $data['location_group'] ?? GalleryItem::DEFAULT_LOCATION_GROUP,
             'description' => $data['description'] ?? null,
             'image_path' => $type === 'gallery'
                 ? $this->resolveNewPath($request->file('image'), $request->input('image_url'), 'gallery')
@@ -84,6 +139,7 @@ class GalleryController extends Controller
             'treatment_id' => $data['treatment_id'] ?? null,
             'title' => $data['title'],
             'type' => $type,
+            'location_group' => $data['location_group'] ?? $gallery->location_group ?? GalleryItem::DEFAULT_LOCATION_GROUP,
             'description' => $data['description'] ?? null,
             'alt_text' => $data['alt_text'] ?? null,
             'is_featured' => $request->boolean('is_featured'),
@@ -235,7 +291,7 @@ class GalleryController extends Controller
         return $slug;
     }
 
-    /** @return \Illuminate\Database\Eloquent\Collection<int, Treatment> */
+    /** @return Collection<int, Treatment> */
     private function treatments(?GalleryItem $item = null)
     {
         return Treatment::query()

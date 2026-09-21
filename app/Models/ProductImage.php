@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class ProductImage extends Model
 {
@@ -17,5 +18,20 @@ class ProductImage extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function imageUrl(): ?string
+    {
+        if (! $this->path) {
+            return null;
+        }
+
+        if (filter_var($this->path, FILTER_VALIDATE_URL)) {
+            return $this->path;
+        }
+
+        return str_starts_with($this->path, 'assets/')
+            ? asset($this->path)
+            : Storage::disk('public')->url($this->path);
     }
 }

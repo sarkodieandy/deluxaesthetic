@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Web;
 
 use App\Enums\FulfillmentType;
+use App\Enums\OrderPaymentStatus;
+use App\Exceptions\Payments\PaymentVerificationMismatchException;
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\Order;
@@ -79,7 +81,7 @@ class CheckoutController extends Controller
 
         $rules = [
             'name' => ['required', 'string', 'max:120'],
-            'email' => ['required', 'email', 'max:255'],
+            'email' => ['required', 'email', 'max:64'],
             'phone' => ['required', 'string', 'max:40'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'fulfillment_type' => ['required', 'in:delivery,pickup'],
@@ -124,15 +126,19 @@ class CheckoutController extends Controller
 
             return back()
                 ->withInput()
-                ->withErrors(['payment' => 'Online payment is temporarily unavailable. Please place your order through WhatsApp.']);
+                ->withErrors(['payment' => 'Online payment is temporarily unavailable. Please try again shortly.']);
         }
 
         return redirect()->away($result['authorization_url']);
     }
 
-    public function processing(string $number): View
+    public function processing(string $number): View|RedirectResponse
     {
         $order = Order::query()->where('number', $number)->firstOrFail();
+
+        if ($order->payment_status === OrderPaymentStatus::Paid) {
+            return redirect()->route('web.checkout.success', $number);
+        }
 
         return view('web.store.checkout.processing', compact('order'));
     }
@@ -140,6 +146,7 @@ class CheckoutController extends Controller
     public function mockPay(string $reference): View|RedirectResponse
     {
         $payment = Payment::query()->where('reference', $reference)->firstOrFail();
+        $this->ensureMockPayment($payment);
         $order = $payment->payable;
 
         if (! $order instanceof Order) {
@@ -151,6 +158,9 @@ class CheckoutController extends Controller
 
     public function mockComplete(string $reference): RedirectResponse
     {
+        $payment = Payment::query()->where('reference', $reference)->firstOrFail();
+        $this->ensureMockPayment($payment);
+
         try {
             $order = $this->checkout->confirmPayment($reference);
         } catch (InvalidArgumentException $e) {
@@ -159,15 +169,31 @@ class CheckoutController extends Controller
                 ->withErrors(['payment' => $e->getMessage()]);
         }
 
-        return redirect()->route('web.checkout.success', $order->number);
+        return $this->paymentRedirect($order, $reference);
     }
 
     public function callback(Request $request): RedirectResponse
     {
-        $reference = (string) $request->query('reference', $request->input('reference'));
+        $data = $request->validate([
+            'reference' => ['nullable', 'string', 'max:64'],
+            'order-id' => ['nullable', 'string', 'max:64'],
+            'token' => ['nullable', 'string', 'max:1024'],
+        ]);
+        $reference = $data['order-id'] ?? $data['reference'] ?? '';
 
-        if ($reference === '') {
-            return redirect()->route('web.cart.index')->withErrors(['payment' => 'Missing payment reference.']);
+        abort_if(isset($data['reference'], $data['order-id']) && $data['reference'] !== $data['order-id'], 422);
+
+        abort_if($reference === '', 422, 'Missing payment reference.');
+
+        $payment = Payment::query()->where('reference', $reference)
+            ->where('payable_type', (new Order)->getMorphClass())->firstOrFail();
+
+        if ($payment->gateway === 'expresspay') {
+            $token = $payment->metadata['expresspay_token'] ?? '';
+            abort_unless(is_string($token) && $token !== '' && isset($data['order-id'], $data['token'])
+                && hash_equals($token, $data['token']), 403);
+        } else {
+            abort_if(isset($data['order-id']), 403);
         }
 
         try {
@@ -176,17 +202,53 @@ class CheckoutController extends Controller
             return redirect()
                 ->route('web.checkout.failure', $reference)
                 ->withErrors(['payment' => $e->getMessage()]);
+        } catch (PaymentVerificationMismatchException $e) {
+            return redirect()
+                ->route('web.checkout.failure', $reference)
+                ->withErrors(['payment' => 'Payment details do not match the order.']);
+        } catch (RuntimeException $e) {
+            report($e);
+
+            return redirect()->route('web.checkout.processing', $payment->payable->number)
+                ->withErrors(['payment' => 'We could not check your payment yet. Please check its status again shortly.']);
         }
 
-        return redirect()->route('web.checkout.success', $order->number);
+        return $this->paymentRedirect($order, $reference);
     }
 
-    public function success(string $number): View
+    public function status(string $number): RedirectResponse
+    {
+        $order = Order::query()->where('number', $number)->firstOrFail();
+        $payment = $order->payments()->latest('id')->firstOrFail();
+
+        try {
+            $order = $this->checkout->confirmPayment($payment->reference);
+        } catch (InvalidArgumentException $e) {
+            return redirect()->route('web.checkout.failure', $payment->reference)
+                ->withErrors(['payment' => $e->getMessage()]);
+        } catch (PaymentVerificationMismatchException $e) {
+            return redirect()->route('web.checkout.failure', $payment->reference)
+                ->withErrors(['payment' => 'Payment details do not match the order.']);
+        } catch (RuntimeException $e) {
+            report($e);
+
+            return redirect()->route('web.checkout.processing', $number)
+                ->withErrors(['payment' => 'We could not check your payment yet. Please try again shortly.']);
+        }
+
+        return $this->paymentRedirect($order, $payment->reference);
+    }
+
+    public function success(string $number): View|RedirectResponse
     {
         $order = Order::query()
             ->with(['items', 'address', 'delivery', 'user'])
             ->where('number', $number)
             ->firstOrFail();
+
+        if ($order->payment_status !== OrderPaymentStatus::Paid) {
+            return redirect()->route('web.checkout.processing', $number);
+        }
 
         return view('web.store.checkout.success', compact('order'));
     }
@@ -197,5 +259,20 @@ class CheckoutController extends Controller
         $order = $payment?->payable;
 
         return view('web.store.checkout.failure', compact('payment', 'order', 'reference'));
+    }
+
+    private function paymentRedirect(Order $order, string $reference): RedirectResponse
+    {
+        return match ($order->payment_status) {
+            OrderPaymentStatus::Paid => redirect()->route('web.checkout.success', $order->number),
+            OrderPaymentStatus::Pending => redirect()->route('web.checkout.processing', $order->number),
+            default => redirect()->route('web.checkout.failure', $reference),
+        };
+    }
+
+    private function ensureMockPayment(Payment $payment): void
+    {
+        abort_unless(app()->environment('local', 'testing') && config('payments.store_mock')
+            && $payment->gateway === 'mock', 404);
     }
 }

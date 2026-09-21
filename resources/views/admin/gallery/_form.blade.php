@@ -2,6 +2,9 @@
     use App\Support\GalleryMedia;
     $item = $item ?? null;
     $type = old('type', $item?->type ?? ($defaultType ?? 'gallery'));
+    $locationGroups = \App\Models\GalleryItem::LOCATION_GROUPS;
+    $locationDescriptions = \App\Models\GalleryItem::LOCATION_GROUP_DESCRIPTIONS;
+    $locationGroup = old('location_group', $item?->location_group ?? ($defaultLocationGroup ?? \App\Models\GalleryItem::DEFAULT_LOCATION_GROUP));
     $isEdit = (bool) $item;
 @endphp
 
@@ -28,10 +31,38 @@
         <div>
             <label class="admin-label" for="gallery-type">Type</label>
             <select id="gallery-type" name="type" class="admin-input" required data-gallery-type-select>
-                <option value="gallery" @selected($type === 'gallery')>Gallery image (homepage grid)</option>
-                <option value="before_after" @selected($type === 'before_after')>Before / after (comparison slider)</option>
+                <option value="gallery" @selected($type === 'gallery')>Gallery photo (destination collection)</option>
+                <option value="before_after" @selected($type === 'before_after')>Before / after treatment result</option>
             </select>
             @error('type')<p class="mt-1 text-sm text-[var(--color-error)]">{{ $message }}</p>@enderror
+        </div>
+        <fieldset class="md:col-span-2">
+            <legend class="admin-label">Choose the destination collection</legend>
+            <p class="admin-field-intro">Every upload appears inside the collection selected here. Use Global Gallery only when the photograph is not connected to a specific country.</p>
+            <div class="admin-collection-picker">
+                @foreach($locationGroups as $key => $label)
+                    <label class="admin-collection-choice">
+                        <input type="radio" name="location_group" value="{{ $key }}" @checked($locationGroup === $key) required>
+                        <span class="admin-collection-choice__number">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
+                        <span class="admin-collection-choice__copy">
+                            <strong>{{ $label }}</strong>
+                            <small>{{ $locationDescriptions[$key] }}</small>
+                        </span>
+                        <span class="admin-collection-choice__check" aria-hidden="true">✓</span>
+                    </label>
+                @endforeach
+            </div>
+            @error('location_group')<p class="mt-1 text-sm text-[var(--color-error)]">{{ $message }}</p>@enderror
+        </fieldset>
+        <div>
+            <label class="admin-label" for="treatment_id">Related clinical procedure (optional)</label>
+            <select id="treatment_id" name="treatment_id" class="admin-input">
+                <option value="">General clinic work</option>
+                @foreach ($treatments as $treatment)
+                    <option value="{{ $treatment->id }}" @selected((string) old('treatment_id', $item?->treatment_id) === (string) $treatment->id)>{{ $treatment->name }}</option>
+                @endforeach
+            </select>
+            <p class="mt-2 text-xs text-[var(--admin-text-muted)]">Linking a before/after case displays it on that procedure's detail page.</p>
         </div>
         <div class="md:col-span-2">
             <label class="admin-label" for="description">Description</label>
@@ -44,16 +75,6 @@
         <div>
             <label class="admin-label" for="sort_order">Sort order</label>
             <input id="sort_order" name="sort_order" type="number" min="0" class="admin-input" value="{{ old('sort_order', $item?->sort_order ?? 10) }}">
-        </div>
-        <div class="md:col-span-2">
-            <label class="admin-label" for="treatment_id">Related clinical procedure (optional)</label>
-            <select id="treatment_id" name="treatment_id" class="admin-input">
-                <option value="">General clinic work</option>
-                @foreach ($treatments as $treatment)
-                    <option value="{{ $treatment->id }}" @selected((string) old('treatment_id', $item?->treatment_id) === (string) $treatment->id)>{{ $treatment->name }}</option>
-                @endforeach
-            </select>
-            <p class="mt-2 text-xs text-[var(--admin-text-muted)]">Linking a before/after case displays it on that procedure's detail page.</p>
         </div>
     </div>
 </div>

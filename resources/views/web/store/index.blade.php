@@ -17,12 +17,13 @@
             </div>
             <div class="store-v2-assurance">
                 <span>Clinic selected</span>
-                <span>Order directly on WhatsApp</span>
+                <span>{{ \App\Support\WhatsAppOrder::enabled() ? 'Order directly on WhatsApp' : 'Secure online checkout' }}</span>
                 <span>Delivery or pickup</span>
             </div>
         </div>
         <div class="store-v2-hero__visual reveal reveal-delay-2">
-            <img src="{{ $cmsPage?->hero_image_url ?: asset('assets/web/images/store/store-hero.webp') }}" alt="A curated collection of skincare and beauty products" width="1600" height="1067" decoding="async" fetchpriority="high">
+            <img src="{{ $cmsPage?->hero_image_url ?: asset('assets/web/images/store/store-hero.webp') }}" alt="A curated collection of skincare and beauty products" width="1600" height="1067" decoding="async" fetchpriority="high" data-editorial-parallax>
+            <span class="store-v2-hero__edition" aria-hidden="true">The edit · 2026</span>
             <div class="store-v2-hero__note">
                 <span>Curated essentials</span>
                 <strong>For skin that feels as good as it looks.</strong>
@@ -97,7 +98,7 @@
         @else
             <div class="store-v2-grid">
                 @foreach ($products as $product)
-                    <article class="store-v2-card reveal">
+                    <article class="store-v2-card reveal" style="--reveal-delay: {{ ($loop->index % 3) * 90 }}ms">
                         <a href="{{ route('web.store.show', $product->slug) }}" class="store-v2-card__media">
                             @if ($product->imageUrl())
                                 <img src="{{ $product->imageUrl() }}" alt="{{ $product->name }}" loading="lazy">
@@ -143,9 +144,17 @@
                                 @endif
                             </div>
                             @if($product->isPurchasable())
-                                <a class="store-v2-card__buy" href="{{ $whatsAppOrderUrls[$product->id] }}" target="_blank" rel="noopener noreferrer">
-                                    <span>Order on WhatsApp</span>
-                                </a>
+                                @if(\App\Support\WhatsAppOrder::enabled())
+                                    <a class="store-v2-card__buy" href="{{ $whatsAppOrderUrls[$product->id] }}" target="_blank" rel="noopener noreferrer">
+                                        <span>Order on WhatsApp</span>
+                                    </a>
+                                @else
+                                    <form method="POST" action="{{ route('web.cart.store') }}">
+                                        @csrf
+                                        <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                        <button type="submit" name="buy_now" value="1" class="btn btn-primary w-full mt-3">Buy now</button>
+                                    </form>
+                                @endif
                             @endif
                         </div>
                     </article>
@@ -158,11 +167,11 @@
 
 <section class="store-v2-service">
     <div class="container-site store-v2-service__grid">
-        <div>
+        <div class="reveal">
             <p class="text-label">Not sure where to begin?</p>
             <h2>Let your routine start with expert advice.</h2>
         </div>
-        <div>
+        <div class="reveal reveal-delay-2">
             <p>Book a consultation for personalised guidance on treatments, skincare and the products best suited to your goals.</p>
             <a href="{{ route('web.booking.create') }}" class="btn btn-primary">Book a consultation</a>
         </div>

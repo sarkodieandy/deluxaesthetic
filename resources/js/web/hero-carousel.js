@@ -6,6 +6,7 @@ export function heroCarousel(total = 5) {
         active: 0,
         total,
         timer: null,
+        paused: false,
         intervalMs: 4000,
         reducedMotion: false,
 
@@ -23,12 +24,14 @@ export function heroCarousel(total = 5) {
             }
 
             this.stopAutoplay();
+            this.paused = false;
             this.timer = window.setInterval(() => {
                 this.next(false);
             }, this.intervalMs);
         },
 
         stopAutoplay() {
+            this.paused = true;
             if (this.timer) {
                 window.clearInterval(this.timer);
                 this.timer = null;

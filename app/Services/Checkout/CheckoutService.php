@@ -2,7 +2,6 @@
 
 namespace App\Services\Checkout;
 
-use App\Contracts\Payments\PaymentGatewayInterface;
 use App\DTOs\PaymentInitiationData;
 use App\Enums\FulfillmentType;
 use App\Enums\OrderPaymentStatus;
@@ -19,7 +18,9 @@ use App\Models\User;
 use App\Services\Cart\CartService;
 use App\Services\Inventory\InventoryService;
 use App\Services\Notifications\InAppNotificationService;
+use App\Services\Payments\StorePaymentGateway;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
@@ -28,7 +29,7 @@ class CheckoutService
     public function __construct(
         private readonly CartService $carts,
         private readonly OrderPricingService $pricing,
-        private readonly PaymentGatewayInterface $payments,
+        private readonly StorePaymentGateway $paymentGateways,
         private readonly InventoryService $inventory,
         private readonly InAppNotificationService $notifications,
     ) {}
@@ -57,8 +58,10 @@ class CheckoutService
         }
 
         $quote = $this->pricing->quote($cart, $fulfillmentType);
+        $gatewayDriver = $this->paymentGateways->driver();
+        $gateway = $this->paymentGateways->resolve($gatewayDriver);
 
-        return DB::transaction(function () use ($cart, $contact, $address, $fulfillmentType, $branchId, $user, $quote) {
+        return DB::transaction(function () use ($cart, $contact, $address, $fulfillmentType, $branchId, $user, $quote, $gatewayDriver, $gateway) {
             foreach ($cart->items as $item) {
                 $stock = $item->product?->availableStock() ?? 0;
                 if (! $item->product?->is_active || $stock < $item->quantity) {
@@ -134,22 +137,41 @@ class CheckoutService
                 'payable_id' => $order->id,
                 'amount' => $order->grand_total,
                 'currency' => $order->currency,
-                'gateway' => config('payments.mock') ? 'mock' : config('payments.default', 'paystack'),
+                'gateway' => $gatewayDriver,
                 'status' => PaymentStatus::Initiated->value,
                 'metadata' => [
                     'order_number' => $order->number,
                     'email' => $contact['email'],
+                    'cart_id' => $cart->id,
                 ],
             ]);
 
-            $initiation = $this->payments->initialize(new PaymentInitiationData(
+            $initiation = $gateway->initialize(new PaymentInitiationData(
                 email: $contact['email'],
                 amountMinor: (int) round(((float) $order->grand_total) * 100),
                 currency: $order->currency,
                 reference: $reference,
                 callbackUrl: route('web.checkout.callback'),
-                metadata: ['order_id' => $order->id, 'order_number' => $order->number],
+                metadata: [
+                    'order_id' => $order->id,
+                    'order_number' => $order->number,
+                    'name' => $contact['name'],
+                    'phone' => $contact['phone'],
+                    'customer_id' => $user?->id,
+                ],
             ));
+
+            if ($gatewayDriver === 'expresspay') {
+                $token = $initiation['token'] ?? null;
+
+                if (! is_string($token) || trim($token) === '') {
+                    throw new \RuntimeException('Unable to initialise expressPay payment.');
+                }
+
+                $payment->update([
+                    'metadata' => [...($payment->metadata ?? []), 'expresspay_token' => $token],
+                ]);
+            }
 
             $payment->attempts()->create([
                 'status' => PaymentStatus::Initiated->value,
@@ -182,7 +204,22 @@ class CheckoutService
                 return $payment->payable()->firstOrFail();
             }
 
-            $result = $this->payments->verify($reference);
+            $gateway = $this->paymentGateways->resolve($payment->gateway);
+            $result = $gateway->verify($reference);
+
+            /** @var Order $order */
+            $order = Order::query()->lockForUpdate()->findOrFail($payment->payable_id);
+
+            if ($result->status === 'pending') {
+                $payment->attempts()->create([
+                    'status' => PaymentStatus::Pending->value,
+                    'response_payload' => $result->raw,
+                ]);
+                $payment->update(['status' => PaymentStatus::Pending->value]);
+                $order->update(['payment_status' => OrderPaymentStatus::Pending->value]);
+
+                return $order->fresh(['items', 'address', 'delivery']);
+            }
 
             $payment->attempts()->create([
                 'status' => $result->successful ? PaymentStatus::Successful->value : PaymentStatus::Failed->value,
@@ -191,23 +228,18 @@ class CheckoutService
 
             if (! $result->successful) {
                 $payment->update(['status' => PaymentStatus::Failed->value]);
-                if ($payment->payable instanceof Order) {
-                    $payment->payable->update(['payment_status' => OrderPaymentStatus::Failed->value]);
-                }
+                $order->update(['payment_status' => OrderPaymentStatus::Failed->value]);
 
-                throw new InvalidArgumentException('Payment could not be verified.');
+                return $order->fresh(['items', 'address', 'delivery']);
             }
 
             $expectedMinor = (int) round(((float) $payment->amount) * 100);
             $paidMinor = (int) ($result->raw['amount'] ?? $expectedMinor);
             $paidCurrency = strtoupper((string) ($result->raw['currency'] ?? $payment->currency));
-            if (! config('payments.mock')
+            if ($payment->gateway !== 'mock'
                 && ($paidMinor !== $expectedMinor || $paidCurrency !== strtoupper($payment->currency))) {
                 throw new InvalidArgumentException('Payment details do not match the order total.');
             }
-
-            /** @var Order $order */
-            $order = Order::query()->lockForUpdate()->findOrFail($payment->payable_id);
 
             $this->inventory->decrementForOrder($order, $order->user_id);
 
@@ -232,16 +264,13 @@ class CheckoutService
                 'paid_at' => now(),
             ]);
 
-            if ($order->user_id) {
-                $userCart = Cart::query()->where('user_id', $order->user_id)->first();
-                if ($userCart) {
-                    $this->carts->clear($userCart);
-                }
-            } else {
-                $guestCart = Cart::query()->whereNull('user_id')->where('session_id', session()->getId())->first();
-                if ($guestCart) {
-                    $this->carts->clear($guestCart);
-                }
+            $cartId = (int) ($payment->metadata['cart_id'] ?? 0);
+            $checkoutCart = $cartId > 0 ? Cart::query()->find($cartId) : null;
+
+            if ($checkoutCart
+                && (($order->user_id && $checkoutCart->user_id === $order->user_id)
+                    || (! $order->user_id && ! $checkoutCart->user_id))) {
+                $this->carts->clear($checkoutCart);
             }
 
             $this->notifications->notifyAdmins([
@@ -251,7 +280,7 @@ class CheckoutService
                 'category' => 'order',
             ]);
 
-            if ($order->user) {
+            if ($order->user && Route::has('client.orders.show')) {
                 $this->notifications->notifyUser($order->user, [
                     'title' => 'Order confirmed',
                     'message' => 'Payment received for order '.$order->number.'.',

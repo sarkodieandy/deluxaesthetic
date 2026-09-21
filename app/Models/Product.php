@@ -58,15 +58,7 @@ class Product extends Model
 
     public function imageUrl(): ?string
     {
-        $image = $this->primaryImage();
-
-        if (! $image?->path) {
-            return null;
-        }
-
-        return str_starts_with($image->path, 'assets/')
-            ? asset($image->path)
-            : \Illuminate\Support\Facades\Storage::disk('public')->url($image->path);
+        return $this->primaryImage()?->imageUrl();
     }
 
     public function effectivePrice(): string
